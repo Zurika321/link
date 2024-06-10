@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Link 2</title>
+    <link rel="icon" href="torii-gate.png" type="image/png" />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <header>
+      <select
+        id="select"
+        onchange="title_pick(this.value)"
+        class="select_t"
+      ></select>
+      <input type="file" id="input-excel" class="pick_excel" />
+      <form id="searchForm">
+        <input
+          type="search"
+          id="searchInput"
+          class="searchInput"
+          placeholder="Tìm kiếm"
+          autocomplete="off"
+        />
+        <button type="submit" id="btn_tim" class="btn_tim">
+          <i class="fa-solid fa-arrow-rotate-right" style="color: #000000"></i>
+        </button>
+      </form>
+    </header>
+    <main id="div_main">
+      <fieldset>
+        <legend id="legend">All</legend>
+        <div id="div_scroll"></div>
+      </fieldset>
+    </main>
+    <footer>
+      <p id="whaticon" class="what-icon">Title<br />Note 1<br />Note 2</p>
+      <button id="scroll_up" class="scroll_up">Up</button>
+      <button id="scroll_down" class="scroll_down">Down</button>
+    </footer>
+    <div id="box_" style="display: none">
+      <div class="box">
+        <h3>Thêm icon mới</h3>
+        <select id="mySelect" change="this.value"></select>
+        <input
+          type="text"
+          id="link_input"
+          placeholder="Link"
+          autocomplete="off"
+          style="width: 150px"
+        />
+        <input type="file" id="input-excel2" />
+
+        <input
+          type="text"
+          id="note1_input"
+          class="note"
+          placeholder="Note 1"
+          autocomplete="off"
+        />
+        <input
+          type="text"
+          id="note2_input"
+          class="note"
+          placeholder="Note 2"
+          autocomplete="off"
+        />
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            width: calc(100%-30px);
+            margin: 10px 3px;
+          "
+        >
+          <button id="close" class="btn" style="border: none">Close</button>
+          <button id="add-link" class="btn" style="background-color: yellow">
+            Add Key
+          </button>
+          <button id="add-link2" class="btn" style="background-color: green">
+            Add Excel
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      // localStorage.removeItem("data");
+    </script>
+    <script src="script.js"></script>
+  </body>
+</html>
