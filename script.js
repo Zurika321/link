@@ -313,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function update_eff_a() {
     hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
   }
-  const defaultContent = "Default Text";
+  const defaultContent = "Title<br/>Note 1<br/>Note 2";
   const defaultStyle = "font-weight: normal;";
 
   const setWhaticonContent = (html, style = defaultStyle) => {
