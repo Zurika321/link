@@ -3,7 +3,7 @@ function linkss() {
   links = document.querySelectorAll(".link-with-favicon");
   links.forEach(async (link) => {
     const url = link.href;
-    if (url.includes("zurika")) {
+    if (url.includes("github.io")) {
       getFaviconUrl(url)
         .then((faviconUrl) => {
           link.style.backgroundImage = `url('${faviconUrl}')`;
