@@ -685,4 +685,14 @@ function isValidURL(url) {
   // Kiểm tra xem chuỗi khớp với biểu thức chính quy hay không
   return urlPattern.test(url);
 }
-document.addEventListener("DOMContentLoaded", () => {});
+function setDivHeight() {
+  var divScroll = document.getElementById("div_scroll");
+  var windowHeight = window.innerHeight;
+  divScroll.style.height = windowHeight - 195 + "px";
+}
+
+// Đặt chiều cao khi trang được tải
+window.onload = setDivHeight;
+
+// Đặt chiều cao khi kích thước cửa sổ thay đổi
+window.onresize = setDivHeight;
