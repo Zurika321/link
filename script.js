@@ -587,12 +587,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function exportExcel() {
-    const wbout = XLSX.write(workbook, { bookType: "xls", type: "binary" });
+    const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
     const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "updated_file.xls";
+    a.download = "updated_file.xlsx";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -614,7 +614,6 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("input-excel2")
     .addEventListener("change", handleFile2, false);
   document.getElementById("add-link2").addEventListener("click", excell, false);
-  document.getElementById("add-link2").addEventListener("touchstart", excell, false);
 });
 
 function removeTags(str) {
@@ -627,11 +626,7 @@ function remove_space(str) {
 document
   .getElementById("add-link")
   .addEventListener("click", addLinkAndNoteToKey, false);
-document
-  .getElementById("add-link")
-  .addEventListener("touchstart", addLinkAndNoteToKey, false);
   document.getElementById("close").addEventListener("click", close, false);
-  document.getElementById("close").addEventListener("touchstart", close, false);
 
 function close() {
   var box_ = document.getElementById("box_");
