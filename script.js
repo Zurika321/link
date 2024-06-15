@@ -1,3 +1,6 @@
+function isMobile() {
+            return /Mobi|Android/i.test(navigator.userAgent);
+}
 var links;
 function linkss() {
   links = document.querySelectorAll(".link-with-favicon");
@@ -279,7 +282,9 @@ function create_icon() {
       var a = document.createElement("a");
       a.href = link[index];
       a.setAttribute("for", items[i]);
-      a.setAttribute("target", "_blank");
+      if (!isMobile()) {
+        a.setAttribute("target", "_blank");
+      }
       a.className = "link-with-favicon eff_a";
 
       div_link.appendChild(a);
@@ -436,8 +441,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var elements = document.querySelectorAll(".eff_a");
     elements.forEach(function (element) {
       element.addEventListener("contextmenu", handleRightClick);
-    });
-    elements.forEach(function (element) {
       element.addEventListener("touchstart", handleRightTap);
     });
     if (event.target.classList.contains("eff_a")) {
@@ -653,7 +656,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         element.style.top = event.clientY + 15 + "px";
       });
-    setTimeout(() => {
       var forValue = event.target.getAttribute("for");
       var href = event.target.href;
       document.querySelectorAll(".box2 li").forEach(function (li, index) {
@@ -703,7 +705,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
       box_2_id.style.display = "block";
-    }, 1000);
   }
   document.addEventListener("click", function (event) {
     if (box_2_id.style.display === "block") {
