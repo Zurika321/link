@@ -97,11 +97,106 @@ function removeIcon(titles) {
   }
   return titlesCopy;
 }
+function removeTags(str) {
+  return str.replace(/<\/?[^>]+>/gi, "");
+}
+function remove_space(str) {
+  return str.replace(/\s+/g, "");
+}
+function remove_space_from_array(arr) {
+  return arr.map((item) => remove_space(item));
+}
 // Sử dụng hàm để loại bỏ biểu tượng từ mảng title và lưu vào mảng mới title_no_icon
 var title_no_icon = removeIcon(title);
 var link = [];
 var note = [];
 console_data();
+var star = [];
+function console_star(note_add, add_or_remove) {
+  if (note_add == "") {
+    star = JSON.parse(localStorage.getItem("star")) || [];
+    let clean_notes = remove_space_from_array(
+      note.map((item) => removeTags(item))
+    );
+    star = star.filter((item) => clean_notes.includes(item));
+    star = [...new Set(star)];
+    localStorage.setItem("star", JSON.stringify(star));
+  } else {
+    var note_add = removeTags(remove_space(note_add));
+    if (add_or_remove === "add") {
+      star = JSON.parse(localStorage.getItem("star")) || [];
+      star.push(note_add);
+      localStorage.setItem("star", JSON.stringify(star));
+      console.log(star + "add");
+    } else if (add_or_remove === "remove") {
+      star = JSON.parse(localStorage.getItem("star")) || [];
+      star = star.filter((item) => item !== note_add);
+      localStorage.setItem("star", JSON.stringify(star));
+      console.log(star + "remove");
+    }
+  }
+  danh_dau();
+}
+console_star("", "");
+function danh_dau() {
+  var div_stars = document.querySelectorAll(".star");
+  div_stars.forEach(function (div_star) {
+    var star_value = div_star.getAttribute("for");
+    var div_link = div_star.parentElement;
+    var div_link_value = div_link.getAttribute("for");
+    var index = star.indexOf(star_value);
+
+    if (index !== -1) {
+      div_star.style.borderWidth = "7.5px";
+      if (div_link_value.startsWith(".")) {
+      } else {
+        div_link.setAttribute("for", "." + div_link_value);
+      }
+    } else {
+      div_star.style.borderWidth = "0px";
+      // Kiểm tra nếu div_link_value bắt đầu bằng dấu chấm, loại bỏ nó
+      if (div_link_value.startsWith(".")) {
+        div_link_value = div_link_value.substring(1);
+      }
+      div_link.setAttribute("for", div_link_value);
+    }
+  });
+
+  var divScroll = document.getElementById("div_scroll");
+  var search = document.getElementById("searchInput").value;
+  sortDivLinks(search, divScroll);
+}
+
+function fixDuplicateNotes() {
+  // Đối với mỗi phần tử trong mảng, kiểm tra xem phần tử đó có xuất hiện lặp lại không
+  var bool = false;
+  for (let i = 0; i < note.length; i++) {
+    let count = 1; // Đếm số lần xuất hiện của phần tử
+    for (let j = i + 1; j < note.length; j++) {
+      if (note[i] === note[j]) {
+        bool = true;
+        count++;
+        var notes = note[j].split("<br>");
+        if (notes.length == 3) {
+          var note_0 = note[j].split("<br>")[0];
+          var note_1 = note[j].split("<br>")[1];
+          var note_2 = note[j].split("<br>")[2];
+          if (note_1.trim() == "") {
+            note[j] = `${note_0}<br>${note_1} ${count}<br>${note_2}`;
+          } else if (note_2.trim() == "") {
+            note[j] = `${note_0}<br>${note_1}<br>${note_2} ${count}`;
+          }
+        } else {
+          note[j] = `${note[j]} ${count}`; // Sửa phần tử lặp lại thành "phần_tử count"
+        }
+      }
+    }
+  }
+  if (bool) {
+    create_data(link, note);
+  }
+}
+fixDuplicateNotes();
 var what_title = "All";
 var items = [];
 function item(what_title) {
@@ -130,48 +225,71 @@ function title_pick(titles) {
   items = item(what_title);
   create_icon(titles);
 }
-var div_scroll = document.getElementById("div_scroll");
-function create_icon(title) {
-  div_scroll.innerHTML = "";
-  if (title == "All") {
-    for (let i = 0; i < link.length; i++) {
-      var div_link = document.createElement("div");
-      div_link.className = "div_link";
-      div_link.setAttribute("for", removeTags(remove_space(note[i])));
+function sortDivLinks(searchValue, divScroll) {
+  const divLinks = Array.from(divScroll.children);
+  divLinks.sort((a, b) => {
+    const aValue = a.getAttribute("for").toLowerCase();
+    const bValue = b.getAttribute("for").toLowerCase();
 
-      var a = document.createElement("a");
-      a.href = link[i];
-      a.setAttribute("for", note[i]);
-      a.className = "link-with-favicon eff_a";
-      if (note[i].startsWith("ZZ")) {
+    const aSimilarity = aValue.indexOf(searchValue) !== -1 ? 1 : 0;
+    const bSimilarity = bValue.indexOf(searchValue) !== -1 ? 1 : 0;
+
+    // Kiểm tra nếu giá trị bắt đầu bằng dấu chấm "."
+    const aStartsWithDot = aValue.startsWith(".") ? 1 : 0;
+    const bStartsWithDot = bValue.startsWith(".") ? 1 : 0;
+
+    // Nếu cả hai đều bắt đầu hoặc không bắt đầu bằng dấu chấm, sắp xếp theo độ tương tự và chữ "ừ"
+    if (aStartsWithDot !== bStartsWithDot) {
+      return bStartsWithDot - aStartsWithDot;
+    } else if (aSimilarity !== bSimilarity) {
+      return bSimilarity - aSimilarity;
+    } else if (aValue.includes("ừ") && !bValue.includes("ừ")) {
+      return 1;
+    } else if (!aValue.includes("ừ") && bValue.includes("ừ")) {
+      return -1;
+    } else {
+      return aValue.localeCompare(bValue);
+    }
+  });
+
+  divLinks.forEach((divLink) => divScroll.appendChild(divLink));
+}
+
+var div_scroll = document.getElementById("div_scroll");
+function create_icon() {
+  const divScroll = document.getElementById("div_scroll");
+  div_scroll.innerHTML = "";
+  for (let i = 0; i < items.length; i++) {
+    // Tìm vị trí của items[i] trong note
+    var index = note.indexOf(items[i]);
+    if (index !== -1) {
+      var div_link = document.createElement("div");
+
+      div_link.className = "div_link";
+      div_link.setAttribute("for", removeTags(remove_space(items[i])));
+      if (note[i].startsWith("ZZ") || note[i].startsWith(".ZZ")) {
         if (!ZZ_on) {
           div_link.style.display = "none";
         }
       }
+      var star = document.createElement("div");
+      star.className = "star";
+      star.setAttribute("for", removeTags(remove_space(items[i])));
+
+      var a = document.createElement("a");
+      a.href = link[index];
+      a.setAttribute("for", items[i]);
+      a.setAttribute("target", "_blank");
+      a.className = "link-with-favicon eff_a";
+
       div_link.appendChild(a);
+      div_link.appendChild(star);
       div_scroll.appendChild(div_link);
       linkss();
     }
-  } else {
-    for (let i = 0; i < items.length; i++) {
-      // Tìm vị trí của items[i] trong note
-      var index = note.indexOf(items[i]);
-      if (index !== -1) {
-        var div_link = document.createElement("div");
-        div_link.className = "div_link";
-        div_link.setAttribute("for", removeTags(remove_space(items[i])));
-
-        var a = document.createElement("a");
-        a.href = link[index];
-        a.setAttribute("for", items[i]);
-        a.className = "link-with-favicon eff_a";
-
-        div_link.appendChild(a);
-        div_scroll.appendChild(div_link);
-        linkss();
-      }
-    }
   }
+  danh_dau();
+  sortDivLinks(".", divScroll);
   var div_link = document.createElement("div");
   var a = document.createElement("a");
   a.className = "button_add link-with-favicon";
@@ -185,9 +303,15 @@ function create_icon(title) {
   div_link.appendChild(a);
   div_scroll.appendChild(div_link);
 }
-create_icon("All");
+title_pick("All");
 var ZZ_on = false;
 function create_option(bool) {
+  if (bool === undefined || bool === null) {
+    ZZ_on = false;
+  } else {
+    ZZ_on = bool;
+    title_pick("All");
+  }
   var select1 = document.getElementById("select");
   var select2 = document.getElementById("mySelect");
   select1.innerHTML = "";
@@ -197,26 +321,23 @@ function create_option(bool) {
   option2.value = "All";
   option2.textContent = "All";
   select1.appendChild(option2);
-  ZZ_on = bool;
-  var length = bool ? title_no_icon.length : title_no_icon.length - 1;
+  var length = ZZ_on ? title_no_icon.length : title_no_icon.length - 1;
 
   for (var i = 0; i < length; i++) {
+    // Tạo option1 cho select1
     var option1 = document.createElement("option");
     option1.value = title_no_icon[i];
     option1.textContent = title_no_icon[i];
     select1.appendChild(option1);
 
-    var option2 = document.createElement("option");
-    option2.value = title_no_icon[i];
-    option2.textContent = title_no_icon[i];
+    var option2 = option1.cloneNode(true);
     select2.appendChild(option2);
   }
-  create_icon("All");
 }
-create_option(false);
+create_option();
 
 function create_data(link, note) {
-  var data = { linksss: link, notesss: note };
+  var data = { linksss: link, notesss: note, titlesss: title };
   localStorage.setItem("data", JSON.stringify(data));
 }
 
@@ -225,7 +346,9 @@ function console_data() {
     var retrievedData = JSON.parse(localStorage.getItem("data"));
     var link_data = retrievedData.linksss;
     var note_data = retrievedData.notesss;
+    var title_data = retrievedData.titlesss;
     console.log("Icons:", link_data.length);
+    console.log("Title :", title_data);
     document.getElementById("whaticon").textContent = link_data.length;
     link = link_data;
     note = note_data;
@@ -240,7 +363,9 @@ function console_data() {
     }, 1000);
   }
 }
-
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 function add_data(link, note) {
   var retrievedData = JSON.parse(localStorage.getItem("data"));
   retrievedData.linksss.push(link); // Thêm vào mảng linksss
@@ -248,18 +373,77 @@ function add_data(link, note) {
   localStorage.setItem("data", JSON.stringify(retrievedData));
   location.reload();
 }
+function remove_data(remove_note) {
+  let confirmed = confirm("Bạn có chắc chắn muốn thực hiện lệnh này không?");
+  if (confirmed) {
+    var retrievedData = JSON.parse(localStorage.getItem("data"));
+    var index = retrievedData.notesss.indexOf(remove_note);
+    if (index !== -1) {
+      retrievedData.notesss.splice(index, 1);
+      retrievedData.linksss.splice(index, 1);
+    }
+    localStorage.setItem("data", JSON.stringify(retrievedData));
+    location.reload();
+  } else {
+    console.log("Người dùng đã hủy!");
+    return;
+  }
+}
+function getInputValues() {
+  let input1 = prompt("Nhập giá trị thứ nhất:");
+  if (input1 === null || input1 === "") {
+    console.log("Bạn đã hủy hoặc không nhập giá trị thứ nhất.");
+    return;
+  }
 
+  let input2 = prompt("Nhập giá trị thứ hai:");
+  if (input2 === null || input2 === "") {
+    console.log("Bạn đã hủy hoặc không nhập giá trị thứ hai.");
+    return;
+  }
+
+  let input3 = prompt("Nhập giá trị thứ ba:");
+  if (input3 === null || input3 === "") {
+    console.log("Bạn đã hủy hoặc không nhập giá trị thứ ba.");
+    return;
+  }
+
+  // Hiển thị thông báo với các giá trị đã nhập
+  let message = `Bạn đã nhập các giá trị sau:\n\nInput 1: ${input1}\nInput 2: ${input2}\nInput 3: ${input3}`;
+  alert(message);
+
+  // Thực hiện các hành động khác với các giá trị nhận được ở đây...
+  console.log("Giá trị thứ nhất:", input1);
+  console.log("Giá trị thứ hai:", input2);
+  console.log("Giá trị thứ ba:", input3);
+}
+
+function edit_data(link, note) {
+  var retrievedData = JSON.parse(localStorage.getItem("data"));
+  retrievedData.linksss.push(link); // Thêm vào mảng linksss
+  retrievedData.notesss.push(note); // Thêm vào mảng notesss
+  localStorage.setItem("data", JSON.stringify(retrievedData));
+  location.reload();
+}
+var window_width = window.innerWidth;
 document.addEventListener("DOMContentLoaded", function () {
   const divScroll = document.getElementById("div_scroll");
   const whaticon = document.getElementById("whaticon");
 
   // Sử dụng ủy quyền sự kiện
   divScroll.addEventListener("mouseover", function (event) {
+    hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
+    var elements = document.querySelectorAll(".eff_a");
+    elements.forEach(function (element) {
+      element.addEventListener("contextmenu", handleRightClick);
+    });
+    elements.forEach(function (element) {
+      element.addEventListener("touchstart", handleRightClick);
+    });
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
       whaticon.innerHTML = `${forValue}`;
       document.getElementById("whaticon").style = "font-weight: bold";
-      var button = document.querySelector(".button");
     } else if (event.target.classList.contains("button_add")) {
       whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Thêm icon mới</p>`;
     }
@@ -312,9 +496,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const draggable = document.querySelector("#draggable");
   var hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
-  function update_eff_a() {
-    hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
-  }
+  // function update_eff_a() {
+  //   hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
+  // }
+
   const defaultContent = "Title<br/>Note 1<br/>Note 2";
   const defaultStyle = "font-weight: normal;";
 
@@ -344,6 +529,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
     });
+
     if (!isHoveringAny) {
       setWhaticonContent(defaultContent);
     }
@@ -364,8 +550,6 @@ document.addEventListener("DOMContentLoaded", function () {
         event.touches[0].clientX - draggable.getBoundingClientRect().left;
       shiftY = event.touches[0].clientY - draggable.getBoundingClientRect().top;
     }
-
-    update_eff_a();
 
     const moveAt = (pageX, pageY) => {
       draggable.style.left = pageX - shiftX + "px";
@@ -398,6 +582,82 @@ document.addEventListener("DOMContentLoaded", function () {
     draggable.ondragstart = () => false;
   }
 
+  var box_2_id = document.getElementById("box_2");
+  var box2_class = document.querySelectorAll(".box2");
+
+  function handleRightClick(event) {
+    event.preventDefault(); // Prevent the default context menu from appearing
+    var forValue = event.target.getAttribute("for");
+    var href = event.target.href;
+    document.querySelectorAll(".box2 li").forEach(function (li, index) {
+      if (index === 0) {
+        li.onclick = function () {
+          getInputValues();
+        };
+      }
+      // Cài đặt thuộc tính href cho li thứ hai (nếu cần)
+      if (index === 1) {
+        var danhdau = document.getElementById("danhdau");
+        var indexx = star.indexOf(removeTags(remove_space(forValue)));
+
+        if (indexx !== -1) {
+          // Nếu giá trị tồn tại trong mảng
+          danhdau.style.color = "black";
+          li.onclick = function () {
+            console_star(forValue, "remove");
+            box_2_id.style.display = "none";
+          };
+        } else {
+          // Nếu giá trị không tồn tại trong mảng
+          danhdau.style.color = "rgba(0, 0, 0, 0)";
+          li.onclick = function () {
+            console_star(forValue, "add");
+            box_2_id.style.display = "none";
+          };
+        }
+      }
+      if (index === 2) {
+        li.onclick = function () {
+          location.href = href;
+          box_2_id.style.display = "none";
+        };
+      }
+      if (index === 3) {
+        li.onclick = function () {
+          window.open(href, "_blank");
+          box_2_id.style.display = "none";
+        };
+      }
+      if (index === 4) {
+        li.onclick = function () {
+          box_2_id.style.display = "none";
+          remove_data(forValue);
+        };
+      }
+    });
+    box2_class.forEach(function (element) {
+      if (window_width - 120 < event.clientX) {
+        element.style.left = event.clientX - 120 + "px";
+      } else {
+        element.style.left = event.clientX + "px";
+      }
+      element.style.top = event.clientY + 15 + "px";
+    });
+    //box_2_id.textContent = `Click chuột phải vào element có content là: ${forValue}`;
+    box_2_id.style.display = "block";
+  }
+
+  document.addEventListener("click", function (event) {
+    if (box_2_id.style.display === "block") {
+      box_2_id.style.display = "none";
+    }
+  });
+
+  // Ngăn chặn sự kiện click trên phần tử fixed nổi bọt lên document
+  box_2_id.addEventListener("click", function (event) {
+    event.stopPropagation();
+  });
+
   var searchInput = document.getElementById("searchInput");
   document
     .getElementById("searchForm")
@@ -419,35 +679,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   searchInput.addEventListener("input", function () {
     const searchValue = remove_space(searchInput.value.toLowerCase());
-    const divLinks = Array.from(divScroll.children);
-
-    divLinks.sort((a, b) => {
-      const aValue = a.getAttribute("for").toLowerCase();
-      const bValue = b.getAttribute("for").toLowerCase();
-
-      const aSimilarity = aValue.indexOf(searchValue) !== -1 ? 1 : 0;
-      const bSimilarity = bValue.indexOf(searchValue) !== -1 ? 1 : 0;
-
-      // Kiểm tra xem nếu chỉ có một trong hai là chứa chuỗi tìm kiếm
-      if (
-        (aSimilarity === 1 && bSimilarity === 0) ||
-        (aSimilarity === 0 && bSimilarity === 1)
-      ) {
-        // Chỉ có một trong hai là chứa chuỗi tìm kiếm, sắp xếp theo độ tương tự
-        return bSimilarity - aSimilarity;
-      } else if (aValue.includes("ừ") && !bValue.includes("ừ")) {
-        // Chữ "ừ" nằm trong a nhưng không nằm trong b
-        return 1;
-      } else if (!aValue.includes("ừ") && bValue.includes("ừ")) {
-        // Chữ "ừ" nằm trong b nhưng không nằm trong a
-        return -1;
-      } else {
-        // Cả hai đều không chứa chuỗi tìm kiếm hoặc chứa chữ "ừ", sắp xếp theo thứ tự bình thường
-        return aValue.localeCompare(bValue);
-      }
-    });
-
-    divLinks.forEach((divLink) => divScroll.appendChild(divLink));
+    const divScroll = document.getElementById("div_scroll");
+    sortDivLinks(searchValue, divScroll);
   });
 
   function handleFile(e) {
@@ -474,7 +707,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         create_data(link, note);
         console_data();
-        create_icon("All");
+        title_pick("All");
       };
 
       reader.readAsArrayBuffer(file); // Đọc tệp dưới dạng ArrayBuffer
@@ -616,17 +849,10 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("add-link2").addEventListener("click", excell, false);
 });
 
-function removeTags(str) {
-  return str.replace(/<\/?[^>]+>/gi, "");
-}
-function remove_space(str) {
-  return str.replace(/\s+/g, "");
-}
-
 document
   .getElementById("add-link")
   .addEventListener("click", addLinkAndNoteToKey, false);
-  document.getElementById("close").addEventListener("click", close, false);
+document.getElementById("close").addEventListener("click", close, false);
 
 function close() {
   var box_ = document.getElementById("box_");
@@ -636,7 +862,6 @@ function close() {
     box_.style.display = "flex";
   }
 }
-
 function check_add() {
   var selectedValue = document.getElementById("mySelect").value;
   var selectedValue2;
@@ -655,14 +880,14 @@ function check_add() {
     alert("Đường liên kết http/https không hợp lệ");
     return [false, "", "", ""];
   }
-  if (input_note1 === "" || input_link === "") {
-    alert("Vui lòng nhập Link và Note 1, chọn tệp excel trước khi thêm Excel");
+  if (input_link === "") {
+    alert("Vui lòng nhập Link");
     return [false, "", "", ""];
   }
 
   return [
     true,
-    `${selectedValue /*2*/}` + "<br/>" + input_note1 + "<br/>" + input_note2,
+    `${selectedValue /*2*/}` + "<br>" + input_note1 + "<br>" + input_note2,
     input_link,
     `${selectedValue}`,
   ];
@@ -685,14 +910,12 @@ function isValidURL(url) {
   // Kiểm tra xem chuỗi khớp với biểu thức chính quy hay không
   return urlPattern.test(url);
 }
+
 function setDivHeight() {
   var divScroll = document.getElementById("div_scroll");
   var windowHeight = window.innerHeight;
   divScroll.style.height = windowHeight - 195 + "px";
+  window_width = window.innerWidth;
 }
-
-// Đặt chiều cao khi trang được tải
 window.onload = setDivHeight;
-
-// Đặt chiều cao khi kích thước cửa sổ thay đổi
 window.onresize = setDivHeight;
