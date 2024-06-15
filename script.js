@@ -438,7 +438,7 @@ document.addEventListener("DOMContentLoaded", function () {
       element.addEventListener("contextmenu", handleRightClick);
     });
     elements.forEach(function (element) {
-      element.addEventListener("click", handleRightTap);
+      element.addEventListener("touchstart", handleRightTap);
     });
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
@@ -645,6 +645,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   function handleRightTap(event) {
     event.preventDefault();
+    box2_class.forEach(function (element) {
+        if (window_width - 120 < event.clientX) {
+          element.style.left = event.clientX - 120 + "px";
+        } else {
+          element.style.left = event.clientX + "px";
+        }
+        element.style.top = event.clientY + 15 + "px";
+      });
     setTimeout(() => {
       var forValue = event.target.getAttribute("for");
       var href = event.target.href;
@@ -693,14 +701,6 @@ document.addEventListener("DOMContentLoaded", function () {
             remove_data(forValue);
           };
         }
-      });
-      box2_class.forEach(function (element) {
-        if (window_width - 120 < event.clientX) {
-          element.style.left = event.clientX - 120 + "px";
-        } else {
-          element.style.left = event.clientX + "px";
-        }
-        element.style.top = event.clientY + 15 + "px";
       });
       box_2_id.style.display = "block";
     }, 1000);
