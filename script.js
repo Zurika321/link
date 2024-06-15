@@ -438,7 +438,7 @@ document.addEventListener("DOMContentLoaded", function () {
       element.addEventListener("contextmenu", handleRightClick);
     });
     elements.forEach(function (element) {
-      element.addEventListener("touchstart", handleRightTap);
+      element.addEventListener("click", handleRightTap);
     });
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
