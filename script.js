@@ -438,7 +438,7 @@ document.addEventListener("DOMContentLoaded", function () {
       element.addEventListener("contextmenu", handleRightClick);
     });
     elements.forEach(function (element) {
-      element.addEventListener("touchstart", handleRightClick);
+      element.addEventListener("touchstart", handleRightTap);
     });
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
@@ -496,9 +496,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const draggable = document.querySelector("#draggable");
   var hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
-  // function update_eff_a() {
-  //   hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
-  // }
 
   const defaultContent = "Title<br/>Note 1<br/>Note 2";
   const defaultStyle = "font-weight: normal;";
@@ -646,15 +643,81 @@ document.addEventListener("DOMContentLoaded", function () {
     //box_2_id.textContent = `Click chuột phải vào element có content là: ${forValue}`;
     box_2_id.style.display = "block";
   }
+  function handleRightTap(event) {
+    event.preventDefault();
+    var forValue = event.target.getAttribute("for");
+    var href = event.target.href;
+    document.querySelectorAll(".box2 li").forEach(function (li, index) {
+      if (index === 0) {
+        li.onclick = function () {
+          getInputValues();
+        };
+      }
+      // Cài đặt thuộc tính href cho li thứ hai (nếu cần)
+      if (index === 1) {
+        var danhdau = document.getElementById("danhdau");
+        var indexx = star.indexOf(removeTags(remove_space(forValue)));
 
+        if (indexx !== -1) {
+          // Nếu giá trị tồn tại trong mảng
+          danhdau.style.color = "black";
+          li.onclick = function () {
+            console_star(forValue, "remove");
+            box_2_id.style.display = "none";
+          };
+        } else {
+          // Nếu giá trị không tồn tại trong mảng
+          danhdau.style.color = "rgba(0, 0, 0, 0)";
+          li.onclick = function () {
+            console_star(forValue, "add");
+            box_2_id.style.display = "none";
+          };
+        }
+      }
+      if (index === 2) {
+        li.onclick = function () {
+          location.href = href;
+          box_2_id.style.display = "none";
+        };
+      }
+      if (index === 3) {
+        li.onclick = function () {
+          window.open(href);
+          box_2_id.style.display = "none";
+        };
+      }
+      if (index === 4) {
+        li.onclick = function () {
+          box_2_id.style.display = "none";
+          remove_data(forValue);
+        };
+      }
+    });
+    box2_class.forEach(function (element) {
+      if (window_width - 120 < event.clientX) {
+        element.style.left = event.clientX - 120 + "px";
+      } else {
+        element.style.left = event.clientX + "px";
+      }
+      element.style.top = event.clientY + 15 + "px";
+    });
+    box_2_id.style.display = "block";
+  }
   document.addEventListener("click", function (event) {
     if (box_2_id.style.display === "block") {
       box_2_id.style.display = "none";
     }
   });
-
+  document.addEventListener("click", function (event) {
+    if (box_2_id.style.display === "block") {
+      box_2_id.style.display = "none";
+    }
+  });
   // Ngăn chặn sự kiện click trên phần tử fixed nổi bọt lên document
   box_2_id.addEventListener("click", function (event) {
+    event.stopPropagation();
+  });
+  box_2_id.addEventListener("touchstart", function (event) {
     event.stopPropagation();
   });
 
