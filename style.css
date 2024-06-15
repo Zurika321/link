@@ -17,6 +17,7 @@ body {
   background: no-repeat center center;
   background-size: cover;
   position: relative; /* Đặt vị trí tương đối để pseudo-elements định vị chính xác */
+  border-radius: 5px;
 }
 
 .link-with-favicon::before {
@@ -106,12 +107,39 @@ fieldset {
   background-color: rgba(255, 255, 255, 1);
   text-align: center;
   transition: border 1s ease;
+  position: relative;
+}
+.star {
+  content: "";
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  border: 10px solid rgb(255, 0, 0);
+  border-width: 5px;
+  background-color: rgb(255, 255, 255);
+  clip-path: polygon(
+    50% 0%,
+    61% 35%,
+    98% 35%,
+    68% 57%,
+    79% 91%,
+    50% 70%,
+    21% 91%,
+    32% 57%,
+    2% 35%,
+    39% 35%
+  );
+  right: 0.5px;
+  top: 0.5px;
+  z-index: 1;
 }
 
 .div_link:hover {
   border: 2px solid rgba(255, 255, 255, 0);
 }
-
+.div_link:hover > .star {
+  border-width: 10px;
+}
 footer {
   width: 100%;
   height: 80px;
@@ -262,6 +290,7 @@ input:focus {
   justify-content: center; /* Căn giữa theo chiều ngang */
   align-items: center; /* Căn giữa theo chiều dọc */
   text-align: center;
+  z-index: 500;
 }
 
 .box {
@@ -271,6 +300,76 @@ input:focus {
   text-align: left;
   padding: 0 15px;
 }
+#box_2 {
+  background-color: rgba(0, 0, 0, 0.1);
+  position: relative;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  width: 100%;
+  display: none;
+}
+.box2 {
+  width: auto;
+  height: auto;
+  background-color: rgb(255, 255, 255);
+  text-align: left;
+  padding: 0 15px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding: 0%;
+  z-index: 500;
+}
+.box2_ul {
+  height: 100%;
+  width: 100%;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  font-size: 20px;
+}
+hr {
+  margin: 0;
+}
+.box2_ul > li:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.box2_ul > li:last-child {
+  color: red;
+  font-size: 15px;
+}
+.box2_ul > li {
+  margin-left: 0;
+}
+#danhdau {
+  text-align: right;
+  margin: 0 0 0 15px;
+}
+.class_box2_edit {
+  width: 150px;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.4);
+  text-align: left;
+  padding: 0 15px;
+  z-index: 999;
+  position: fixed;
+  left: calc(50% - 75px);
+  top: calc(50% - 100px);
+}
+.class_box2_remove {
+  width: 150px;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.4);
+  text-align: left;
+  padding: 0 15px;
+  z-index: 999;
+  position: fixed;
+  left: calc(50% - 75px);
+  top: calc(50% - 100px);
+}
+
 h3 {
   text-align: center;
 }
