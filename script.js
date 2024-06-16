@@ -97,6 +97,7 @@ let touchStartY = 0;
 divMain.addEventListener("touchstart", function(event) {
   isTouching = true;
   touchStartY = event.touches[0].clientY;
+  event.preventDefault();
 });
 
 // Xử lý sự kiện di chuyển ngón tay trên màn hình
@@ -116,7 +117,6 @@ divMain.addEventListener("touchmove", function(event) {
 // Xử lý sự kiện kết thúc chạm
 divMain.addEventListener("touchend", function(event) {
   isTouching = false;
-  event.preventDefault();
 });
 
 let scrollInterval;
