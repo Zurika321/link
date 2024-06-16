@@ -1,6 +1,14 @@
 function isMobile() {
   return /Mobi|Android/i.test(navigator.userAgent);
 }
+function isValidURL(string) {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 var links;
 function linkss() {
   links = document.querySelectorAll(".link-with-favicon");
@@ -11,29 +19,30 @@ function linkss() {
     } else {
       url = link.getAttribute("link");
     }
-    if (url.includes("github.io")) {
-      getFaviconUrl(url)
-        .then((faviconUrl) => {
-          link.style.backgroundImage = `url('${faviconUrl}')`;
-        })
-        .catch(() => {
-          link.style.backgroundImage = `url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtihiUrRht07teu-KiMQpuLIj7XCSuquhWrQ&usqp=CAU')`;
-        });
-    } else if (url.includes("youtube")) {
-      link.style.backgroundImage = `url('https://www.youtube.com/favicon.ico')`;
-    } else if (url.startsWith("file:///")) {
-      link.style.backgroundImage = `url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKc4f1B7TETp0s2EH9LvCiSU6TyYXsm1ewiQ&usqp=CAU')`;
-    } else if (!isValidURL(url)) {
-      link.style.backgroundImage = `url('https://cdn.pixabay.com/photo/2017/02/12/21/29/false-2061132_640.png')`;
-    } else {
-      const faviconUrl =
-        `https://www.google.com/s2/favicons?sz=64&domain_url=` + url;
+
+    try {
+      let faviconUrl;
+      if (url.includes("github.io")) {
+        faviconUrl = await getFaviconUrl(url);
+      } else if (url.includes("youtube")) {
+        faviconUrl = "https://www.youtube.com/favicon.ico";
+      } else if (url.startsWith("file:///")) {
+        faviconUrl =
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKc4f1B7TETp0s2EH9LvCiSU6TyYXsm1ewiQ&usqp=CAU";
+      } else if (!isValidURL(url)) {
+        faviconUrl =
+          "https://cdn.pixabay.com/photo/2017/02/12/21/29/false-2061132_640.png";
+      } else {
+        faviconUrl =
+          `https://www.google.com/s2/favicons?sz=64&domain_url=` + url;
+      }
       link.style.backgroundImage = `url('${faviconUrl}')`;
+    } catch (error) {
+      link.style.backgroundImage = `url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtihiUrRht07teu-KiMQpuLIj7XCSuquhWrQ&usqp=CAU')`;
     }
   });
 }
 
-linkss();
 function getFaviconUrl(url) {
   return new Promise((resolve, reject) => {
     fetch(url)
@@ -46,7 +55,7 @@ function getFaviconUrl(url) {
           doc.querySelector("link[rel='shortcut icon']");
         if (faviconLink) {
           const faviconUrl = faviconLink.getAttribute("href");
-          resolve(faviconUrl);
+          resolve(new URL(faviconUrl, url).href); // Resolve absolute URL
         } else {
           reject("Không thể tìm thấy favicon.");
         }
@@ -377,9 +386,6 @@ function console_data() {
     }, 1000);
   }
 }
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////
 function add_data(link, note) {
   var retrievedData = JSON.parse(localStorage.getItem("data"));
   retrievedData.linksss.push(link); // Thêm vào mảng linksss
@@ -401,7 +407,10 @@ function remove_data(remove_note) {
       retrievedData.linksss.splice(index, 1);
     }
     localStorage.setItem("data", JSON.stringify(retrievedData));
-    location.reload();
+    console_data();
+    console_star("", "");
+    title_pick(what_title);
+    document.getElementById("class_box2_remove").style.display = "none";
   };
 
   // Xử lý nút "No"
@@ -465,6 +474,7 @@ function edit_data(edit_note, link_value) {
     localStorage.setItem("data", JSON.stringify(retrievedData));
     console_data();
     title_pick(what_title);
+    document.getElementById("class_box2_edit").style.display = "none";
   };
 
   document.getElementById("cancel_edit").onclick = function () {
@@ -1021,13 +1031,6 @@ function addLinkAndNoteToKey() {
   var link_a = a[2];
   var note_a = a[1];
   add_data(link_a, note_a);
-}
-function isValidURL(url) {
-  // Biểu thức chính quy để kiểm tra đường liên kết hợp lệ
-  var urlPattern = /^(ftp|http|https):\/\/[^ "]+$/;
-
-  // Kiểm tra xem chuỗi khớp với biểu thức chính quy hay không
-  return urlPattern.test(url);
 }
 
 function setDivHeight() {
