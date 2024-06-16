@@ -84,7 +84,7 @@ function getFaviconUrl(url) {
 const divMain = document.getElementById("div_scroll");
 
 // Xử lý sự kiện cuộn bằng chuột
-divMain.addEventListener("wheel", function (event) {
+divMain.addEventListener("wheel", function(event) {
   event.preventDefault();
   divMain.scrollTop += event.deltaY;
 });
@@ -94,27 +94,31 @@ let isTouching = false;
 let touchStartY = 0;
 
 // Xử lý sự kiện bắt đầu chạm
-divMain.addEventListener("touchstart", function (event) {
+divMain.addEventListener("touchstart", function(event) {
   isTouching = true;
   touchStartY = event.touches[0].clientY;
+  event.preventDefault(); // Ngăn chặn hành vi mặc định
 });
 
 // Xử lý sự kiện di chuyển ngón tay trên màn hình
-divMain.addEventListener("touchmove", function (event) {
+divMain.addEventListener("touchmove", function(event) {
   if (!isTouching) return;
 
   const touchCurrentY = event.touches[0].clientY;
   const touchDeltaY = touchStartY - touchCurrentY;
-
+  
   divMain.scrollTop += touchDeltaY;
 
   // Cập nhật lại tọa độ bắt đầu chạm để cho lần di chuyển tiếp theo
   touchStartY = touchCurrentY;
+
+  event.preventDefault(); // Ngăn chặn hành vi mặc định
 });
 
 // Xử lý sự kiện kết thúc chạm
-divMain.addEventListener("touchend", function (event) {
+divMain.addEventListener("touchend", function(event) {
   isTouching = false;
+  event.preventDefault(); // Ngăn chặn hành vi mặc định
 });
 
 let scrollInterval;
