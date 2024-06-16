@@ -63,8 +63,40 @@
         </ul>
       </div>
     </div>
-    <div class="class_box2_edit" style="display: none">hello</div>
-    <div class="class_box2_remove" style="display: none">hello</div>
+    <div id="class_box2_edit" style="display: none">
+      <h3>Chỉnh Sửa</h3>
+      <div id="edit_input">
+        <select id="select_edit" style="grid-area: select"></select>
+        <input
+          id="link_edit"
+          style="grid-area: link"
+          autocomplete="off"
+          placeholder="link"
+        />
+        <input
+          id="note1_edit"
+          style="grid-area: note1"
+          autocomplete="off"
+          placeholder="note 1"
+        />
+        <input
+          id="note2_edit"
+          style="grid-area: note2"
+          autocomplete="off"
+          placeholder="note 2"
+        />
+      </div>
+      <button id="cancel_edit">Hủy</button>
+      <button id="save_edit">Lưu</button>
+    </div>
+
+    <div id="class_box2_remove" style="display: none">
+      <h3>Bạn có chắc muốn xóa:</h3>
+      <p id="noteToDelete"></p>
+      <button id="confirmYes">Yes</button>
+      <button id="confirmNo">No</button>
+    </div>
+
     <div id="box_" style="display: none">
       <div class="box">
         <h3>Thêm icon mới</h3>
