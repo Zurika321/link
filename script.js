@@ -522,27 +522,21 @@ document.addEventListener("DOMContentLoaded", function () {
   const divScroll = document.getElementById("div_scroll");
   const whaticon = document.getElementById("whaticon");
 
-  // Sử dụng ủy quyền sự kiện
   divScroll.addEventListener("mouseover", function (event) {
     hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
     var elements = document.querySelectorAll(".eff_a");
     elements.forEach(function (element) {
-      // if (!isMobile()) {
-      //   element.addEventListener("contextmenu", handleRightClick);
-      // } else {
       element.addEventListener("touchstart", handleRightClick);
       element.addEventListener("contextmenu", handleRightClick);
       element.addEventListener("click", function (event) {
         if (event.button === 0) {
           var href = event.target.getAttribute("link");
-          //console.log("Đã mở liên kết:", href);
           if (href) {
             go_link(href);
             event.preventDefault();
           }
         }
       });
-      // }
     });
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
@@ -710,16 +704,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var forValue = event.target.getAttribute("for");
     var href1 = event.target.href;
     var href2 = event.target.getAttribute("link");
-    var href = "";
-    console.log(href1);
-    console.log(href2);
-    if (href1 == null) {
-      href = href2;
-      console.log("pe");
-    } else if (href2 == null) {
-      href = href1;
-      console.log("pc");
-    }
+    var href = href1 || href2;
     document.querySelectorAll(".box2 li").forEach(function (li, index) {
       if (index === 0) {
         li.onclick = function () {
