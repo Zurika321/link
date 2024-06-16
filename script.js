@@ -1,6 +1,7 @@
 function isMobile() {
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userActivation);
 }
+
 function isValidURL(string) {
   try {
     new URL(string);
@@ -371,8 +372,18 @@ function console_data() {
     var note_data = retrievedData.notesss;
     var title_data = retrievedData.titlesss;
     console.log("Icons:", link_data.length);
-    console.log("Title :", title_data);
-    document.getElementById("whaticon").textContent = link_data.length;
+    var thiet_bi = "PE";
+    if (!isMobile()) {
+      thiet_bi = "PC";
+    }
+    document.getElementById("whaticon").innerHTML =
+      "Icons :" +
+      link_data.length +
+      "<br>" +
+      thiet_bi +
+      "<br>" +
+      "Titles :" +
+      title_data.length;
     link = link_data;
     note = note_data;
   } else {
