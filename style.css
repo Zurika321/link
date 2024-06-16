@@ -347,27 +347,74 @@ hr {
   text-align: right;
   margin: 0 0 0 15px;
 }
-.class_box2_edit {
-  width: 150px;
-  height: 200px;
-  background-color: rgba(0, 0, 0, 0.4);
+#class_box2_edit {
+  width: 350px;
+  height: 150px;
+  background-color: rgb(255, 255, 255);
   text-align: left;
-  padding: 0 15px;
-  z-index: 999;
+  z-index: 500;
   position: fixed;
-  left: calc(50% - 75px);
-  top: calc(50% - 100px);
+  left: calc(50% - 175px);
+  top: calc(50% - 75px);
+  display: flex;
 }
-.class_box2_remove {
-  width: 150px;
-  height: 200px;
-  background-color: rgba(0, 0, 0, 0.4);
+#class_box2_edit > h3 {
+  margin-top: 10px;
+}
+#edit_input {
+  display: grid;
+  width: 320px;
+  grid-template-areas:
+    "select link link link"
+    "note1 note1 note1 note1"
+    "note2 note2 note2 note2";
+  margin: auto;
+  grid-gap: 5px;
+  margin-top: -15px;
+}
+#class_box2_edit > button {
+  width: 100px;
+  height: 20px;
+  position: absolute;
+  bottom: 15px;
+  margin-left: 15px;
+}
+#class_box2_edit > button:nth-child(2n) {
+  right: 15px;
+  background-color: blue;
+  color: white;
+}
+#class_box2_remove {
+  width: 300px;
+  height: 150px;
+  background-color: rgb(255, 255, 255);
   text-align: left;
-  padding: 0 15px;
-  z-index: 999;
+  z-index: 500;
   position: fixed;
-  left: calc(50% - 75px);
-  top: calc(50% - 100px);
+  left: calc(50% - 150px);
+  top: calc(50% - 75px);
+}
+#class_box2_remove > button {
+  width: 100px;
+  height: 20px;
+  position: absolute;
+  bottom: 15px;
+  background-color: red;
+  margin-left: 15px;
+}
+#class_box2_remove > button:nth-child(2n) {
+  right: 15px;
+  background-color: white;
+}
+#noteToDelete {
+  display: block;
+  margin: auto;
+  width: 270px;
+  text-align: center;
+  border: 1px solid black;
+  border-radius: 15px;
+  height: 60px;
+  margin-top: -15px;
 }
 
 h3 {
