@@ -542,7 +542,10 @@ function edit_data(edit_note, link_value) {
       }
       if (note[index] !== new_note) {
         retrievedData.notesss[index] = new_note;
-        console_star(new_note, "add");
+        var index_star = star.indexOf(removeTags(remove_space(note[index])));
+        if(index_star !== -1){
+          console_star(new_note, "add");
+        }
       }
     }
     localStorage.setItem("data", JSON.stringify(retrievedData));
