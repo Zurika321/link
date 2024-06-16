@@ -297,8 +297,6 @@ function create_icon() {
         a.href = link[index];
       } else {
         a.setAttribute("link", link[index]);
-        a.href = link[index];
-        a.setAttribute("target", "_blank");
       }
       a.className = "link-with-favicon eff_a";
 
@@ -496,8 +494,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!isMobile()) {
         element.addEventListener("contextmenu", handleRightClick);
       } else {
-        element.addEventListener("touchstart", handleRightTap);
-        element.addEventListener("contextmenu", handleRightClick);
+        element.addEventListener("click", handleRightTap);
       }
     });
     if (event.target.classList.contains("eff_a")) {
