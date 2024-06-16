@@ -84,7 +84,7 @@ function getFaviconUrl(url) {
 const divMain = document.getElementById("div_scroll");
 
 // Xử lý sự kiện cuộn bằng chuột
-divMain.addEventListener("wheel", function(event) {
+divMain.addEventListener("wheel", function (event) {
   event.preventDefault();
   divMain.scrollTop += event.deltaY;
 });
@@ -94,19 +94,19 @@ let isTouching = false;
 let touchStartY = 0;
 
 // Xử lý sự kiện bắt đầu chạm
-divMain.addEventListener("touchstart", function(event) {
+divMain.addEventListener("touchstart", function (event) {
   isTouching = true;
   touchStartY = event.touches[0].clientY;
   event.preventDefault(); // Ngăn chặn hành vi mặc định
 });
 
 // Xử lý sự kiện di chuyển ngón tay trên màn hình
-divMain.addEventListener("touchmove", function(event) {
+divMain.addEventListener("touchmove", function (event) {
   if (!isTouching) return;
 
   const touchCurrentY = event.touches[0].clientY;
   const touchDeltaY = touchStartY - touchCurrentY;
-  
+
   divMain.scrollTop += touchDeltaY;
 
   // Cập nhật lại tọa độ bắt đầu chạm để cho lần di chuyển tiếp theo
@@ -116,7 +116,7 @@ divMain.addEventListener("touchmove", function(event) {
 });
 
 // Xử lý sự kiện kết thúc chạm
-divMain.addEventListener("touchend", function(event) {
+divMain.addEventListener("touchend", function (event) {
   isTouching = false;
   event.preventDefault(); // Ngăn chặn hành vi mặc định
 });
@@ -584,7 +584,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let clickCount = 0;
         let clickTimeout;
 
-        element.addEventListener("click", function (event) {
+        element.addEventListener("touchstart", function (event) {
           clickCount++;
           if (clickCount === 1) {
             clickTimeout = setTimeout(function () {
@@ -604,6 +604,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       element.addEventListener("contextmenu", handleRightClick);
     });
+
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
       whaticon.innerHTML = `${forValue}`;
@@ -612,6 +613,7 @@ document.addEventListener("DOMContentLoaded", function () {
       whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Thêm icon mới</p>`;
     }
   });
+
   document.addEventListener("mouseover", function (event) {
     if (event.target.classList.contains("select_t")) {
       whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Pick title</p>`;
@@ -633,6 +635,7 @@ document.addEventListener("DOMContentLoaded", function () {
       whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Reload</p>`;
     }
   });
+
   document.addEventListener("mouseout", function (event) {
     if (
       event.target.classList.contains("select_t") ||
@@ -648,6 +651,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "font-size: 16px;display:block";
     }
   });
+
   divScroll.addEventListener("mouseout", function (event) {
     if (
       event.target.classList.contains("link-with-favicon") ||
