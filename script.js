@@ -83,26 +83,31 @@ function getFaviconUrl(url) {
 }
 
 let scrollInterval;
-document.getElementById("scroll_up").addEventListener("mousedown", function () {
+function startScrolling(scrollAmount) {
   scrollInterval = setInterval(function () {
     const divMain = document.getElementById("div_scroll");
     const currentScroll = divMain.scrollTop;
-    divMain.scrollTop = currentScroll - 50; // Cuộn lên 50px
+    divMain.scrollTop = currentScroll + scrollAmount;
   }, 100); // Thực hiện cuộn mỗi 100ms
-});
-
-document
-  .getElementById("scroll_down")
-  .addEventListener("mousedown", function () {
-    scrollInterval = setInterval(function () {
-      const divMain = document.getElementById("div_scroll");
-      const currentScroll = divMain.scrollTop;
-      divMain.scrollTop = currentScroll + 50; // Cuộn xuống 50px
-    }, 100); // Thực hiện cuộn mỗi 100ms
-  });
-document.addEventListener("mouseup", function () {
+}
+function stopScrolling() {
   clearInterval(scrollInterval); // Dừng cuộn khi nhả nút
+}
+document.getElementById("scroll_up").addEventListener("mousedown", function () {
+  startScrolling(-50); // Cuộn lên 50px
 });
+document.getElementById("scroll_up").addEventListener("touchstart", function () {
+  startScrolling(-50); // Cuộn lên 50px
+});
+document.getElementById("scroll_down").addEventListener("mousedown", function () {
+  startScrolling(50); // Cuộn xuống 50px
+});
+document.getElementById("scroll_down").addEventListener("touchstart", function () {
+  startScrolling(50); // Cuộn xuống 50px
+});
+document.addEventListener("mouseup", stopScrolling);
+document.addEventListener("touchend", stopScrolling);
+
 var title = [
   "AI",
   "Anime",
@@ -751,8 +756,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       if (index === 2) {
         li.onclick = function () {
-          location.href = href;
-          box_2_id.style.display = "none";
+          navigator.clipboard
+            .writeText(href)
+            .then(function () {
+              box_2_id.style.display = "none";
+              alert("Liên kết đã được sao chép vào clipboard!");
+            })
+            .catch(function (error) {
+              console.error("Không thể sao chép liên kết: ", error);
+            });
         };
       }
       if (index === 3) {
