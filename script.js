@@ -110,6 +110,7 @@ divMain.addEventListener("touchmove", function(event) {
 
   // Cập nhật lại tọa độ bắt đầu chạm để cho lần di chuyển tiếp theo
   touchStartY = touchCurrentY;
+  event.preventDefault();
 });
 
 // Xử lý sự kiện kết thúc chạm
