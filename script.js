@@ -484,7 +484,6 @@ function edit_data(edit_note, link_value) {
     var new_link = link_input.value;
     var retrievedData = JSON.parse(localStorage.getItem("data"));
     var index = retrievedData.notesss.indexOf(edit_note);
-    console.log(index);
     if (index !== -1) {
       if (link[index] !== new_link) {
         retrievedData.linksss[index] = new_link;
@@ -515,7 +514,7 @@ function go_link(href) {
 function go__() {
   setTimeout(() => {
     go_ = false;
-  }, 5000);
+  }, 1000);
 }
 var window_width = window.innerWidth;
 document.addEventListener("DOMContentLoaded", function () {
@@ -526,17 +525,21 @@ document.addEventListener("DOMContentLoaded", function () {
     hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
     var elements = document.querySelectorAll(".eff_a");
     elements.forEach(function (element) {
-      element.addEventListener("touchstart", handleRightClick);
-      element.addEventListener("contextmenu", handleRightClick);
-      element.addEventListener("click", function (event) {
-        if (event.button === 0) {
-          var href = event.target.getAttribute("link");
-          if (href) {
-            go_link(href);
-            event.preventDefault();
+      if (!isMobile()) {
+        element.addEventListener("contextmenu", handleRightClick);
+      } else {
+        element.addEventListener("touchstart", handleRightClick);
+        element.addEventListener("contextmenu", handleRightClick);
+        element.addEventListener("click", function (event) {
+          if (event.button === 0) {
+            var href = event.target.getAttribute("link");
+            if (href) {
+              go_link(href);
+              event.preventDefault();
+            }
           }
-        }
-      });
+        });
+      }
     });
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
