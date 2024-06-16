@@ -528,7 +528,20 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!isMobile()) {
         element.addEventListener("contextmenu", handleRightClick);
       } else {
-        element.addEventListener("touchstart", handleRightClick);
+        let touchStartTime;
+        element.addEventListener("touchstart", function (event) {
+          touchStartTime = Date.now();
+        });
+
+        element.addEventListener("touchend", function (event) {
+          let touchEndTime = Date.now();
+          let touchDuration = touchEndTime - touchStartTime;
+
+          if (touchDuration >= 2000) {
+            // Kiểm tra nếu thời gian giữ là ít nhất 2 giây
+            handleRightClick(); // Gọi hàm xử lý khi giữ lâu
+          }
+        });
         element.addEventListener("contextmenu", handleRightClick);
         element.addEventListener("click", function (event) {
           if (event.button === 0) {
