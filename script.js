@@ -81,6 +81,41 @@ function getFaviconUrl(url) {
       });
   });
 }
+const divMain = document.getElementById("div_scroll");
+
+// Xử lý sự kiện cuộn bằng chuột
+divMain.addEventListener("wheel", function (event) {
+  event.preventDefault();
+  divMain.scrollTop += event.deltaY;
+});
+
+// Biến để theo dõi trạng thái vuốt
+let isTouching = false;
+let touchStartY = 0;
+
+// Xử lý sự kiện bắt đầu chạm
+divMain.addEventListener("touchstart", function (event) {
+  isTouching = true;
+  touchStartY = event.touches[0].clientY;
+});
+
+// Xử lý sự kiện di chuyển ngón tay trên màn hình
+divMain.addEventListener("touchmove", function (event) {
+  if (!isTouching) return;
+
+  const touchCurrentY = event.touches[0].clientY;
+  const touchDeltaY = touchStartY - touchCurrentY;
+
+  divMain.scrollTop += touchDeltaY;
+
+  // Cập nhật lại tọa độ bắt đầu chạm để cho lần di chuyển tiếp theo
+  touchStartY = touchCurrentY;
+});
+
+// Xử lý sự kiện kết thúc chạm
+divMain.addEventListener("touchend", function (event) {
+  isTouching = false;
+});
 
 let scrollInterval;
 function startScrolling(scrollAmount) {
@@ -96,15 +131,21 @@ function stopScrolling() {
 document.getElementById("scroll_up").addEventListener("mousedown", function () {
   startScrolling(-50); // Cuộn lên 50px
 });
-document.getElementById("scroll_up").addEventListener("touchstart", function () {
-  startScrolling(-50); // Cuộn lên 50px
-});
-document.getElementById("scroll_down").addEventListener("mousedown", function () {
-  startScrolling(50); // Cuộn xuống 50px
-});
-document.getElementById("scroll_down").addEventListener("touchstart", function () {
-  startScrolling(50); // Cuộn xuống 50px
-});
+document
+  .getElementById("scroll_up")
+  .addEventListener("touchstart", function () {
+    startScrolling(-50); // Cuộn lên 50px
+  });
+document
+  .getElementById("scroll_down")
+  .addEventListener("mousedown", function () {
+    startScrolling(50); // Cuộn xuống 50px
+  });
+document
+  .getElementById("scroll_down")
+  .addEventListener("touchstart", function () {
+    startScrolling(50); // Cuộn xuống 50px
+  });
 document.addEventListener("mouseup", stopScrolling);
 document.addEventListener("touchend", stopScrolling);
 
