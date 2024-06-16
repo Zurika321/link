@@ -116,6 +116,7 @@ divMain.addEventListener("touchmove", function(event) {
 // Xử lý sự kiện kết thúc chạm
 divMain.addEventListener("touchend", function(event) {
   isTouching = false;
+  event.preventDefault();
 });
 
 let scrollInterval;
