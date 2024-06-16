@@ -1,5 +1,5 @@
 function isMobile() {
-  return /Mobi|Android/i.test(navigator.userAgent);
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 function isValidURL(string) {
   try {
@@ -297,6 +297,8 @@ function create_icon() {
         a.href = link[index];
       } else {
         a.setAttribute("link", link[index]);
+        a.href = link[index];
+        a.setAttribute("target", "_blank");
       }
       a.className = "link-with-favicon eff_a";
 
@@ -494,7 +496,8 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!isMobile()) {
         element.addEventListener("contextmenu", handleRightClick);
       } else {
-        element.addEventListener(/*"touchstart"*/ "click", handleRightTap);
+        element.addEventListener("touchstart", handleRightTap);
+        element.addEventListener("contextmenu", handleRightClick);
       }
     });
     if (event.target.classList.contains("eff_a")) {
@@ -717,7 +720,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       element.style.top = event.clientY + 15 + "px";
     });
-    //box_2_id.textContent = `Click chuột phải vào element có content là: ${forValue}`;
     box_2_id.style.display = "block";
   }
   function handleRightTap(event) {
@@ -779,7 +781,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       element.style.top = event.clientY + 15 + "px";
     });
-    //box_2_id.textContent = `Click chuột phải vào element có content là: ${forValue}`;
     box_2_id.style.display = "block";
   }
   // Ngăn chặn sự kiện click trên phần tử fixed nổi bọt lên document
