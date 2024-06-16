@@ -134,7 +134,7 @@ document.getElementById("scroll_up").addEventListener("mousedown", function () {
 document
   .getElementById("scroll_up")
   .addEventListener("touchstart", function () {
-    startScrolling(-50); // Cuộn lên 50px
+    startScrolling(-200); // Cuộn lên 50px
   });
 document
   .getElementById("scroll_down")
@@ -144,7 +144,7 @@ document
 document
   .getElementById("scroll_down")
   .addEventListener("touchstart", function () {
-    startScrolling(50); // Cuộn xuống 50px
+    startScrolling(200); // Cuộn xuống 50px
   });
 document.addEventListener("mouseup", stopScrolling);
 document.addEventListener("touchend", stopScrolling);
