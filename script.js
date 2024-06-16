@@ -1,11 +1,16 @@
 function isMobile() {
-            return /Mobi|Android/i.test(navigator.userAgent);
+  return /Mobi|Android/i.test(navigator.userAgent);
 }
 var links;
 function linkss() {
   links = document.querySelectorAll(".link-with-favicon");
   links.forEach(async (link) => {
-    const url = link.href;
+    var url = "";
+    if (!isMobile()) {
+      url = link.href;
+    } else {
+      url = link.getAttribute("link");
+    }
     if (url.includes("github.io")) {
       getFaviconUrl(url)
         .then((faviconUrl) => {
@@ -22,7 +27,7 @@ function linkss() {
       link.style.backgroundImage = `url('https://cdn.pixabay.com/photo/2017/02/12/21/29/false-2061132_640.png')`;
     } else {
       const faviconUrl =
-        `https://www.google.com/s2/favicons?sz=64&domain_url=` + url + "/";
+        `https://www.google.com/s2/favicons?sz=64&domain_url=` + url;
       link.style.backgroundImage = `url('${faviconUrl}')`;
     }
   });
@@ -70,7 +75,6 @@ document
       divMain.scrollTop = currentScroll + 50; // Cuộn xuống 50px
     }, 100); // Thực hiện cuộn mỗi 100ms
   });
-
 document.addEventListener("mouseup", function () {
   clearInterval(scrollInterval); // Dừng cuộn khi nhả nút
 });
@@ -130,12 +134,10 @@ function console_star(note_add, add_or_remove) {
       star = JSON.parse(localStorage.getItem("star")) || [];
       star.push(note_add);
       localStorage.setItem("star", JSON.stringify(star));
-      console.log(star + "add");
     } else if (add_or_remove === "remove") {
       star = JSON.parse(localStorage.getItem("star")) || [];
       star = star.filter((item) => item !== note_add);
       localStorage.setItem("star", JSON.stringify(star));
-      console.log(star + "remove");
     }
   }
   danh_dau();
@@ -280,10 +282,12 @@ function create_icon() {
       star.setAttribute("for", removeTags(remove_space(items[i])));
 
       var a = document.createElement("a");
-      a.href = link[index];
       a.setAttribute("for", items[i]);
       if (!isMobile()) {
         a.setAttribute("target", "_blank");
+        a.href = link[index];
+      } else {
+        a.setAttribute("link", link[index]);
       }
       a.className = "link-with-favicon eff_a";
 
@@ -319,8 +323,10 @@ function create_option(bool) {
   }
   var select1 = document.getElementById("select");
   var select2 = document.getElementById("mySelect");
+  var select3 = document.getElementById("select_edit");
   select1.innerHTML = "";
   select2.innerHTML = "";
+  select3.innerHTML = "";
 
   var option2 = document.createElement("option");
   option2.value = "All";
@@ -337,6 +343,9 @@ function create_option(bool) {
 
     var option2 = option1.cloneNode(true);
     select2.appendChild(option2);
+
+    var option3 = option1.cloneNode(true);
+    select3.appendChild(option3);
   }
 }
 create_option();
@@ -379,8 +388,12 @@ function add_data(link, note) {
   location.reload();
 }
 function remove_data(remove_note) {
-  let confirmed = confirm("Bạn có chắc chắn muốn thực hiện lệnh này không?");
-  if (confirmed) {
+  // Hiển thị hộp thoại tùy chỉnh
+  document.getElementById("class_box2_remove").style.display = "block";
+  document.getElementById("noteToDelete").innerHTML = remove_note;
+
+  // Xử lý nút "Yes"
+  document.getElementById("confirmYes").onclick = function () {
     var retrievedData = JSON.parse(localStorage.getItem("data"));
     var index = retrievedData.notesss.indexOf(remove_note);
     if (index !== -1) {
@@ -389,46 +402,74 @@ function remove_data(remove_note) {
     }
     localStorage.setItem("data", JSON.stringify(retrievedData));
     location.reload();
+  };
+
+  // Xử lý nút "No"
+  document.getElementById("confirmNo").onclick = function () {
+    document.getElementById("class_box2_remove").style.display = "none";
+  };
+}
+function selectOptionByValue(selectElement, value) {
+  for (let i = 0; i < selectElement.options.length; i++) {
+    if (selectElement.options[i].value === value) {
+      selectElement.selectedIndex = i;
+      break;
+    }
+  }
+}
+
+function edit_data(edit_note, link_value) {
+  document.getElementById("class_box2_edit").style.display = "block";
+  var link_input = document.getElementById("link_edit");
+  var note1_input = document.getElementById("note1_edit");
+  var note2_input = document.getElementById("note2_edit");
+  var selectEdit = document.getElementById("select_edit");
+
+  link_input.value = link_value;
+
+  var notes = edit_note.split("<br>");
+  if (notes.length == 3) {
+    selectOptionByValue(selectEdit, notes[0].trim());
+    note1_input.value = notes[1];
+    note2_input.value = notes[2];
+  } else if (notes.length == 2) {
+    selectOptionByValue(selectEdit, notes[0].trim());
+    note1_input.value = notes[1];
+    note2_input.value = ""; // clear the second note if it doesn't exist
   } else {
-    console.log("Người dùng đã hủy!");
-    return;
-  }
-}
-function getInputValues() {
-  let input1 = prompt("Nhập giá trị thứ nhất:");
-  if (input1 === null || input1 === "") {
-    console.log("Bạn đã hủy hoặc không nhập giá trị thứ nhất.");
-    return;
+    selectOptionByValue(selectEdit, notes[0].trim());
+    note1_input.value = "";
+    note2_input.value = "";
   }
 
-  let input2 = prompt("Nhập giá trị thứ hai:");
-  if (input2 === null || input2 === "") {
-    console.log("Bạn đã hủy hoặc không nhập giá trị thứ hai.");
-    return;
-  }
+  document.getElementById("save_edit").onclick = function () {
+    var new_note =
+      selectEdit.value +
+      "<br>" +
+      note1_input.value +
+      "<br>" +
+      note2_input.value;
+    var new_link = link_input.value;
+    var retrievedData = JSON.parse(localStorage.getItem("data"));
+    var index = retrievedData.notesss.indexOf(edit_note);
+    console.log(index);
+    if (index !== -1) {
+      if (link[index] !== new_link) {
+        retrievedData.linksss[index] = new_link;
+      }
+      if (note[index] !== new_note) {
+        retrievedData.notesss[index] = new_note;
+        console_star(new_note, "add");
+      }
+    }
+    localStorage.setItem("data", JSON.stringify(retrievedData));
+    console_data();
+    title_pick(what_title);
+  };
 
-  let input3 = prompt("Nhập giá trị thứ ba:");
-  if (input3 === null || input3 === "") {
-    console.log("Bạn đã hủy hoặc không nhập giá trị thứ ba.");
-    return;
-  }
-
-  // Hiển thị thông báo với các giá trị đã nhập
-  let message = `Bạn đã nhập các giá trị sau:\n\nInput 1: ${input1}\nInput 2: ${input2}\nInput 3: ${input3}`;
-  alert(message);
-
-  // Thực hiện các hành động khác với các giá trị nhận được ở đây...
-  console.log("Giá trị thứ nhất:", input1);
-  console.log("Giá trị thứ hai:", input2);
-  console.log("Giá trị thứ ba:", input3);
-}
-
-function edit_data(link, note) {
-  var retrievedData = JSON.parse(localStorage.getItem("data"));
-  retrievedData.linksss.push(link); // Thêm vào mảng linksss
-  retrievedData.notesss.push(note); // Thêm vào mảng notesss
-  localStorage.setItem("data", JSON.stringify(retrievedData));
-  location.reload();
+  document.getElementById("cancel_edit").onclick = function () {
+    document.getElementById("class_box2_edit").style.display = "none";
+  };
 }
 var window_width = window.innerWidth;
 document.addEventListener("DOMContentLoaded", function () {
@@ -440,8 +481,11 @@ document.addEventListener("DOMContentLoaded", function () {
     hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
     var elements = document.querySelectorAll(".eff_a");
     elements.forEach(function (element) {
-      element.addEventListener("contextmenu", handleRightClick);
-      element.addEventListener("touchstart", handleRightTap);
+      if (!isMobile()) {
+        element.addEventListener("contextmenu", handleRightClick);
+      } else {
+        element.addEventListener(/*"touchstart"*/ "click", handleRightTap);
+      }
     });
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
@@ -501,12 +545,6 @@ document.addEventListener("DOMContentLoaded", function () {
   var hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
 
   const defaultContent = "Title<br/>Note 1<br/>Note 2";
-  const defaultStyle = "font-weight: normal;";
-
-  const setWhaticonContent = (html, style = defaultStyle) => {
-    whaticon.innerHTML = html;
-    whaticon.style = style;
-  };
 
   const checkHover = (draggableRect) => {
     let isHoveringAny = false;
@@ -523,17 +561,42 @@ document.addEventListener("DOMContentLoaded", function () {
         isHoveringAny = true;
         if (target.classList.contains("eff_a")) {
           const forValue = target.closest(".eff_a").getAttribute("for");
+          var href = "";
+          if (!isMobile()) {
+            href = target.href;
+          } else {
+            href = target.getAttribute("link");
+          }
           setWhaticonContent(forValue, "font-weight: bold;");
           var button = document.querySelector(".button");
-          button.onclick = () => window.open(target.closest(".eff_a").href);
+          button.onclick = function () {
+            window.open(href);
+          };
         }
       }
     });
 
     if (!isHoveringAny) {
-      setWhaticonContent(defaultContent);
+      setWhaticonContent(defaultContent, "font-weight: normal;");
     }
   };
+
+  // Ẩn box2 khi click ra ngoài phần tử eff_a
+  document.addEventListener("click", function (event) {
+    var isClickInside = event.target.closest(".eff_a");
+
+    if (!isClickInside) {
+      box_2_id.style.display = "none";
+    }
+  });
+
+  function setWhaticonContent(content, style) {
+    var whaticon = document.getElementById("whaticon"); // Thay đổi selector này nếu cần
+    if (whaticon) {
+      whaticon.innerHTML = content;
+      whaticon.style = style;
+    }
+  }
   draggable.addEventListener("mousedown", startDrag);
   draggable.addEventListener("touchstart", startDrag);
 
@@ -592,7 +655,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll(".box2 li").forEach(function (li, index) {
       if (index === 0) {
         li.onclick = function () {
-          getInputValues();
+          edit_data(forValue, href);
+          box_2_id.style.display = "none";
         };
       }
       // Cài đặt thuộc tính href cho li thứ hai (nếu cần)
@@ -647,70 +711,67 @@ document.addEventListener("DOMContentLoaded", function () {
     box_2_id.style.display = "block";
   }
   function handleRightTap(event) {
-    event.preventDefault();
-    box2_class.forEach(function (element) {
-        if (window_width - 120 < event.clientX) {
-          element.style.left = event.clientX - 120 + "px";
-        } else {
-          element.style.left = event.clientX + "px";
-        }
-        element.style.top = event.clientY + 15 + "px";
-      });
-      var forValue = event.target.getAttribute("for");
-      var href = event.target.href;
-      document.querySelectorAll(".box2 li").forEach(function (li, index) {
-        if (index === 0) {
-          li.onclick = function () {
-            getInputValues();
-          };
-        }
-        // Cài đặt thuộc tính href cho li thứ hai (nếu cần)
-        if (index === 1) {
-          var danhdau = document.getElementById("danhdau");
-          var indexx = star.indexOf(removeTags(remove_space(forValue)));
+    event.preventDefault(); // Prevent the default context menu from appearing
+    var forValue = event.target.getAttribute("for");
+    var href = event.target.getAttribute("link");
+    document.querySelectorAll(".box2 li").forEach(function (li, index) {
+      if (index === 0) {
+        li.onclick = function () {
+          edit_data(forValue, href);
+          box_2_id.style.display = "none";
+        };
+      }
+      // Cài đặt thuộc tính href cho li thứ hai (nếu cần)
+      if (index === 1) {
+        var danhdau = document.getElementById("danhdau");
+        var indexx = star.indexOf(removeTags(remove_space(forValue)));
 
-          if (indexx !== -1) {
-            // Nếu giá trị tồn tại trong mảng
-            danhdau.style.color = "black";
-            li.onclick = function () {
-              console_star(forValue, "remove");
-              box_2_id.style.display = "none";
-            };
-          } else {
-            // Nếu giá trị không tồn tại trong mảng
-            danhdau.style.color = "rgba(0, 0, 0, 0)";
-            li.onclick = function () {
-              console_star(forValue, "add");
-              box_2_id.style.display = "none";
-            };
-          }
-        }
-        if (index === 2) {
+        if (indexx !== -1) {
+          // Nếu giá trị tồn tại trong mảng
+          danhdau.style.color = "black";
           li.onclick = function () {
-            location.href = href;
+            console_star(forValue, "remove");
+            box_2_id.style.display = "none";
+          };
+        } else {
+          // Nếu giá trị không tồn tại trong mảng
+          danhdau.style.color = "rgba(0, 0, 0, 0)";
+          li.onclick = function () {
+            console_star(forValue, "add");
             box_2_id.style.display = "none";
           };
         }
-        if (index === 3) {
-          li.onclick = function () {
-            window.open(href);
-            box_2_id.style.display = "none";
-          };
-        }
-        if (index === 4) {
-          li.onclick = function () {
-            box_2_id.style.display = "none";
-            remove_data(forValue);
-          };
-        }
-      });
-      box_2_id.style.display = "block";
+      }
+      if (index === 2) {
+        li.onclick = function () {
+          location.href = href;
+          box_2_id.style.display = "none";
+        };
+      }
+      if (index === 3) {
+        li.onclick = function () {
+          window.open(href, "_blank");
+          box_2_id.style.display = "none";
+        };
+      }
+      if (index === 4) {
+        li.onclick = function () {
+          box_2_id.style.display = "none";
+          remove_data(forValue);
+        };
+      }
+    });
+    box2_class.forEach(function (element) {
+      if (window_width - 120 < event.clientX) {
+        element.style.left = event.clientX - 120 + "px";
+      } else {
+        element.style.left = event.clientX + "px";
+      }
+      element.style.top = event.clientY + 15 + "px";
+    });
+    //box_2_id.textContent = `Click chuột phải vào element có content là: ${forValue}`;
+    box_2_id.style.display = "block";
   }
-  document.addEventListener("click", function (event) {
-    if (box_2_id.style.display === "block") {
-      box_2_id.style.display = "none";
-    }
-  });
   // Ngăn chặn sự kiện click trên phần tử fixed nổi bọt lên document
   box_2_id.addEventListener("click", function (event) {
     event.stopPropagation();
