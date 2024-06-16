@@ -97,11 +97,11 @@ let touchStartY = 0;
 divMain.addEventListener("touchstart", function(event) {
   isTouching = true;
   touchStartY = event.touches[0].clientY;
-  event.preventDefault();
 });
 
 // Xử lý sự kiện di chuyển ngón tay trên màn hình
 divMain.addEventListener("touchmove", function(event) {
+  event.preventDefault();
   if (!isTouching) return;
 
   const touchCurrentY = event.touches[0].clientY;
@@ -111,7 +111,6 @@ divMain.addEventListener("touchmove", function(event) {
 
   // Cập nhật lại tọa độ bắt đầu chạm để cho lần di chuyển tiếp theo
   touchStartY = touchCurrentY;
-  event.preventDefault();
 });
 
 // Xử lý sự kiện kết thúc chạm
