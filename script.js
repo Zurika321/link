@@ -528,28 +528,25 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!isMobile()) {
         element.addEventListener("contextmenu", handleRightClick);
       } else {
-        let touchStartTime;
-        element.addEventListener("touchstart", function (event) {
-          touchStartTime = Date.now();
-        });
-
-        element.addEventListener("touchend", function (event) {
-          let touchEndTime = Date.now();
-          let touchDuration = touchEndTime - touchStartTime;
-
-          if (touchDuration >= 2000) {
-            // Kiểm tra nếu thời gian giữ là ít nhất 2 giây
-            handleRightClick(); // Gọi hàm xử lý khi giữ lâu
-          }
-        });
         element.addEventListener("contextmenu", handleRightClick);
+        let clickCount = 0;
+        let clickTimeout;
+
         element.addEventListener("click", function (event) {
-          if (event.button === 0) {
-            var href = event.target.getAttribute("link");
-            if (href) {
-              go_link(href);
-              event.preventDefault();
-            }
+          clickCount++;
+          if (clickCount === 1) {
+            clickTimeout = setTimeout(function () {
+              var href = event.target.getAttribute("link");
+              if (href) {
+                go_link(href);
+                event.preventDefault();
+              }
+              clickCount = 0;
+            }, 300);
+          } else if (clickCount === 2) {
+            clearTimeout(clickTimeout);
+            handleRightClick(event);
+            clickCount = 0;
           }
         });
       }
