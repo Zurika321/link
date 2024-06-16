@@ -337,15 +337,15 @@ function create_icon() {
   div_link.appendChild(a);
   div_scroll.appendChild(div_link);
 }
-title_pick("All");
 var ZZ_on = false;
 function create_option(bool) {
   if (bool === undefined || bool === null) {
-    ZZ_on = false;
+    ZZ_on = JSON.parse(localStorage.getItem("open_file_ẩn")) || false;
   } else {
     ZZ_on = bool;
-    title_pick("All");
   }
+  title_pick("All");
+
   var select1 = document.getElementById("select");
   var select2 = document.getElementById("mySelect");
   var select3 = document.getElementById("select_edit");
@@ -363,7 +363,11 @@ function create_option(bool) {
     // Tạo option1 cho select1
     var option1 = document.createElement("option");
     option1.value = title_no_icon[i];
-    option1.textContent = title_no_icon[i];
+    if (title_no_icon[i] === "ZZ") {
+      option1.textContent = "Link ẩn";
+    } else {
+      option1.textContent = title_no_icon[i];
+    }
     select1.appendChild(option1);
 
     var option2 = option1.cloneNode(true);
@@ -372,6 +376,7 @@ function create_option(bool) {
     var option3 = option1.cloneNode(true);
     select3.appendChild(option3);
   }
+  localStorage.setItem("open_file_ẩn", JSON.stringify(ZZ_on));
 }
 create_option();
 
@@ -525,10 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
     hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
     var elements = document.querySelectorAll(".eff_a");
     elements.forEach(function (element) {
-      if (!isMobile()) {
-        element.addEventListener("contextmenu", handleRightClick);
-      } else {
-        element.addEventListener("contextmenu", handleRightClick);
+      if (isMobile()) {
         let clickCount = 0;
         let clickTimeout;
 
@@ -550,6 +552,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         });
       }
+      element.addEventListener("contextmenu", handleRightClick);
     });
     if (event.target.classList.contains("eff_a")) {
       const forValue = event.target.getAttribute("for");
