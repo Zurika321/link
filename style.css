@@ -12,39 +12,41 @@ body {
 }
 .link-with-favicon {
   display: inline-block;
-  width: 48px; /* Kích thước của favicon */
-  height: 48px; /* Kích thước của favicon */
+  width: 48px;
+  height: 48px;
   background: no-repeat center center;
   background-size: cover;
-  position: relative; /* Đặt vị trí tương đối để pseudo-elements định vị chính xác */
+  position: absolute;
   border-radius: 5px;
+  top: 0;
+  left: 0;
 }
 
 .link-with-favicon::before {
   content: "";
-  width: 47.5px; /* Giữ kích thước tương tự nhau để pseudo-elements phù hợp với phần tử gốc */
+  width: 47.5px;
   height: 47.5px;
   border: 0.5px solid rgba(0, 0, 0, 0);
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0);
-  position: absolute; /* Đặt vị trí tuyệt đối để pseudo-elements nằm trên phần tử gốc */
-  top: -2.5px; /* Đảm bảo chúng nằm chồng chính xác lên phần tử gốc */
-  left: -2.5px; /* Đảm bảo chúng nằm chồng chính xác lên phần tử gốc */
-  transition: transform 1s ease, border 0.5s ease; /* Thêm transform vào transition */
+  position: absolute;
+  top: -2.5px;
+  left: -2.5px;
+  transition: transform 1s ease, border 0.5s ease;
   transform: rotate(0);
   border-radius: 5px;
 }
 .link-with-favicon::after {
   content: "";
-  width: 47.5px; /* Giữ kích thước tương tự nhau để pseudo-elements phù hợp với phần tử gốc */
+  width: 47.5px;
   height: 47.5px;
   border: 0.5px solid rgba(0, 0, 0, 0);
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0);
-  position: absolute; /* Đặt vị trí tuyệt đối để pseudo-elements nằm trên phần tử gốc */
-  top: -2.5px; /* Đảm bảo chúng nằm chồng chính xác lên phần tử gốc */
-  left: -2.5px; /* Đảm bảo chúng nằm chồng chính xác lên phần tử gốc */
-  transition: transform 1s ease, border 0.5s ease; /* Thêm transform vào transition */
+  position: absolute;
+  top: -2.5px;
+  left: -2.5px;
+  transition: transform 1s ease, border 0.5s ease;
   transform: rotate(0);
   border-radius: 5px;
 }
@@ -52,13 +54,13 @@ body {
 .link-with-favicon:hover::before {
   transform: rotate(360deg);
   border: 3px solid red;
-  transition: transform 1s ease, border 0.5s ease; /* Thêm transform vào transition */
+  transition: transform 1s ease, border 0.5s ease;
 }
 
 .link-with-favicon:hover::after {
   transform: rotate(-360deg);
   border: 3px solid red;
-  transition: transform 1s ease, border 0.5s ease; /* Thêm transform vào transition */
+  transition: transform 1s ease, border 0.5s ease;
 }
 header {
   height: 80px;
@@ -90,7 +92,7 @@ fieldset {
   border: 2px solid blue;
 }
 #div_scroll {
-  height: 490px;
+  height: 1000px;
   overflow-x: hidden;
   overflow-y: hidden;
   padding: 0 10px;
@@ -110,13 +112,20 @@ fieldset {
   position: relative;
 }
 .star {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0);
+  width: 13px;
+  height: 13px;
+  right: 0.5px;
+  top: 0.5px;
+  z-index: 100;
+}
+.star::before {
   content: "";
   position: absolute;
-  width: 1px;
-  height: 1px;
-  border: 10px solid rgb(255, 0, 0);
-  border-width: 5px;
-  background-color: rgb(255, 255, 255);
+  background-color: rgb(255, 183, 0);
+  width: 14px;
+  height: 14px;
   clip-path: polygon(
     50% 0%,
     61% 35%,
@@ -129,16 +138,79 @@ fieldset {
     2% 35%,
     39% 35%
   );
-  right: 0.5px;
-  top: 0.5px;
-  z-index: 1;
+  right: -0.5px;
+  top: -0.5px;
 }
 
+.star::after {
+  content: "đánh dấu";
+  width: 80px;
+  height: 20px;
+  background-color: white;
+  border: 2px solid black;
+  position: absolute;
+  top: 25px;
+  left: -46px;
+  display: none;
+}
+
+.star:hover::after {
+  display: block;
+}
+
+.thong_bao {
+  width: 7.5px;
+  height: 7.5px;
+  border-radius: 50%;
+  border: 0px solid black;
+  background-color: rgba(144, 238, 144, 0);
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  z-index: 100;
+}
+.thong_bao::after {
+  content: "Anime ra tập mới";
+  width: 80px;
+  height: 40px;
+  background-color: white;
+  border: 2px solid black;
+  position: absolute;
+  top: 25px;
+  left: -17px;
+  display: none;
+}
+.thong_bao:hover::after {
+  display: block;
+}
+.canh_bao {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid red;
+  position: absolute;
+  left: 18px;
+  top: 0.5px;
+  display: none;
+  z-index: 100;
+}
+.canh_bao::after {
+  content: "Web không an toàn";
+  width: 80px;
+  height: 40px;
+  background-color: white;
+  border: 2px solid black;
+  position: absolute;
+  top: 25px;
+  left: -38px;
+  display: none;
+}
+.canh_bao:hover::after {
+  display: block;
+}
 .div_link:hover {
   border: 2px solid rgba(255, 255, 255, 0);
-}
-.div_link:hover > .star {
-  border-width: 10px;
 }
 footer {
   width: 100%;
@@ -154,13 +226,27 @@ footer {
   display: block;
   margin: auto;
   align-items: center;
-  width: 200px;
+  max-width: 250px;
   height: 60px;
   background-color: rgb(255, 255, 255);
-  border: 5px solid blue;
+  border: 3px solid blue;
   border-radius: 15px;
-  transform: translateY(10px);
+  transform: translateY(5px);
   color: black;
+}
+@media screen and (max-width: 350px) {
+  #whaticon {
+    max-width: 95%;
+  }
+  .scroll_down {
+    display: none;
+  }
+  .scroll_up {
+    display: none;
+  }
+  .button {
+    display: none;
+  }
 }
 #add-link {
   width: 100px;
@@ -331,7 +417,7 @@ input:focus {
   font-size: 20px;
 }
 hr {
-  margin: 0;
+  margin: 5px;
 }
 .box2_ul > li:hover {
   background-color: rgba(0, 0, 0, 0.3);
@@ -447,7 +533,7 @@ h3 {
   content: "";
   width: 50px;
   height: 50px;
-  background-color: rgb(150, 150, 150);
+  background-color: rgba(150, 150, 150, 0.6);
   position: absolute;
   top: 20px;
   left: -25px;
@@ -455,15 +541,13 @@ h3 {
   cursor: move;
   user-select: none; /* Disable text selection */
 }
-.hover {
-  background-color: aqua;
-}
 .button {
-  width: 50px;
-  height: 50px;
-  background-color: rgba(255, 0, 0);
-  z-index: 400;
-  position: absolute;
-  top: 15px;
-  right: 10px;
+  width: 60px;
+  height: 30px;
+  background-color: rgb(0, 140, 255);
+  color: white;
+  z-index: 501;
+  position: fixed;
+  cursor: pointer;
+  display: none;
 }
