@@ -17,6 +17,12 @@ function getDeviceType() {
     return "PC";
   }
 }
+function convertToMinutes(day, hour, minute) {
+  return day * 24 * 60 + hour * 60 + minute;
+}
+function c(string) {
+  console.log(string);
+}
 function isValidURL(string) {
   try {
     new URL(string);
@@ -84,7 +90,7 @@ function getFaviconUrl(url) {
 const divMain = document.getElementById("div_scroll");
 
 // Xử lý sự kiện cuộn bằng chuột
-divMain.addEventListener("wheel", function(event) {
+divMain.addEventListener("wheel", function (event) {
   event.preventDefault();
   divMain.scrollTop += event.deltaY;
 });
@@ -94,19 +100,19 @@ let isTouching = false;
 let touchStartY = 0;
 
 // Xử lý sự kiện bắt đầu chạm
-divMain.addEventListener("touchstart", function(event) {
+divMain.addEventListener("touchstart", function (event) {
   isTouching = true;
   touchStartY = event.touches[0].clientY;
 });
 
 // Xử lý sự kiện di chuyển ngón tay trên màn hình
-divMain.addEventListener("touchmove", function(event) {
+divMain.addEventListener("touchmove", function (event) {
   event.preventDefault();
   if (!isTouching) return;
 
   const touchCurrentY = event.touches[0].clientY;
   const touchDeltaY = touchStartY - touchCurrentY;
-  
+
   divMain.scrollTop += touchDeltaY;
 
   // Cập nhật lại tọa độ bắt đầu chạm để cho lần di chuyển tiếp theo
@@ -114,7 +120,7 @@ divMain.addEventListener("touchmove", function(event) {
 });
 
 // Xử lý sự kiện kết thúc chạm
-divMain.addEventListener("touchend", function(event) {
+divMain.addEventListener("touchend", function (event) {
   isTouching = false;
 });
 
@@ -130,22 +136,22 @@ function stopScrolling() {
   clearInterval(scrollInterval); // Dừng cuộn khi nhả nút
 }
 document.getElementById("scroll_up").addEventListener("mousedown", function () {
-  startScrolling(-50); // Cuộn lên 50px
+  startScrolling(-100); // Cuộn lên 50px
 });
 document
   .getElementById("scroll_up")
   .addEventListener("touchstart", function () {
-    startScrolling(-200); // Cuộn lên 50px
+    startScrolling(-100); // Cuộn lên 50px
   });
 document
   .getElementById("scroll_down")
   .addEventListener("mousedown", function () {
-    startScrolling(50); // Cuộn xuống 50px
+    startScrolling(100); // Cuộn xuống 50px
   });
 document
   .getElementById("scroll_down")
   .addEventListener("touchstart", function () {
-    startScrolling(200); // Cuộn xuống 50px
+    startScrolling(100); // Cuộn xuống 50px
   });
 document.addEventListener("mouseup", stopScrolling);
 document.addEventListener("touchend", stopScrolling);
@@ -224,13 +230,13 @@ function danh_dau() {
     var index = star.indexOf(star_value);
 
     if (index !== -1) {
-      div_star.style.borderWidth = "7.5px";
+      div_star.style.display = "block";
       if (div_link_value.startsWith(".")) {
       } else {
         div_link.setAttribute("for", "." + div_link_value);
       }
     } else {
-      div_star.style.borderWidth = "0px";
+      div_star.style.display = "none";
       // Kiểm tra nếu div_link_value bắt đầu bằng dấu chấm, loại bỏ nó
       if (div_link_value.startsWith(".")) {
         div_link_value = div_link_value.substring(1);
@@ -239,8 +245,8 @@ function danh_dau() {
     }
   });
 
-  var divScroll = document.getElementById("div_scroll");
-  var search = document.getElementById("searchInput").value;
+  let divScroll = document.getElementById("div_scroll");
+  let search = document.getElementById("searchInput").value;
   sortDivLinks(search, divScroll);
 }
 
@@ -274,6 +280,76 @@ function fixDuplicateNotes() {
   }
 }
 fixDuplicateNotes();
+
+function undate_date_anime() {
+  var now = new Date();
+  var currentDay = now.getDay();
+  var currentHour = now.getHours();
+  var currentMinute = now.getMinutes();
+
+  // Chuyển đổi ngày hiện tại từ 0 (Chủ nhật) thành 8
+  if (currentDay === 0) {
+    currentDay = 8;
+  } else {
+    currentDay = currentDay + 1;
+  }
+  let note_anime2 = [];
+  let currentTotalMinutes = convertToMinutes(
+    currentDay,
+    currentHour,
+    currentMinute
+  );
+  if (note.length !== 0) {
+    var note_anime = note.filter((note) => note.startsWith("Anime"));
+    note_anime.map((element) => {
+      // Chia nhỏ chuỗi bằng <br>
+      let parts = element.split("<br>");
+      // Lấy phần tử cuối cùng
+      let lastPart = parts[parts.length - 1];
+      // Kiểm tra xem phần tử cuối cùng có định dạng (new day-hour-min) không và day từ 2 đến 8
+      let match = lastPart.match(/\(new ([2-8])-([0-9]{2})-([0-9]{2})\)/);
+      if (match) {
+        let day = parseInt(match[1]);
+        let hour = parseInt(match[2]);
+        let minute = parseInt(match[3]);
+        let targetTotalMinutes = convertToMinutes(day, hour, minute);
+        let nextDayTotalMinutes = targetTotalMinutes + 24 * 60;
+        // So sánh với ngày, giờ, phút hiện tại
+        if (
+          currentTotalMinutes >= targetTotalMinutes &&
+          currentTotalMinutes <= nextDayTotalMinutes
+        ) {
+          note_anime2.push(element);
+        }
+      }
+    });
+    thong_bao_anime(note_anime2);
+  }
+}
+setInterval(undate_date_anime, 60000);
+function thong_bao_anime(note_anime2) {
+  var div_thong_bao = document.querySelectorAll(".thong_bao");
+  div_thong_bao.forEach(function (div) {
+    let thong_bao_value = div.getAttribute("for");
+    let index_thong_bao = note_anime2.indexOf(thong_bao_value);
+    if (index_thong_bao !== -1) {
+      div.style.backgroundColor = "lightgreen";
+      div.style.borderWidth = 1 + "px";
+    } else {
+      div.style.backgroundColor = "rgba(144, 238, 144, 0)";
+      div.style.borderWidth = 0 + "px";
+    }
+  });
+}
+function canh_bao_link() {
+  var div_canh_bao = document.querySelectorAll(".canh_bao");
+  div_canh_bao.forEach(function (div) {
+    let link_value = div.getAttribute("for");
+    if (link_value.startsWith("http://")) {
+      div.style.display = "block";
+    }
+  });
+}
 var what_title = "All";
 var items = [];
 function item(what_title) {
@@ -332,10 +408,9 @@ function sortDivLinks(searchValue, divScroll) {
   divLinks.forEach((divLink) => divScroll.appendChild(divLink));
 }
 
-var div_scroll = document.getElementById("div_scroll");
 function create_icon() {
   const divScroll = document.getElementById("div_scroll");
-  div_scroll.innerHTML = "";
+  divScroll.innerHTML = "";
   for (let i = 0; i < items.length; i++) {
     // Tìm vị trí của items[i] trong note
     var index = note.indexOf(items[i]);
@@ -365,12 +440,25 @@ function create_icon() {
 
       div_link.appendChild(a);
       div_link.appendChild(star);
-      div_scroll.appendChild(div_link);
-      linkss();
+      if (items[i].startsWith("Anime")) {
+        var thong_bao = document.createElement("div");
+        thong_bao.className = "thong_bao";
+        thong_bao.setAttribute("for", items[i]);
+        div_link.appendChild(thong_bao);
+      }
+      var canh_bao = document.createElement("div");
+      canh_bao.className = "canh_bao";
+      canh_bao.setAttribute("for", link[index]);
+      div_link.appendChild(canh_bao);
+
+      divScroll.appendChild(div_link);
     }
+    linkss();
   }
   danh_dau();
   sortDivLinks(".", divScroll);
+  undate_date_anime();
+  canh_bao_link();
   var div_link = document.createElement("div");
   var a = document.createElement("a");
   a.className = "button_add link-with-favicon";
@@ -462,7 +550,7 @@ function console_data() {
   }
 }
 function add_data(link, note) {
-  var retrievedData = JSON.parse(localStorage.getItem("data"));
+  let retrievedData = JSON.parse(localStorage.getItem("data"));
   retrievedData.linksss.push(link); // Thêm vào mảng linksss
   retrievedData.notesss.push(note); // Thêm vào mảng notesss
   localStorage.setItem("data", JSON.stringify(retrievedData));
@@ -501,7 +589,6 @@ function selectOptionByValue(selectElement, value) {
     }
   }
 }
-
 function edit_data(edit_note, link_value) {
   document.getElementById("class_box2_edit").style.display = "block";
   var link_input = document.getElementById("link_edit");
@@ -543,7 +630,7 @@ function edit_data(edit_note, link_value) {
       if (note[index] !== new_note) {
         retrievedData.notesss[index] = new_note;
         var index_star = star.indexOf(removeTags(remove_space(note[index])));
-        if(index_star !== -1){
+        if (index_star !== -1) {
           console_star(new_note, "add");
         }
       }
@@ -569,7 +656,7 @@ function go_link(href) {
 function go__() {
   setTimeout(() => {
     go_ = false;
-  }, 1000);
+  }, 500);
 }
 var window_width = window.innerWidth;
 document.addEventListener("DOMContentLoaded", function () {
@@ -577,7 +664,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const whaticon = document.getElementById("whaticon");
 
   divScroll.addEventListener("mouseover", function (event) {
-    hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
     var elements = document.querySelectorAll(".eff_a");
     elements.forEach(function (element) {
       if (isMobile()) {
@@ -685,16 +771,20 @@ document.addEventListener("DOMContentLoaded", function () {
             href = target.getAttribute("link");
           }
           setWhaticonContent(forValue, "font-weight: bold;");
-          var button = document.querySelector(".button");
+          let button = document.querySelector(".button");
+          button.style.display = "block";
           button.onclick = function () {
             window.open(href);
           };
+        } else {
         }
       }
     });
 
     if (!isHoveringAny) {
       setWhaticonContent(defaultContent, "font-weight: normal;");
+      let button = document.querySelector(".button");
+      button.style.display = "none";
     }
   };
 
@@ -714,8 +804,25 @@ document.addEventListener("DOMContentLoaded", function () {
       whaticon.style = style;
     }
   }
-  draggable.addEventListener("mousedown", startDrag);
-  draggable.addEventListener("touchstart", startDrag);
+  let isDragging = false;
+
+  function handleStart(event) {
+    if (!isDragging) {
+      isDragging = true;
+      startDrag(event);
+      hoverTargets = document.querySelectorAll("#div_scroll .div_link .eff_a");
+    }
+  }
+
+  function handleEnd() {
+    isDragging = false;
+  }
+
+  draggable.addEventListener("mousedown", handleStart);
+  draggable.addEventListener("touchstart", handleStart);
+
+  document.addEventListener("mouseup", handleEnd);
+  document.addEventListener("touchend", handleEnd);
 
   function startDrag(event) {
     event.preventDefault();
@@ -734,7 +841,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const moveAt = (pageX, pageY) => {
       draggable.style.left = pageX - shiftX + "px";
       draggable.style.top = pageY - shiftY + "px";
-
+      let button = document.querySelector(".button");
+      button.style.left = pageX - shiftX - 25 + "px";
+      button.style.top = pageY - shiftY + 70 + "px";
       const draggableRect = draggable.getBoundingClientRect();
       checkHover(draggableRect);
     };
@@ -767,10 +876,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function handleRightClick(event) {
     event.preventDefault(); // Prevent the default context menu from appearing
-    var forValue = event.target.getAttribute("for");
-    var href1 = event.target.href;
-    var href2 = event.target.getAttribute("link");
-    var href = href1 || href2;
+    let forValue = event.target.getAttribute("for");
+    let href1 = event.target.href;
+    let href2 = event.target.getAttribute("link");
+    let href = href1 || href2;
     document.querySelectorAll(".box2 li").forEach(function (li, index) {
       if (index === 0) {
         li.onclick = function () {
@@ -780,8 +889,8 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       // Cài đặt thuộc tính href cho li thứ hai (nếu cần)
       if (index === 1) {
-        var danhdau = document.getElementById("danhdau");
-        var indexx = star.indexOf(removeTags(remove_space(forValue)));
+        let danhdau = document.getElementById("danhdau");
+        let indexx = star.indexOf(removeTags(remove_space(forValue)));
 
         if (indexx !== -1) {
           // Nếu giá trị tồn tại trong mảng
@@ -889,6 +998,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         create_data(link, note);
         console_data();
+        anime_tap_moi = undate_date_anime();
         title_pick("All");
       };
 
@@ -913,7 +1023,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var newNotes;
   var newtitle;
   function excell() {
-    var new1 = check_add();
+    let new1 = check_add();
     let bool = new1[0];
     if (!bool) {
       console.log("false");
@@ -1037,7 +1147,7 @@ document
 document.getElementById("close").addEventListener("click", close, false);
 
 function close() {
-  var box_ = document.getElementById("box_");
+  let box_ = document.getElementById("box_");
   if (box_.style.display === "flex") {
     box_.style.display = "none";
   } else {
@@ -1045,12 +1155,12 @@ function close() {
   }
 }
 function check_add() {
-  var selectedValue = document.getElementById("mySelect").value;
-  var selectedValue2;
-  var input_note1 = document.getElementById("note1_input").value;
-  var input_note2 = document.getElementById("note2_input").value;
-  var input_link = document.getElementById("link_input").value;
-  var indexxx = title_no_icon.indexOf(`${selectedValue}`);
+  let selectedValue = document.getElementById("mySelect").value;
+  //var selectedValue2;
+  let input_note1 = document.getElementById("note1_input").value;
+  let input_note2 = document.getElementById("note2_input").value;
+  let input_link = document.getElementById("link_input").value;
+  //var indexxx = title_no_icon.indexOf(`${selectedValue}`);
   // if (indexxx !== -1) {
   //   selectedValue2 = title[indexxx];
   // }
@@ -1076,19 +1186,19 @@ function check_add() {
 }
 
 function addLinkAndNoteToKey() {
-  var a = check_add();
+  let a = check_add();
   let bool = a[0];
   if (!bool) {
     return;
   }
-  var link_a = a[2];
-  var note_a = a[1];
+  let link_a = a[2];
+  let note_a = a[1];
   add_data(link_a, note_a);
 }
 
 function setDivHeight() {
-  var divScroll = document.getElementById("div_scroll");
-  var windowHeight = window.innerHeight;
+  let divScroll = document.getElementById("div_scroll");
+  let windowHeight = window.innerHeight;
   divScroll.style.height = windowHeight - 195 + "px";
   window_width = window.innerWidth;
 }
