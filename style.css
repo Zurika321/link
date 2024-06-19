@@ -8,7 +8,7 @@ body {
   height: 48px;
   border-radius: 5px;
   font-size: 35px;
-  margin-bottom: 100px;
+  margin-bottom: 10px;
 }
 .link-with-favicon {
   display: inline-block;
@@ -92,7 +92,7 @@ fieldset {
   border: 2px solid blue;
 }
 #div_scroll {
-  height: 1000px;
+  height: 500px;
   overflow-x: hidden;
   overflow-y: hidden;
   padding: 0 10px;
@@ -243,10 +243,7 @@ footer {
   }
   .scroll_up {
     display: none;
-  }
-  .button {
-    display: none;
-  }
+  }
 }
 #add-link {
   width: 100px;
