@@ -1,6 +1,6 @@
 * {
   border-radius: 5px;
-  transition: color 1s ease, background-color 1s ease;
+  transition: color 0.1s ease, background-color 1s ease;
 }
 #favicon1 {
   width: 70px;
@@ -9,7 +9,7 @@
   z-index: 50;
   left: 10px;
   top: 4px;
-  filter: contrast(300%) brightness(110%);
+  filter: contrast(200%) brightness(110%);
 }
 #favicon2 {
   width: 70px;
@@ -18,10 +18,10 @@
   z-index: 100;
   left: 20px;
   top: 5px;
-  filter: contrast(300%) brightness(110%);
+  filter: contrast(200%) brightness(110%);
 }
 #add-link {
-  color: var(--color_hover);
+  color: var(--color_text_p);
   border: 1px solid var(--color_text_h);
 }
 #add-link2 {
@@ -64,15 +64,10 @@
   top: 0;
   width: 100%;
 }
-input {
-  color: var(--color_text_h);
-  background-color: var(--color_backgroud);
-  border-color: var(--color_text_h);
-}
 #btn_tim {
   background-color: var(--color_backgroud);
   border: 2px solid var(--color_text_h);
-  color: var(--color_text_h);
+  color: var(--color_text_p);
   border-left: none;
   border-radius: 0 10px 10px 0;
   height: 24.5px;
@@ -114,28 +109,19 @@ input {
   margin-left: 15px;
   position: absolute;
   width: 100px;
-  background-color: var(--color_text_p);
+  background-color: rgba(0, 0, 0, 0);
   color: var(--color_text_h);
-  border: none;
   cursor: pointer;
+  border: 1px solid var(--color_backgroud2);
 }
 #class_box2_edit > button:nth-child(2n) {
-  background-color: var(--color_text_h);
-  color: var(--color_backgroud);
+  background-color: var(--color_backgroud);
+  color: var(--color_text_p);
+  border: 1px solid var(--color_text_h);
   right: 15px;
 }
 #class_box2_edit > h3 {
   margin-top: 10px;
-}
-#class_box2_edit_backgroud {
-  background-color: var(--color_backgroud);
-  height: 150px;
-  left: calc(50% - 150px);
-  position: fixed;
-  text-align: left;
-  top: calc(50% - 75px);
-  width: 300px;
-  z-index: 500;
 }
 #class_box2_remove {
   background-color: var(--color_backgroud);
@@ -148,19 +134,20 @@ input {
   z-index: 500;
 }
 #class_box2_remove > button {
-  background-color: var(--color_text_h);
-  color: var(--color_backgroud);
+  background-color: var(--color_backgroud);
+  color: var(--color_text_p);
+  border: 1px solid var(--color_text_h);
   bottom: 15px;
   height: 20px;
   margin-left: 15px;
   position: absolute;
   width: 100px;
-  border: none;
   cursor: pointer;
 }
 #class_box2_remove > button:nth-child(2n) {
-  background-color: var(--color_text_p);
+  background-color: rgba(0, 0, 0, 0);
   color: var(--color_text_h);
+  border-color: var(--color_text_p);
   right: 15px;
 }
 #class_box2_edit_title {
@@ -173,24 +160,24 @@ input {
   z-index: 500;
 }
 #class_box2_edit_title > button {
-  background-color: var(--color_text_h);
-  color: var(--color_backgroud);
+  background-color: rgba(0, 0, 0, 0);
+  color: var(--color_text_p);
   bottom: 10px;
   height: 20px;
   right: 15px;
   position: absolute;
   width: 70px;
-  border: none;
+  border: 1px solid var(--color_text_h);
   cursor: pointer;
 }
 #class_box2_edit_title > button:nth-child(2n) {
-  background-color: var(--color_text_p);
   color: var(--color_text_h);
   left: 15px;
+  border-color: var(--color_text_p);
 }
 #class_box2_edit_title > button:nth-child(3n) {
-  background-color: var(--color_text_p);
-  color: var(--color_text_h);
+  border-color: var(--color_text_h);
+  color: var(--color_text_p);
   margin-left: 100px;
 }
 #class_box2_edit_title > .div_add_title {
@@ -204,9 +191,9 @@ input {
   width: 195px;
 }
 #class_box2_edit_title > .div_add_title > button {
-  background-color: var(--color_backgroud2);
+  background-color: var(--color_backgroud);
   border-color: var(--color_text_h);
-  color: var(--color_text_h);
+  color: var(--color_text_p);
   cursor: pointer;
 }
 #list_title {
@@ -226,7 +213,7 @@ input {
   width: 250px;
   min-height: 30px;
   height: auto;
-  color: var(--color_text_h);
+  color: var(--color_text_p);
   background-color: var(--color_hover);
   position: relative;
 }
@@ -261,7 +248,8 @@ input {
   overflow: hidden;
 }
 #close {
-  background-color: var(--color_backgroud2);
+  background-color: var(--color_backgroud);
+  border: 1px solid var(--color_text_p);
   color: var(--color_text_h);
 }
 #danhdau {
@@ -313,7 +301,8 @@ input {
   position: absolute;
   width: 100%;
   background-color: var(--color_backgroud);
-  color: var(--color_text_h);
+  color: var(--color_text_p);
+  transition: background-color 1s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -343,7 +332,7 @@ input {
   font-weight: bold;
   height: 20px;
   width: 80px;
-  color: var(--color_text_h);
+  color: var(--color_text_p);
   border-color: var(--color_text_h);
   cursor: pointer;
 }
@@ -356,6 +345,7 @@ input {
   margin-top: -15px;
   text-align: center;
   width: 270px;
+  color: var(--color_text_p);
 }
 #searchForm {
   align-items: center;
@@ -372,8 +362,8 @@ input {
 #searchInput {
   border: 2px solid var(--color_text_h);
   border-radius: 10px 0 0 10px;
-  caret-color: var(--color_text_h);
-  color: var(--color_text_h);
+  caret-color: var(--color_text_p);
+  color: var(--color_text_p);
   font-weight: bold;
   height: 24.5px;
   left: 50%;
@@ -395,11 +385,12 @@ input {
   transform: translateX(37px) translateY(10px);
   width: 83px;
   z-index: 200;
-  color: var(--color_text_h);
+  color: var(--color_text_p);
   cursor: pointer;
+  color: var(--color_text_p);
 }
 #select_edit {
-  color: var(--color_text_h);
+  color: var(--color_text_p);
   border-color: var(--color_text_h);
   background-color: var(--color_backgroud);
   cursor: pointer;
@@ -535,6 +526,7 @@ input {
 }
 .huong_dan {
   padding: 0;
+  color: var(--color_text_h);
 }
 .huong_dan ol {
   margin-left: -10px;
@@ -600,11 +592,12 @@ input {
 .btn {
   border-radius: 10px;
   width: 100px;
+  background-color: var(--color_backgroud);
   cursor: pointer;
 }
 .button {
   background-color: var(--color_backgroud);
-  color: var(--color_text_h);
+  color: var(--color_text_p);
   cursor: pointer;
   display: none;
   height: 30px;
@@ -643,6 +636,7 @@ input {
   position: absolute;
   top: 25px;
   width: 80px;
+  color: var(--color_text_p);
 }
 .canh_bao:hover::after {
   display: block;
@@ -769,7 +763,7 @@ input {
   width: 293px;
 }
 .ruler1 {
-  background-color: var(--color_text_h);
+  background-color: var(--color_text_p);
   height: 3px;
   left: 10px;
   position: absolute;
@@ -781,7 +775,7 @@ input {
   cursor: pointer;
 }
 .ruler2 {
-  background-color: var(--color_text_h);
+  background-color: var(--color_text_p);
   height: 3px;
   left: 10px;
   position: absolute;
@@ -803,12 +797,12 @@ input {
   width: 30px;
 }
 .add_rules1 {
-  background-color: var(--color_text_p);
+  background-color: var(--color_text_h);
   top: 25px;
   transform: rotate(45deg);
 }
 .add_rules2 {
-  background-color: var(--color_text_p);
+  background-color: var(--color_text_h);
   top: 25px;
   transform: rotate(-45deg);
 }
@@ -871,6 +865,7 @@ input {
 .star::after {
   background-color: var(--color_backgroud);
   border: 2px solid var(--color_text_h);
+  color: var(--color_text_p);
   content: "đánh dấu";
   display: none;
   height: 20px;
@@ -917,6 +912,7 @@ input {
 .thong_bao::after {
   background-color: var(--color_backgroud);
   border: 2px solid var(--color_text_h);
+  color: var(--color_text_p);
   content: "Anime ra tập mới";
   display: none;
   height: 40px;
@@ -936,13 +932,13 @@ input {
   --color_text_p: rgb(10, 10, 10);
 }
 body {
-  background-color: var(--color_backgroud2);
-  color: var(--color_text_h);
   margin: 0px;
+  background-color: var(--color_backgroud2);
+  border-radius: 10px;
+  color: var(--color_text_h);
 }
 fieldset {
-  background-color: var(--color_backgroud2);
-  border: 2px solid var(--color_text_h);
+  border: 2px solid var(--color_backgroud);
   border-radius: 10px;
   margin: 0 10px;
   padding: 0%;
@@ -950,7 +946,6 @@ fieldset {
 }
 footer {
   background-color: var(--color_backgroud);
-  border: 3px solid var(--color_text_h);
   color: var(--color_text_h);
   height: 80px;
   text-align: center;
@@ -964,25 +959,28 @@ h3 {
 }
 header {
   background-color: var(--color_backgroud);
-  border: 3px solid var(--color_text_h);
   height: 80px;
   position: relative;
   z-index: 500;
 }
 hr {
-  color: var(--color_text_h);
   margin: 5px;
 }
 input::placeholder {
-  color: var(--color_text_h);
+  color: var(--color_text_p);
   font-style: italic;
 }
 input:focus {
   border-color: var(--color_text_h);
-  box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
+}
+input {
+  color: var(--color_text_p);
+  background-color: var(--color_backgroud);
+  border-color: var(--color_text_h);
+  caret-color: var(--color_text_p);
 }
 legend {
-  color: yellow;
+  color: var(--color_backgroud);
   font-size: 20px;
   font-weight: bold;
   padding: -10px 10px;
