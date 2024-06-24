@@ -1,131 +1,867 @@
-body {
-  color: rgb(0, 0, 0);
-  margin: 0px;
-  background-color: rgb(201, 201, 201);
-}
-.button_add {
-  width: 48px;
-  height: 48px;
+* {
   border-radius: 5px;
-  font-size: 35px;
-  margin-bottom: 10px;
+  transition: color 1s ease, background-color 1s ease;
 }
-.link-with-favicon {
-  display: inline-block;
-  width: 48px;
-  height: 48px;
-  background: no-repeat center center;
-  background-size: cover;
-  position: absolute;
-  border-radius: 5px;
-  top: 0;
+#add-link {
+  color: var(--color_hover);
+  border: 1px solid var(--color_text_h);
+}
+#add-link2 {
+  color: var(--color_text_h);
+  border: 1px solid var(--color_text_h);
+  border-color: var(--color_text_h);
+  background-color: var(--color_backgroud2);
+  cursor: pointer;
+  border-radius: 10px;
+  width: 120px;
+  height: 22px;
+}
+#tuy_chinh_title {
+  color: var(--color_text_h);
+  border: 1px solid var(--color_text_h);
+  border-color: var(--color_text_h);
+  background-color: var(--color_backgroud2);
+  cursor: pointer;
+  width: 120px;
+  height: 22px;
+  border-radius: 10px;
+}
+#doi_mat_khau {
+  color: var(--color_text_h);
+  border: 1px solid var(--color_text_h);
+  border-color: var(--color_text_h);
+  background-color: var(--color_backgroud2);
+  border-radius: 10px;
+  width: 120px;
+  height: 22px;
+  cursor: pointer;
+}
+#box_2 {
+  background-color: rgba(0, 0, 0, 0);
+  bottom: 0;
+  display: none;
   left: 0;
+  position: relative;
+  right: 0;
+  top: 0;
+  width: 100%;
 }
-
-.link-with-favicon::before {
-  content: "";
-  width: 47.5px;
-  height: 47.5px;
-  border: 0.5px solid rgba(0, 0, 0, 0);
-  overflow: hidden;
-  background-color: rgba(0, 0, 0, 0);
+input {
+  color: var(--color_text_h);
+  background-color: var(--color_backgroud);
+  border-color: var(--color_text_h);
+}
+#btn_tim {
+  background-color: var(--color_backgroud);
+  border: 2px solid var(--color_text_h);
+  color: var(--color_text_h);
+  border-left: none;
+  border-radius: 0 10px 10px 0;
+  height: 24.5px;
+  left: 50%;
+  margin-left: -5px;
+  padding-left: 12px;
+  padding-right: 13px;
   position: absolute;
-  top: -2.5px;
-  left: -2.5px;
-  transition: transform 1s ease, border 0.5s ease;
-  transform: rotate(0);
-  border-radius: 5px;
+  transform: translateX(85px) translateY(15px);
+  cursor: pointer;
 }
-.link-with-favicon::after {
-  content: "";
-  width: 47.5px;
-  height: 47.5px;
-  border: 0.5px solid rgba(0, 0, 0, 0);
-  overflow: hidden;
-  background-color: rgba(0, 0, 0, 0);
-  position: absolute;
-  top: -2.5px;
-  left: -2.5px;
-  transition: transform 1s ease, border 0.5s ease;
-  transform: rotate(0);
-  border-radius: 5px;
+#btn_tim:focus > i,
+#btn_tim:hover > i {
+  color: var(--color_hover);
+  animation: xoay 1s infinite;
 }
-
-.link-with-favicon:hover::before {
-  transform: rotate(360deg);
-  border: 3px solid red;
-  transition: transform 1s ease, border 0.5s ease;
+@keyframes xoay {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
-
-.link-with-favicon:hover::after {
-  transform: rotate(-360deg);
-  border: 3px solid red;
-  transition: transform 1s ease, border 0.5s ease;
-}
-header {
-  height: 80px;
-  background-color: black;
+#class_box2_edit {
+  background-color: var(--color_backgroud);
+  display: flex;
+  height: 150px;
+  left: calc(50% - 175px);
+  position: fixed;
+  text-align: left;
+  top: calc(50% - 75px);
+  width: 350px;
   z-index: 500;
+}
+#class_box2_edit > button {
+  bottom: 15px;
+  height: 20px;
+  margin-left: 15px;
+  position: absolute;
+  width: 100px;
+  background-color: var(--color_text_p);
+  color: var(--color_text_h);
+  border: none;
+  cursor: pointer;
+}
+#class_box2_edit > button:nth-child(2n) {
+  background-color: var(--color_text_h);
+  color: var(--color_backgroud);
+  right: 15px;
+}
+#class_box2_edit > h3 {
+  margin-top: 10px;
+}
+#class_box2_edit_backgroud {
+  background-color: var(--color_backgroud);
+  height: 150px;
+  left: calc(50% - 150px);
+  position: fixed;
+  text-align: left;
+  top: calc(50% - 75px);
+  width: 300px;
+  z-index: 500;
+}
+#class_box2_remove {
+  background-color: var(--color_backgroud);
+  height: 150px;
+  left: calc(50% - 150px);
+  position: fixed;
+  text-align: left;
+  top: calc(50% - 75px);
+  width: 300px;
+  z-index: 500;
+}
+#class_box2_remove > button {
+  background-color: var(--color_text_h);
+  color: var(--color_backgroud);
+  bottom: 15px;
+  height: 20px;
+  margin-left: 15px;
+  position: absolute;
+  width: 100px;
+  border: none;
+  cursor: pointer;
+}
+#class_box2_remove > button:nth-child(2n) {
+  background-color: var(--color_text_p);
+  color: var(--color_text_h);
+  right: 15px;
+}
+#class_box2_edit_title {
+  background-color: var(--color_backgroud);
+  height: 300px;
+  position: fixed;
+  top: calc(50% - 150px);
+  left: calc(50% - 150px);
+  width: 300px;
+  z-index: 500;
+}
+#class_box2_edit_title > button {
+  background-color: var(--color_text_h);
+  color: var(--color_backgroud);
+  bottom: 10px;
+  height: 20px;
+  right: 15px;
+  position: absolute;
+  width: 70px;
+  border: none;
+  cursor: pointer;
+}
+#class_box2_edit_title > button:nth-child(2n) {
+  background-color: var(--color_text_p);
+  color: var(--color_text_h);
+  left: 15px;
+}
+#class_box2_edit_title > button:nth-child(3n) {
+  background-color: var(--color_text_p);
+  color: var(--color_text_h);
+  margin-left: 100px;
+}
+#class_box2_edit_title > .div_add_title {
+  display: block;
+  margin: auto;
+  width: 250px;
+  height: 20px;
+  margin-top: -10px;
+}
+#class_box2_edit_title > .div_add_title > input {
+  width: 195px;
+}
+#class_box2_edit_title > .div_add_title > button {
+  background-color: var(--color_backgroud2);
+  border-color: var(--color_text_h);
+  color: var(--color_text_h);
+  cursor: pointer;
+}
+#list_title {
+  width: 250px;
+  height: 170px;
+  background-color: var(--color_backgroud2);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-rows: repeat(auto-fill, minmax(30px, 1fr));
+  grid-gap: 5px;
+  margin: auto;
+  margin-top: 10px;
+  overflow-y: hidden;
+  padding: 5px 0;
+}
+.title_icon {
+  width: 250px;
+  min-height: 30px;
+  height: auto;
+  color: var(--color_text_h);
+  background-color: var(--color_hover);
   position: relative;
 }
-legend {
-  width: 100px;
-  padding: -10px 10px;
-  text-align: center;
-  position: relative;
-  font-weight: bold;
-  font-size: 20px;
-  transform: translateY(2.5px);
-  color: yellow;
+.title_icon > button {
+  width: 25px;
+  height: 29px;
+  padding: 0;
+  border: 1px solid var(--color_text_h);
+  background-color: var(--color_backgroud2);
+  color: var(--color_text_h);
+  position: absolute;
+  top: 0;
+  right: 65px;
+  cursor: pointer;
+}
+.title_icon > button:nth-child(3) {
+  right: 35px;
+}
+.title_icon > button:nth-child(4) {
+  width: 28px;
+  right: 2px;
+  color: red;
+}
+.title_icon > div {
+  width: 150px;
+  height: 30px;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  top: 0;
+  left: 5px;
+  overflow: hidden;
+}
+#close {
+  background-color: var(--color_backgroud2);
+  color: var(--color_text_h);
+}
+#danhdau {
+  margin: 0 0 0 15px;
+  text-align: right;
 }
 #div_main {
-  width: 100%;
+  background-color: var(--color_backgroud2);
   height: calc(100% - 160px);
-  background-color: rgb(201, 201, 201);
-}
-fieldset {
-  margin: 0 10px;
-  width: calc(100%-40px);
-  border-radius: 10px;
-  background-color: rgb(201, 201, 201);
-  padding: 0%;
-  border: 2px solid blue;
+  width: 100%;
 }
 #div_scroll {
+  display: grid;
+  grid-gap: 5px;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  grid-template-rows: repeat(auto-fill, minmax(48px, 1fr));
   height: 500px;
   overflow-x: hidden;
   overflow-y: hidden;
-  padding: 0 10px;
+  padding: 0 10px 10px 10px;
+}
+#edit_input {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
-  grid-template-rows: repeat(auto-fill, minmax(48px, 1fr));
   grid-gap: 5px;
+  grid-template-areas:
+    "select link link link"
+    "note1 note1 note1 note1"
+    "note2 note2 note2 note2";
+  margin: auto;
+  margin-top: -15px;
+  width: 320px;
 }
-.div_link {
-  border: 2px solid blue;
-  border-radius: 5px;
-  width: 48px;
-  height: 48px;
-  background-color: rgba(255, 255, 255, 1);
-  text-align: center;
-  transition: border 1s ease;
-  position: relative;
-}
-.star {
+#input-excel {
+  border-radius: 10px;
+  height: 23px;
+  left: 50%;
+  padding: 0%;
   position: absolute;
-  background-color: rgba(0, 0, 0, 0);
-  width: 13px;
-  height: 13px;
-  right: 0.5px;
-  top: 0.5px;
+  border: 1px solid var(--color_text_h);
+  transform: translateX(-120px) translateY(10px);
+  width: 150px;
   z-index: 100;
 }
-.star::before {
-  content: "";
+#input-excel::before {
+  content: "Thêm dữ liệu file Excel";
+  height: 23px;
+  left: 0px;
+  padding: 0%;
   position: absolute;
+  width: 100%;
+  background-color: var(--color_backgroud);
+  color: var(--color_text_h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#menu {
+  background-color: var(--color_backgroud);
+  border-radius: 50%;
+  height: 50px;
+  position: absolute;
+  right: 5px;
+  top: 15px;
+  width: 50px;
+  z-index: 502;
+  border: 2px solid var(--color_text_h);
+}
+#menu:focus > .ruler1 {
+  background-color: rgba(255, 255, 255, 0);
+  transition: background-color 1s;
+}
+#menu:focus > .ruler2 {
+  background-color: rgba(255, 255, 255, 0);
+  transition: background-color 1s;
+}
+#mySelect {
+  background-color: var(--color_backgroud);
+  border-radius: 10px;
+  font-weight: bold;
+  height: 20px;
+  width: 80px;
+  color: var(--color_text_h);
+  border-color: var(--color_text_h);
+  cursor: pointer;
+}
+#noteToDelete {
+  border: 1px solid var(--color_text_h);
+  border-radius: 15px;
+  display: block;
+  height: 60px;
+  margin: auto;
+  margin-top: -15px;
+  text-align: center;
+  width: 270px;
+}
+#searchForm {
+  align-items: center;
+  background-color: var(--color_backgroud);
+  display: flex;
+  height: 80px;
+  justify-content: center;
+  left: 0;
+  position: sticky;
+  right: 0;
+  top: 0;
+  z-index: 10;
+}
+#searchInput {
+  border: 2px solid var(--color_text_h);
+  border-radius: 10px 0 0 10px;
+  caret-color: var(--color_text_h);
+  color: var(--color_text_h);
+  font-weight: bold;
+  height: 24.5px;
+  left: 50%;
+  margin-right: 0;
+  padding-left: 10px;
+  position: absolute;
+  transform: translateX(-120px) translateY(15px);
+  width: 200px;
+}
+#select {
+  background-color: var(--color_backgroud);
+  border-radius: 10px;
+  font-weight: bold;
+  height: 25px;
+  left: 50%;
+  position: absolute;
+  border-color: var(--color_text_h);
+  transform: translateX(37px) translateY(10px);
+  width: 83px;
+  z-index: 200;
+  color: var(--color_text_h);
+  cursor: pointer;
+}
+#select_edit {
+  color: var(--color_text_h);
+  border-color: var(--color_text_h);
+  background-color: var(--color_backgroud);
+  cursor: pointer;
+}
+#whaticon {
+  align-items: center;
+  background-color: var(--color_backgroud);
+  border: 3px solid var(--color_text_h);
+  border-radius: 15px;
+  color: var(--color_text_p);
+  display: block;
+  height: 60px;
+  margin: auto;
+  transform: translateY(7.5px);
+  width: 95%;
+}
+.setting {
+  color: var(--color_text_h);
+  height: auto;
+  margin: 70px 10px -10px 10px;
+}
+#table {
+  width: 100%;
+}
+#table tr {
+  height: 25px;
+}
+#table td:nth-child(1) {
+  color: var(--color_text_p);
+  width: 40%;
+}
+
+#table td:nth-child(2) {
+  width: 60%;
+  color: white;
+}
+#text_color {
+  display: grid;
+  grid-gap: 5px;
+  grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+  margin-top: 15px;
+}
+#text_color > label {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--color);
+  cursor: pointer;
+}
+#text_color > input {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  border-radius: 50%;
+}
+#text_color > input::before {
+  content: "●●●";
+  color: var(--color_backgroud);
+  display: flex;
+  text-align: center;
+  justify-content: center;
+  font-size: 8px;
+  line-height: 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--color_text_h);
+  cursor: pointer;
+  position: absolute;
+  top: -2px;
+  left: -1.5px;
+  border: 1px solid var(--color_backgroud2);
+}
+#button_mode_dark {
+  width: 40px;
+  height: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--color_text_h);
+  background-color: var(--color_backgroud2);
+  position: relative;
+  cursor: pointer;
+}
+.nut_gat {
+  border-radius: 50%;
+  background-color: rgb(255, 100, 100);
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 1px;
+  left: 2.5px;
+  border: 1px solid var(--color_text_h);
+  transition: left 0.5s;
+}
+.add_button_gat {
+  background-color: rgb(100, 255, 100);
+  left: 19px;
+}
+#button_off_mouse {
+  width: 40px;
+  height: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--color_text_h);
+  background-color: var(--color_backgroud2);
+  position: relative;
+  cursor: pointer;
+}
+#button_link_an {
+  width: 40px;
+  height: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--color_text_h);
+  background-color: var(--color_backgroud2);
+  position: relative;
+  cursor: pointer;
+}
+.thong_bao_chung {
+  position: fixed;
+  z-index: 500;
+  width: 200px;
+  height: 60px;
+  padding: 10px;
+  color: var(--color_text_h);
+  border: 1px solid var(--color_text_h);
+  border-radius: 10px;
+  background-color: var(--color_backgroud);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  left: calc(50% - 100px);
+  top: -60px;
+  transition: top 0.5s, opacity 1s;
+  box-shadow: 2px 2px 10px var(--color_text_h);
+}
+.huong_dan {
+  padding: 0;
+}
+.huong_dan ol {
+  margin-left: -10px;
+  color: var(--color_text_p);
+}
+.huong_dan ol li:hover {
+  color: var(--color_text_h);
+  cursor: pointer;
+}
+.add_menu_content {
+  transform: translateX(-100px);
+}
+#box_ {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 400;
+}
+.box {
+  background-color: var(--color_backgroud);
+  height: auto;
+  padding: 0 15px;
+  text-align: left;
+  width: 300px;
+}
+.box2 {
+  background-color: var(--color_backgroud);
+  color: var(--color_text_p);
+  height: auto;
+  left: 0;
+  padding: 0 15px;
+  padding: 0%;
+  position: fixed;
+  text-align: left;
+  top: 0;
+  width: auto;
+  z-index: 500;
+}
+.box2_ul {
+  font-size: 20px;
+  height: 100%;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+.box2_ul > li {
+  margin-left: 5px;
+  cursor: pointer;
+}
+.box2_ul > li:hover {
+  background-color: var(--color_hover);
+}
+.box2_ul > li:last-child {
+  color: red;
+  font-size: 15px;
+}
+.btn {
+  border-radius: 10px;
+  width: 100px;
+  cursor: pointer;
+}
+.button {
+  background-color: var(--color_backgroud);
+  color: var(--color_text_h);
+  cursor: pointer;
+  display: none;
+  height: 30px;
+  position: fixed;
+  width: 70px;
+  z-index: 501;
+  border-color: var(--color_text_h);
+  cursor: pointer;
+}
+.button_add {
+  border-radius: 5px;
+  font-size: 35px;
+  height: 48px;
+  width: 48px;
+  cursor: pointer;
+}
+.canh_bao {
+  border-bottom: 10px solid red;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  display: none;
+  height: 0;
+  left: 18px;
+  position: absolute;
+  top: 0.5px;
+  width: 0;
+  z-index: 100;
+}
+.canh_bao::after {
+  background-color: var(--color_backgroud);
+  border: 2px solid var(--color_text_h);
+  content: "Web không an toàn";
+  display: none;
+  height: 40px;
+  left: -38px;
+  position: absolute;
+  top: 25px;
+  width: 80px;
+}
+.canh_bao:hover::after {
+  display: block;
+}
+.container {
+  display: grid;
+  margin: 0;
+  width: 100%;
+}
+.container-fluid {
+  width: 100%;
+}
+.div_link {
+  background-color: white;
+  border: 2px solid var(--color_text_h);
+  border-radius: 5px;
+  height: 48px;
+  margin: 0;
+  position: relative;
+  text-align: center;
+  transition: border 1s ease;
+  width: 48px;
+}
+.div_link:hover {
+  border: 2px solid rgba(255, 255, 255, 0);
+}
+.draggable {
+  border-bottom: 10px solid var(--color_text_h);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  bottom: 20%;
+  cursor: move;
+  height: 0;
+  left: 30px;
+  position: fixed;
+  top: 5px;
+  user-select: none;
+  width: 0;
+  z-index: 501;
+}
+.draggable::before {
+  background-color: var(--color_backgroud);
+  filter: opacity(0.5);
+  border: 3px solid var(--color_text_h);
+  border-radius: 50%;
+  content: "";
+  cursor: move;
+  height: 50px;
+  left: -25px;
+  position: absolute;
+  top: 20px;
+  user-select: none;
+  width: 50px;
+}
+.link-with-favicon {
+  background: no-repeat center center;
+  background-size: cover;
+  border-radius: 5px;
+  display: inline-block;
+  height: 48px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 48px;
+}
+.link-with-favicon::after {
+  background-color: rgba(0, 0, 0, 0);
+  border: 0.5px solid rgba(0, 0, 0, 0);
+  border-radius: 5px;
+  content: "";
+  height: 47.5px;
+  left: -2.5px;
+  overflow: hidden;
+  position: absolute;
+  top: -2.5px;
+  transform: rotate(0);
+  transition: transform 1s ease, border 0.5s ease, box-shadow 1s ease;
+  width: 47.5px;
+}
+.link-with-favicon::before {
+  background-color: rgba(0, 0, 0, 0);
+  border: 0.5px solid rgba(0, 0, 0, 0);
+  border-radius: 5px;
+  content: "";
+  height: 47.5px;
+  left: -2.5px;
+  overflow: hidden;
+  position: absolute;
+  top: -2.5px;
+  transform: rotate(0);
+  transition: transform 1s ease, border 0.5s ease, box-shadow 1s ease;
+  width: 47.5px;
+}
+.link-with-favicon:hover::after {
+  border: 3px solid var(--color_text_h);
+  transform: rotate(-360deg);
+  transition: transform 1s ease, border 0.5s ease;
+  box-shadow: -1px -1px 5px var(--color_backgroud),
+    1px 1px 5px var(--color_text_h);
+}
+.link-with-favicon:hover::before {
+  border: 3px solid var(--color_text_h);
+  transform: rotate(360deg);
+  transition: transform 1s ease, border 0.5s ease;
+  box-shadow: -1px -1px 5px var(--color_text_h),
+    1px 1px 5px var(--color_backgroud);
+}
+.menu_content {
+  background-color: var(--color_backgroud);
+  left: 100%;
+  max-width: 400px;
+  overflow-y: hidden;
+  padding: 0;
+  position: fixed;
+  top: 0;
+  transition: transform 1.5s;
+  width: 100%;
+  height: 100%;
+  z-index: 502;
+  box-shadow: 2px 2px 1px inset var(--color_text_h);
+}
+.note {
+  margin-top: 10px;
+  width: 293px;
+}
+.ruler1 {
+  background-color: var(--color_text_h);
+  height: 3px;
+  left: 10px;
+  position: absolute;
+  top: 30px;
+  transform-origin: center;
+  transition: transform 1s, top 1s, background-color 2s;
+  width: 30px;
+  z-index: 503;
+  cursor: pointer;
+}
+.ruler2 {
+  background-color: var(--color_text_h);
+  height: 3px;
+  left: 10px;
+  position: absolute;
+  top: 20px;
+  transform-origin: center;
+  transition: transform 1s, top 1s, background-color 2s;
+  width: 30px;
+  z-index: 503;
+  cursor: pointer;
+}
+.ruler2::before {
+  background-color: rgba(0, 0, 0, 0);
+  border-radius: 50%;
+  content: "";
+  height: 30px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 30px;
+}
+.add_rules1 {
+  background-color: var(--color_text_p);
+  top: 25px;
+  transform: rotate(45deg);
+}
+.add_rules2 {
+  background-color: var(--color_text_p);
+  top: 25px;
+  transform: rotate(-45deg);
+}
+.add_rules2::before {
+  left: 0;
+  top: -14px;
+}
+.site-footer {
+  background-color: rgb(0, 0, 0, 0);
+  margin: 20px 10px 5px 10px;
+}
+.site-footer .fa {
+  color: var(--color_text_h);
+  margin-right: 10px;
+}
+.site-footer .footer-links {
+  list-style: none;
+  padding: 0;
+}
+.site-footer .footer-links a {
+  color: var(--color_text_p);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.site-footer .footer-links a:hover {
+  color: var(--color_text_h);
+}
+.site-footer .footer-links li {
+  margin-bottom: 10px;
+}
+.site-footer .text-center a:hover {
+  text-decoration: underline;
+}
+.site-footer h3 {
+  color: var(--color_text_h);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.text-center {
+  text-align: center;
+}
+.text-center a {
+  color: var(--color_text_h);
+}
+.site-footer p {
+  color: var(--color_text_p);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.star {
+  background-color: rgba(0, 0, 0, 0);
+  height: 13px;
+  position: absolute;
+  right: 0.5px;
+  top: 0.5px;
+  width: 13px;
+  z-index: 100;
+}
+.star::after {
+  background-color: var(--color_backgroud);
+  border: 2px solid var(--color_text_h);
+  content: "đánh dấu";
+  display: none;
+  height: 20px;
+  left: -46px;
+  position: absolute;
+  top: 25px;
+  width: 80px;
+}
+.star::before {
   background-color: rgb(255, 183, 0);
-  width: 14px;
-  height: 14px;
   clip-path: polygon(
     50% 0%,
     61% 35%,
@@ -138,413 +874,103 @@ fieldset {
     2% 35%,
     39% 35%
   );
+  content: "";
+  height: 14px;
+  position: absolute;
   right: -0.5px;
   top: -0.5px;
+  width: 14px;
 }
-
-.star::after {
-  content: "đánh dấu";
-  width: 80px;
-  height: 20px;
-  background-color: white;
-  border: 2px solid black;
-  position: absolute;
-  top: 25px;
-  left: -46px;
-  display: none;
-}
-
 .star:hover::after {
   display: block;
 }
-
 .thong_bao {
-  width: 7.5px;
-  height: 7.5px;
-  border-radius: 50%;
-  border: 0px solid black;
   background-color: rgba(144, 238, 144, 0);
-  position: absolute;
+  border: 2px solid var(--color_text_h);
+  border-radius: 50%;
+  height: 7.5px;
   left: 2px;
+  position: absolute;
   top: 2px;
+  width: 7.5px;
   z-index: 100;
 }
 .thong_bao::after {
+  background-color: var(--color_backgroud);
+  border: 2px solid var(--color_text_h);
   content: "Anime ra tập mới";
-  width: 80px;
+  display: none;
   height: 40px;
-  background-color: white;
-  border: 2px solid black;
+  left: -17px;
   position: absolute;
   top: 25px;
-  left: -17px;
-  display: none;
+  width: 80px;
 }
 .thong_bao:hover::after {
   display: block;
 }
-.canh_bao {
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-bottom: 10px solid red;
-  position: absolute;
-  left: 18px;
-  top: 0.5px;
-  display: none;
-  z-index: 100;
+:root {
+  --color_backgroud: #ccc;
+  --color_backgroud2: rgb(50, 50, 50);
+  --color_hover: rgb(100, 100, 100);
+  --color_text_h: #007bff;
+  --color_text_p: rgb(10, 10, 10);
 }
-.canh_bao::after {
-  content: "Web không an toàn";
-  width: 80px;
-  height: 40px;
-  background-color: white;
-  border: 2px solid black;
-  position: absolute;
-  top: 25px;
-  left: -38px;
-  display: none;
+body {
+  background-color: var(--color_backgroud2);
+  color: var(--color_text_h);
+  margin: 0px;
 }
-.canh_bao:hover::after {
-  display: block;
-}
-.div_link:hover {
-  border: 2px solid rgba(255, 255, 255, 0);
+fieldset {
+  background-color: var(--color_backgroud2);
+  border: 2px solid var(--color_text_h);
+  border-radius: 10px;
+  margin: 0 10px;
+  padding: 0%;
+  width: calc(100%-40px);
 }
 footer {
-  width: 100%;
+  background-color: var(--color_backgroud);
+  border: 3px solid var(--color_text_h);
+  color: var(--color_text_h);
   height: 80px;
-  background-color: black;
   text-align: center;
-  color: yellow;
-  position: absolute;
-  bottom: 0;
-  z-index: 500;
-}
-#whaticon {
-  display: block;
-  margin: auto;
-  align-items: center;
-  max-width: 250px;
-  height: 60px;
-  background-color: rgb(255, 255, 255);
-  border: 3px solid blue;
-  border-radius: 15px;
-  transform: translateY(5px);
-  color: black;
-}
-@media screen and (max-width: 350px) {
-  #whaticon {
-    max-width: 95%;
-  }
-  .scroll_down {
-    display: none;
-  }
-  .scroll_up {
-    display: none;
-  }
-}
-#add-link {
-  width: 100px;
-}
-#input-excel {
-  border-radius: 10px;
-  width: 65px;
-  background-color: white;
-  font-weight: bold;
-  height: 21px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-75px) translateY(10px);
-  z-index: 100;
-  padding: 0%;
-}
-#input-excel2 {
-  border-radius: 10px;
-  width: 65px;
-  border: 1px solid black;
-  background-color: white;
-  font-weight: bold;
-  height: 20px;
-  padding: 0%;
-}
-#mySelect {
-  border-radius: 10px;
-  width: 65px;
-  background-color: white;
-  font-weight: bold;
-  height: 20px;
-}
-#select {
-  border-radius: 10px;
-  width: 65px;
-  background-color: rgb(255, 255, 255);
-  font-weight: bold;
-  height: 21px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(10px) translateY(10px);
-  z-index: 200;
-}
-#scroll_up {
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-20px);
-  text-align: center;
-  align-items: center;
-  padding: 0;
-  border-radius: 10px;
-}
-#scroll_down {
-  width: 40px;
-  height: 40px;
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-20px);
-  text-align: center;
-  align-items: center;
-  padding: 0;
-  border-radius: 10px;
-}
-
-#searchForm {
-  position: sticky;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 80px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: black;
-  z-index: 10;
-}
-#searchInput {
-  width: 200px;
-  border-radius: 10px 0 0 10px;
-  margin-right: 0;
-  padding-left: 10px;
-  caret-color: blue;
-  font-weight: bold;
-  height: 24.5px;
-  border: 2px solid gray;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-120px) translateY(15px);
-}
-input::placeholder {
-  color: gray; /* Màu chữ của placeholder */
-  font-style: italic; /* Kiểu chữ của placeholder */
-}
-input:focus {
-  border-color: blue; /* Màu viền khi input được focus */
-  box-shadow: 0 0 5px rgba(0, 0, 255, 0.5); /* Hiệu ứng shadow khi input được focus */
-}
-#btn_tim {
-  border-radius: 0 10px 10px 0;
-  background-color: white;
-  margin-left: -5px;
-  padding-left: 12px;
-  padding-right: 13px;
-  height: 24.5px;
-  border: 2px solid gray;
-  border-left: none;
-  position: absolute;
-  left: 50%;
-  transform: translateX(85px) translateY(15px);
-}
-#btn_tim:focus,
-#btn_tim:hover {
-  background-color: #ccc;
-}
-#box_ {
-  background-color: rgba(0, 0, 0, 0.2);
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  display: flex;
-  justify-content: center; /* Căn giữa theo chiều ngang */
-  align-items: center; /* Căn giữa theo chiều dọc */
-  text-align: center;
-  z-index: 500;
-}
-
-.box {
-  width: 300px;
-  height: auto;
-  background-color: rgb(255, 255, 255);
-  text-align: left;
-  padding: 0 15px;
-}
-#box_2 {
-  background-color: rgba(0, 0, 0, 0.1);
-  position: relative;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
-  width: 100%;
-  display: none;
-}
-.box2 {
-  width: auto;
-  height: auto;
-  background-color: rgb(255, 255, 255);
-  text-align: left;
-  padding: 0 15px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  padding: 0%;
-  z-index: 500;
-}
-.box2_ul {
-  height: 100%;
-  width: 100%;
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  font-size: 20px;
-}
-hr {
-  margin: 5px;
-}
-.box2_ul > li:hover {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-.box2_ul > li:last-child {
-  color: red;
-  font-size: 15px;
-}
-.box2_ul > li {
-  margin-left: 0;
-}
-#danhdau {
-  text-align: right;
-  margin: 0 0 0 15px;
-}
-#class_box2_edit {
-  width: 350px;
-  height: 150px;
-  background-color: rgb(255, 255, 255);
-  text-align: left;
-  z-index: 500;
-  position: fixed;
-  left: calc(50% - 175px);
-  top: calc(50% - 75px);
-  display: flex;
-}
-#class_box2_edit > h3 {
+  z-index: 400;
   margin-top: 10px;
 }
-#edit_input {
-  display: grid;
-  width: 320px;
-  grid-template-areas:
-    "select link link link"
-    "note1 note1 note1 note1"
-    "note2 note2 note2 note2";
-  margin: auto;
-  grid-gap: 5px;
-  margin-top: -15px;
-}
-#class_box2_edit > button {
-  width: 100px;
-  height: 20px;
-  position: absolute;
-  bottom: 15px;
-  margin-left: 15px;
-}
-#class_box2_edit > button:nth-child(2n) {
-  right: 15px;
-  background-color: blue;
-  color: white;
-}
-#class_box2_remove {
-  width: 300px;
-  height: 150px;
-  background-color: rgb(255, 255, 255);
-  text-align: left;
-  z-index: 500;
-  position: fixed;
-  left: calc(50% - 150px);
-  top: calc(50% - 75px);
-}
-#class_box2_remove > button {
-  width: 100px;
-  height: 20px;
-  position: absolute;
-  bottom: 15px;
-  background-color: red;
-  margin-left: 15px;
-}
-#class_box2_remove > button:nth-child(2n) {
-  right: 15px;
-  background-color: white;
-}
-#noteToDelete {
-  display: block;
-  margin: auto;
-  width: 270px;
-  text-align: center;
-  border: 1px solid black;
-  border-radius: 15px;
-  height: 60px;
-  margin-top: -15px;
-}
-
 h3 {
   text-align: center;
+  font-weight: bold;
 }
-.note {
-  margin-top: 10px;
-  width: 140px;
+header {
+  background-color: var(--color_backgroud);
+  border: 3px solid var(--color_text_h);
+  height: 80px;
+  position: relative;
+  z-index: 500;
 }
-.btn {
-  width: 80px;
-  border-radius: 10px;
+hr {
+  color: var(--color_text_h);
+  margin: 5px;
 }
-.draggable {
-  width: 0;
-  height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 10px solid blue;
-  position: fixed;
-  bottom: 20%;
-  left: 30px;
-  top: 5px;
-  cursor: move;
-  z-index: 501;
-  user-select: none; /* Disable text selection */
+input::placeholder {
+  color: var(--color_text_h);
+  font-style: italic;
 }
-
-.draggable::before {
-  content: "";
-  width: 50px;
-  height: 50px;
-  background-color: rgba(150, 150, 150, 0.6);
-  position: absolute;
-  top: 20px;
-  left: -25px;
-  border-radius: 50%;
-  cursor: move;
-  user-select: none; /* Disable text selection */
+input:focus {
+  border-color: var(--color_text_h);
+  box-shadow: 0 0 5px rgba(0, 0, 255, 0.5);
 }
-.button {
-  width: 60px;
-  height: 30px;
-  background-color: rgb(0, 140, 255);
-  color: white;
-  z-index: 501;
-  position: fixed;
-  cursor: pointer;
-  display: none;
+legend {
+  color: yellow;
+  font-size: 20px;
+  font-weight: bold;
+  padding: -10px 10px;
+  position: relative;
+  text-align: center;
+  transform: translateY(2.5px);
+  width: 100px;
+}
+button {
+  font-weight: bold;
 }
