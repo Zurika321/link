@@ -4,7 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Link</title>
-    <link rel="icon" href="torii-gate.png" type="image/png" />
+    <link rel="icon" href="zurika.jpg" type="image/jpg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
     <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
@@ -22,6 +26,7 @@
       ></select>
       <input type="file" id="input-excel"/>
       <form id="searchForm">
+      <img src="zurika.png" id="favicon1" onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',5)">
         <input
           type="search"
           id="searchInput"
@@ -37,6 +42,7 @@
         <div class="ruler1"></div>
         <div class="ruler2"></div>
         <div class="menu_content">
+          <img src="zurika.png" id="favicon2" onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',5)">
           <div class="setting">
             <h3>Cài đặt</h3>
             <table id="table" border="0">
@@ -283,8 +289,5 @@
       </div>
     </div>
   </body>
-    <script>
-      // localStorage.removeItem("data");
-    </script>
     <script src="script.js"></script>
 </html>
