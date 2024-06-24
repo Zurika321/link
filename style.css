@@ -2,6 +2,24 @@
   border-radius: 5px;
   transition: color 1s ease, background-color 1s ease;
 }
+#favicon1 {
+  width: 70px;
+  height: 70px;
+  position: absolute;
+  z-index: 50;
+  left: 10px;
+  top: 4px;
+  filter: contrast(300%) brightness(110%);
+}
+#favicon2 {
+  width: 70px;
+  height: 70px;
+  position: absolute;
+  z-index: 100;
+  left: 20px;
+  top: 5px;
+  filter: contrast(300%) brightness(110%);
+}
 #add-link {
   color: var(--color_hover);
   border: 1px solid var(--color_text_h);
@@ -364,6 +382,7 @@ input {
   position: absolute;
   transform: translateX(-120px) translateY(15px);
   width: 200px;
+  z-index: 100;
 }
 #select {
   background-color: var(--color_backgroud);
@@ -395,7 +414,7 @@ input {
   height: 60px;
   margin: auto;
   transform: translateY(7.5px);
-  width: 95%;
+  width: auto;
 }
 .setting {
   color: var(--color_text_h);
@@ -937,6 +956,7 @@ footer {
   text-align: center;
   z-index: 400;
   margin-top: 10px;
+  padding: 0 10px;
 }
 h3 {
   text-align: center;
