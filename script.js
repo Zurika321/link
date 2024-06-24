@@ -907,7 +907,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (indexx !== -1) {
           // Nếu giá trị tồn tại trong mảng
-          danhdau.style.color = "black";
+          danhdau.style.color = "var(--color_text_p)";
           li.onclick = function () {
             console_star(forValue, "remove");
             box_2_id.style.display = "none";
@@ -1177,7 +1177,7 @@ function addLinkAndNoteToKey() {
 function setDivHeight() {
   let divScroll = document.getElementById("div_scroll");
   let windowHeight = window.innerHeight;
-  divScroll.style.height = windowHeight - 217 + "px";
+  divScroll.style.height = windowHeight - 205 + "px";
   window_width = window.innerWidth;
   const draggable = document.querySelector("#draggable");
   document.querySelectorAll(".button").forEach(function (button) {
