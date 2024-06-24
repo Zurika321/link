@@ -20,9 +20,6 @@ function getDeviceType() {
 function convertToMinutes(day, hour, minute) {
   return day * 24 * 60 + hour * 60 + minute;
 }
-function c(string) {
-  console.log(string);
-}
 function isValidURL(string) {
   try {
     new URL(string);
@@ -46,14 +43,9 @@ function linkss() {
       let faviconUrl;
       if (url.includes("github.io")) {
         faviconUrl = await getFaviconUrl(url);
-      } else if (url.includes("youtube")) {
-        faviconUrl = "https://www.youtube.com/favicon.ico";
       } else if (url.startsWith("file:///")) {
         faviconUrl =
           "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKc4f1B7TETp0s2EH9LvCiSU6TyYXsm1ewiQ&usqp=CAU";
-      } else if (!isValidURL(url)) {
-        faviconUrl =
-          "https://cdn.pixabay.com/photo/2017/02/12/21/29/false-2061132_640.png";
       } else {
         faviconUrl =
           `https://www.google.com/s2/favicons?sz=64&domain_url=` + url;
@@ -65,7 +57,7 @@ function linkss() {
   });
 }
 
-function getFaviconUrl(url) {
+async function getFaviconUrl(url) {
   return new Promise((resolve, reject) => {
     fetch(url)
       .then((response) => response.text())
@@ -87,74 +79,62 @@ function getFaviconUrl(url) {
       });
   });
 }
+
+function thong_bao_chung(thong_bao, x) {
+  if (x == undefined) {
+    x = 3;
+  }
+  let div = document.createElement("div");
+  div.className = "thong_bao_chung";
+  div.textContent = thong_bao;
+
+  document.body.appendChild(div);
+  div.offsetHeight; // Force reflow
+  div.style.top = "10px";
+  setTimeout(() => {
+    div.style.opacity = "0";
+    setTimeout(() => {
+      document.body.removeChild(div);
+    }, 1000);
+  }, 1000 * x);
+}
+function enableScroll(element) {
+  element.addEventListener("wheel", function (event) {
+    event.preventDefault();
+    element.scrollTop += event.deltaY;
+  });
+
+  let isTouching = false;
+  let touchStartY = 0;
+
+  element.addEventListener("touchstart", function (event) {
+    isTouching = true;
+    touchStartY = event.touches[0].clientY;
+  });
+
+  element.addEventListener("touchmove", function (event) {
+    event.preventDefault();
+    if (!isTouching) return;
+
+    const touchCurrentY = event.touches[0].clientY;
+    const touchDeltaY = touchStartY - touchCurrentY;
+
+    element.scrollTop += touchDeltaY;
+    touchStartY = touchCurrentY;
+  });
+
+  element.addEventListener("touchend", function () {
+    isTouching = false;
+  });
+}
+
 const divMain = document.getElementById("div_scroll");
+const list_title = document.getElementById("list_title");
+const menu_content = document.querySelectorAll(".menu_content");
 
-// Xử lý sự kiện cuộn bằng chuột
-divMain.addEventListener("wheel", function (event) {
-  event.preventDefault();
-  divMain.scrollTop += event.deltaY;
-});
-
-// Biến để theo dõi trạng thái vuốt
-let isTouching = false;
-let touchStartY = 0;
-
-// Xử lý sự kiện bắt đầu chạm
-divMain.addEventListener("touchstart", function (event) {
-  isTouching = true;
-  touchStartY = event.touches[0].clientY;
-});
-
-// Xử lý sự kiện di chuyển ngón tay trên màn hình
-divMain.addEventListener("touchmove", function (event) {
-  event.preventDefault();
-  if (!isTouching) return;
-
-  const touchCurrentY = event.touches[0].clientY;
-  const touchDeltaY = touchStartY - touchCurrentY;
-
-  divMain.scrollTop += touchDeltaY;
-
-  // Cập nhật lại tọa độ bắt đầu chạm để cho lần di chuyển tiếp theo
-  touchStartY = touchCurrentY;
-});
-
-// Xử lý sự kiện kết thúc chạm
-divMain.addEventListener("touchend", function (event) {
-  isTouching = false;
-});
-
-let scrollInterval;
-function startScrolling(scrollAmount) {
-  scrollInterval = setInterval(function () {
-    const divMain = document.getElementById("div_scroll");
-    const currentScroll = divMain.scrollTop;
-    divMain.scrollTop = currentScroll + scrollAmount;
-  }, 100); // Thực hiện cuộn mỗi 100ms
-}
-function stopScrolling() {
-  clearInterval(scrollInterval); // Dừng cuộn khi nhả nút
-}
-document.getElementById("scroll_up").addEventListener("mousedown", function () {
-  startScrolling(-100); // Cuộn lên 50px
-});
-document
-  .getElementById("scroll_up")
-  .addEventListener("touchstart", function () {
-    startScrolling(-100); // Cuộn lên 50px
-  });
-document
-  .getElementById("scroll_down")
-  .addEventListener("mousedown", function () {
-    startScrolling(100); // Cuộn xuống 50px
-  });
-document
-  .getElementById("scroll_down")
-  .addEventListener("touchstart", function () {
-    startScrolling(100); // Cuộn xuống 50px
-  });
-document.addEventListener("mouseup", stopScrolling);
-document.addEventListener("touchend", stopScrolling);
+menu_content.forEach(enableScroll);
+enableScroll(divMain);
+enableScroll(list_title);
 
 var title = [
   "AI",
@@ -168,6 +148,7 @@ var title = [
   "<i class='fa-solid fa-brain' style='color: #949494;'></i> Tips",
   "ZZ",
 ];
+var title_mac_dinh = title;
 function removeIcon(titles) {
   // Tạo một bản sao của mảng titles để tránh thay đổi trực tiếp mảng gốc
   const titlesCopy = titles.slice();
@@ -191,10 +172,9 @@ function remove_space(str) {
 function remove_space_from_array(arr) {
   return arr.map((item) => remove_space(item));
 }
-// Sử dụng hàm để loại bỏ biểu tượng từ mảng title và lưu vào mảng mới title_no_icon
-var title_no_icon = removeIcon(title);
 var link = [];
 var note = [];
+var title_no_icon = [];
 console_data();
 var star = [];
 function console_star(note_add, add_or_remove) {
@@ -253,24 +233,22 @@ function danh_dau() {
 function fixDuplicateNotes() {
   // Đối với mỗi phần tử trong mảng, kiểm tra xem phần tử đó có xuất hiện lặp lại không
   var bool = false;
-  for (let i = 0; i < note.length; i++) {
-    let count = 1; // Đếm số lần xuất hiện của phần tử
-    for (let j = i + 1; j < note.length; j++) {
-      if (note[i] === note[j]) {
-        bool = true;
+  for (let z = 0; z < note.length; z++) {
+    let count = -1; // Đếm số lần xuất hiện của phần tử
+    for (let j = z + 1; j < note.length; j++) {
+      if (note[z] == note[j]) {
         count++;
-        var notes = note[j].split("<br>");
-        if (notes.length == 3) {
-          var note_0 = note[j].split("<br>")[0];
-          var note_1 = note[j].split("<br>")[1];
-          var note_2 = note[j].split("<br>")[2];
-          if (note_1.trim() == "") {
-            note[j] = `${note_0}<br>${note_1} ${count}<br>${note_2}`;
-          } else if (note_2.trim() == "") {
-            note[j] = `${note_0}<br>${note_1}<br>${note_2} ${count}`;
-          }
+        if (note[j].includes("(note bị trùng)")) {
+          // Nếu đã chứa "(note bị trùng)" thì thêm số lần xuất hiện
+          note[j] = note[j].replace(
+            /(\(note bị trùng\)\*)(\d+)/,
+            (match, p1, p2) => {
+              return `${p1}${parseInt(p2) + 1}`;
+            }
+          );
         } else {
-          note[j] = `${note[j]} ${count}`; // Sửa phần tử lặp lại thành "phần_tử count"
+          // Nếu chưa chứa "(note bị trùng)" thì thêm vào với số lần xuất hiện
+          note[j] = `${note[z]} (note bị trùng)*${count + 1}`;
         }
       }
     }
@@ -279,6 +257,7 @@ function fixDuplicateNotes() {
     create_data(link, note);
   }
 }
+
 fixDuplicateNotes();
 
 function undate_date_anime() {
@@ -320,6 +299,16 @@ function undate_date_anime() {
           currentTotalMinutes <= nextDayTotalMinutes
         ) {
           note_anime2.push(element);
+        }
+        if (currentTotalMinutes == targetTotalMinutes) {
+          thong_bao_chung(removeTags(remove_space(element)), 15);
+        }
+        if (day == 8) {
+          day = 2;
+          let targetTotalMinutes = convertToMinutes(day, hour, minute);
+          if (currentTotalMinutes <= targetTotalMinutes) {
+            note_anime2.push(element);
+          }
         }
       }
     });
@@ -472,10 +461,26 @@ function create_icon() {
   div_link.appendChild(a);
   div_scroll.appendChild(div_link);
 }
+function moveZZToEnd(arr) {
+  const index = arr.indexOf("ZZ");
+  if (index !== -1) {
+    arr.splice(index, 1);
+    arr.push("ZZ");
+  }
+
+  return arr;
+}
 var ZZ_on = false;
 function create_option(bool) {
   if (bool === undefined || bool === null) {
     ZZ_on = JSON.parse(localStorage.getItem("open_file_ẩn")) || false;
+    if (ZZ_on) {
+      const button_link_an = document.getElementById("button_link_an");
+      const children = button_link_an.children;
+      Array.from(children).forEach((child) => {
+        child.classList.toggle("add_button_gat");
+      });
+    }
   } else {
     ZZ_on = bool;
   }
@@ -492,14 +497,17 @@ function create_option(bool) {
   option2.value = "All";
   option2.textContent = "All";
   select1.appendChild(option2);
-  var length = ZZ_on ? title_no_icon.length : title_no_icon.length - 1;
 
-  for (var i = 0; i < length; i++) {
+  for (var i = 0; i < title_no_icon.length; i++) {
     // Tạo option1 cho select1
     var option1 = document.createElement("option");
     option1.value = title_no_icon[i];
     if (title_no_icon[i] === "ZZ") {
-      option1.textContent = "Link ẩn";
+      if (ZZ_on) {
+        option1.textContent = "Link ẩn";
+      } else {
+        option1.style.display = "none";
+      }
     } else {
       option1.textContent = title_no_icon[i];
     }
@@ -526,7 +534,6 @@ function console_data() {
     var link_data = retrievedData.linksss;
     var note_data = retrievedData.notesss;
     var title_data = retrievedData.titlesss;
-    console.log("Icons:", link_data.length);
     var thiet_bi = getDeviceType();
     document.getElementById("whaticon").innerHTML =
       "Icons :" +
@@ -538,6 +545,8 @@ function console_data() {
       title_data.length;
     link = link_data;
     note = note_data;
+    title = title_data;
+    fixDuplicateNotes();
   } else {
     setTimeout(() => {
       var div_scroll = document.getElementById("div_scroll");
@@ -548,13 +557,15 @@ function console_data() {
       div_scroll.appendChild(div);
     }, 1000);
   }
+  title_no_icon = removeIcon(title);
 }
 function add_data(link, note) {
   let retrievedData = JSON.parse(localStorage.getItem("data"));
   retrievedData.linksss.push(link); // Thêm vào mảng linksss
   retrievedData.notesss.push(note); // Thêm vào mảng notesss
   localStorage.setItem("data", JSON.stringify(retrievedData));
-  location.reload();
+  console_data();
+  title_pick("All");
 }
 function remove_data(remove_note) {
   // Hiển thị hộp thoại tùy chỉnh
@@ -574,6 +585,7 @@ function remove_data(remove_note) {
     console_star("", "");
     title_pick(what_title);
     document.getElementById("class_box2_remove").style.display = "none";
+    thong_bao_chung("Đã xóa icon thành công!");
   };
 
   // Xử lý nút "No"
@@ -639,6 +651,7 @@ function edit_data(edit_note, link_value) {
     console_data();
     title_pick(what_title);
     document.getElementById("class_box2_edit").style.display = "none";
+    thong_bao_chung("Đã sửa icon liên kết thành công!");
   };
 
   document.getElementById("cancel_edit").onclick = function () {
@@ -842,8 +855,8 @@ document.addEventListener("DOMContentLoaded", function () {
       draggable.style.left = pageX - shiftX + "px";
       draggable.style.top = pageY - shiftY + "px";
       let button = document.querySelector(".button");
-      button.style.left = pageX - shiftX - 25 + "px";
-      button.style.top = pageY - shiftY + 70 + "px";
+      button.style.left = pageX - shiftX - 27 + "px";
+      button.style.top = pageY - shiftY + 80 + "px";
       const draggableRect = draggable.getBoundingClientRect();
       checkHover(draggableRect);
     };
@@ -914,10 +927,10 @@ document.addEventListener("DOMContentLoaded", function () {
             .writeText(href)
             .then(function () {
               box_2_id.style.display = "none";
-              alert("Liên kết đã được sao chép vào clipboard!");
+              thong_bao_chung("Đã sao chép liên kết!");
             })
             .catch(function (error) {
-              console.error("Không thể sao chép liên kết: ", error);
+              console.error("Không thể sao chép liên kết", error);
             });
         };
       }
@@ -954,19 +967,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .getElementById("searchForm")
     .addEventListener("submit", function (event) {
       event.preventDefault(); // Ngăn chặn reload trang
-      var searchInputValue = document.getElementById("searchInput").value; // Lấy giá trị của input
-
-      if (searchInputValue == "0809") {
-        if (ZZ_on) {
-          create_option(false);
-        } else {
-          create_option(true);
-        }
-        document.getElementById("whaticon").innerHTML =
-          "aaaaaaaaa <br>aaaaaaaaa <br>aaaaaaaaa";
-      } else {
-        location.reload();
-      }
+      location.reload();
     });
   searchInput.addEventListener("input", function () {
     const searchValue = remove_space(searchInput.value.toLowerCase());
@@ -987,6 +988,20 @@ document.addEventListener("DOMContentLoaded", function () {
         const jsonData = XLSX.utils.sheet_to_json(worksheet); // Chuyển đổi dữ liệu thành định dạng JSON
         link = [];
         note = [];
+
+        const jsonData_row = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+        });
+        const LinkIndex = jsonData_row[0].indexOf("Link");
+        const NoteIndex = jsonData_row[0].indexOf("Note");
+        if (LinkIndex === -1) {
+          thong_bao_chung("Không tìm thấy cột 'Link' trong file Excel.");
+          return;
+        } else if (NoteIndex === -1) {
+          thong_bao_chung("Không tìm thấy cột 'Note' trong file Excel.");
+          return;
+        }
+
         jsonData.forEach((row) => {
           if (row.Link) {
             link.push(row.Link);
@@ -1000,98 +1015,64 @@ document.addEventListener("DOMContentLoaded", function () {
         console_data();
         anime_tap_moi = undate_date_anime();
         title_pick("All");
+        thong_bao_chung("Nhập dữ liệu Excel thành công");
       };
 
       reader.readAsArrayBuffer(file); // Đọc tệp dưới dạng ArrayBuffer
-    } catch (error) {
-      console.error("Error fetching or processing the Excel file:", error);
+    } catch {
+      //
     }
   }
   let workbook;
   let firstSheetName;
-  function handleFile2(e) {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = function (event) {
-      const data = new Uint8Array(event.target.result);
-      workbook = XLSX.read(data, { type: "array" });
-      firstSheetName = workbook.SheetNames[0];
-    };
-    reader.readAsArrayBuffer(file);
-  }
-  var newLinks;
-  var newNotes;
-  var newtitle;
   function excell() {
-    let new1 = check_add();
-    let bool = new1[0];
-    if (!bool) {
-      console.log("false");
-      return;
-    }
-    newLinks = new1[2];
-    newNotes = new1[1];
-    newtitle = new1[3];
     addAndSortData();
   }
   function addAndSortData() {
-    // Thêm dữ liệu mới vào bảng tính Excel
-    addDataToExcel();
+    // Thêm dữ liệu mảng link vào cột Link và mảng note vào cột Note theo thứ tự song song 2 cột
+    createNewExcelFile(link, note, note);
 
     // Sắp xếp dữ liệu theo cột "Title"
     sortDataByTitle();
   }
 
-  function addDataToExcel() {
-    if (!workbook || !firstSheetName) {
-      alert("Vui lòng thêm file Excel trước.");
-      return;
+  function createNewExcelFile(links, notes, titles) {
+    // Tạo workbook mới
+    workbook = XLSX.utils.book_new();
+
+    // Tạo sheet mới
+    firstSheetName = "Sheet1";
+    const sheetData = [];
+
+    // Thêm header cho sheet (các cột Link, Note, Title)
+    sheetData.push(["Link", "Note", "Title"]);
+
+    // Thêm dữ liệu từ các mảng links, notes và titles vào sheet
+    for (let i = 0; i < links.length; i++) {
+      const link = links[i];
+      const note = notes[i];
+      const title = titles[i].split("<br>")[0]; // Lấy phần tử đầu tiên trong titles[i]
+
+      sheetData.push([link, note, title]);
     }
 
-    const worksheet = workbook.Sheets[firstSheetName];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    // Chuyển đổi dữ liệu thành định dạng sheet
+    const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
 
-    const linkIndex = jsonData[0].indexOf("Link");
-    const noteIndex = jsonData[0].indexOf("Note");
-    const titleIndex = jsonData[0].indexOf("Title");
+    // Thêm sheet vào workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, firstSheetName);
 
-    if (linkIndex === -1 || noteIndex === -1 || titleIndex === -1) {
-      alert(
-        "Không tìm thấy cột 'Link', 'Note', hoặc 'Title' trong file Excel."
-      );
-      return;
-    }
-
-    // Tìm hàng trống đầu tiên
-    let emptyRow = jsonData.find((row) => row.every((cell) => !cell));
-
-    // Nếu không tìm thấy hàng trống, thêm dữ liệu vào hàng cuối cùng
-    if (!emptyRow) {
-      emptyRow = Array(jsonData[0].length).fill("");
-      jsonData.push(emptyRow);
-    }
-
-    // Thêm dữ liệu mới vào hàng trống đầu tiên
-    emptyRow[linkIndex] = newLinks;
-    emptyRow[noteIndex] = newNotes;
-    emptyRow[titleIndex] = newtitle;
-
-    // Cập nhật bảng tính
-    const newWorksheet = XLSX.utils.aoa_to_sheet(jsonData);
-    workbook.Sheets[firstSheetName] = newWorksheet;
+    // Xuất file Excel
+    exportExcel();
   }
-  function sortDataByTitle() {
-    if (!workbook || !firstSheetName) {
-      alert("Vui lòng thêm file Excel trước.");
-      return;
-    }
 
+  function sortDataByTitle() {
     const worksheet = workbook.Sheets[firstSheetName];
     const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
     const titleIndex = jsonData[0].indexOf("Title");
     if (titleIndex === -1) {
-      alert("Không tìm thấy cột 'Title' trong file Excel.");
+      thong_bao_chung("Không tìm thấy cột 'Title' trong file Excel.");
       return;
     }
 
@@ -1107,17 +1088,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const newWorksheet = XLSX.utils.aoa_to_sheet(sortedData);
     workbook.Sheets[firstSheetName] = newWorksheet;
 
-    // Xuất file Excel
     exportExcel();
   }
 
   function exportExcel() {
     const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
-    const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+    const blob = new Blob([s2ab(wbout)], {
+      type: "application/octet-stream",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "updated_file.xlsx";
+    a.download = "link.xlsx";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1135,9 +1117,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("input-excel")
     .addEventListener("change", handleFile, false);
-  document
-    .getElementById("input-excel2")
-    .addEventListener("change", handleFile2, false);
   document.getElementById("add-link2").addEventListener("click", excell, false);
 });
 
@@ -1156,30 +1135,27 @@ function close() {
 }
 function check_add() {
   let selectedValue = document.getElementById("mySelect").value;
-  //var selectedValue2;
   let input_note1 = document.getElementById("note1_input").value;
   let input_note2 = document.getElementById("note2_input").value;
   let input_link = document.getElementById("link_input").value;
-  //var indexxx = title_no_icon.indexOf(`${selectedValue}`);
-  // if (indexxx !== -1) {
-  //   selectedValue2 = title[indexxx];
-  // }
+
   if (selectedValue == "File") {
-    if (input_link.startsWith("file:///")) {
-      alert("Đường liên kết file không hợp lệ");
+    if (!input_link.startsWith("file:///")) {
+      thong_bao_chung("Đường liên kết file không hợp lệ!");
+      return [false, "", "", ""];
     }
   } else if (!isValidURL(input_link)) {
-    alert("Đường liên kết http/https không hợp lệ");
-    return [false, "", "", ""];
-  }
-  if (input_link === "") {
-    alert("Vui lòng nhập Link");
+    thong_bao_chung("Đường liên kết link không hợp lệ!");
     return [false, "", "", ""];
   }
 
+  document.getElementById("note1_input").value = "";
+  document.getElementById("note2_input").value = "";
+  document.getElementById("link_input").value = "";
+
   return [
     true,
-    `${selectedValue /*2*/}` + "<br>" + input_note1 + "<br>" + input_note2,
+    `${selectedValue}` + "<br>" + input_note1 + "<br>" + input_note2,
     input_link,
     `${selectedValue}`,
   ];
@@ -1194,13 +1170,327 @@ function addLinkAndNoteToKey() {
   let link_a = a[2];
   let note_a = a[1];
   add_data(link_a, note_a);
+  thong_bao_chung("Đã thêm link thành công!");
+  close();
 }
 
 function setDivHeight() {
   let divScroll = document.getElementById("div_scroll");
   let windowHeight = window.innerHeight;
-  divScroll.style.height = windowHeight - 195 + "px";
+  divScroll.style.height = windowHeight - 217 + "px";
   window_width = window.innerWidth;
+  const draggable = document.querySelector("#draggable");
+  document.querySelectorAll(".button").forEach(function (button) {
+    button.style.display = "none";
+  });
+  draggable.style.top = 5 + "px";
+  draggable.style.left = 30 + "px";
+  document.querySelectorAll(".menu_content").forEach(function (menu_c) {
+    if (menu_open) {
+      menu_c.style.transform = "translateX(0)";
+      menu_open = false;
+      document.querySelectorAll(".ruler1").forEach(function (r1) {
+        r1.classList.toggle("add_rules1");
+      });
+      document.querySelectorAll(".ruler2").forEach(function (r2) {
+        r2.classList.toggle("add_rules2");
+      });
+    }
+  });
 }
 window.onload = setDivHeight;
 window.onresize = setDivHeight;
+
+var menu_open = false;
+
+document.getElementById("menu").addEventListener("click", function () {
+  const ruler1 = this.querySelector(".ruler1");
+  const ruler2 = this.querySelector(".ruler2");
+  const menu_content = document.querySelectorAll(".menu_content");
+
+  ruler1.classList.toggle("add_rules1");
+  ruler2.classList.toggle("add_rules2");
+
+  menu_content.forEach(function (element) {
+    if (menu_open) {
+      menu_open = false;
+      element.style.transform = "translateX(0)";
+    } else {
+      if (window.innerWidth >= 400) {
+        element.style.transform = "translateX(-400px)";
+      } else {
+        element.style.transform = `translateX(-${window_width}px)`;
+      }
+      menu_open = true;
+    }
+  });
+});
+
+// Ngăn chặn sự kiện click của menu_content lan ra menu
+document.querySelectorAll(".menu_content").forEach(function (content) {
+  content.addEventListener("click", function (event) {
+    event.stopPropagation();
+  });
+});
+
+// Xử lý sự kiện cho các thẻ input type="color" và các thẻ khác
+const parentElement = document.getElementById("text_color");
+const childElements = parentElement.querySelectorAll("*");
+childElements.forEach((child) => {
+  if (child.tagName.toLowerCase() === "input" && child.type === "color") {
+    // Lắng nghe sự kiện 'input' cho thẻ input type="color"
+    child.addEventListener("input", function (event) {
+      const color = child.value;
+      document.documentElement.style.setProperty("--color_text_h", color);
+      create_data_setting(color, "", "");
+    });
+  } else {
+    // Lắng nghe sự kiện 'click' cho các thẻ khác
+    child.addEventListener("click", function (event) {
+      const color = child.getAttribute("value");
+      document.documentElement.style.setProperty("--color_text_h", color);
+      create_data_setting(color, "", "");
+    });
+  }
+});
+
+let nen_background = false;
+const button_background = document.getElementById("button_mode_dark");
+button_background.addEventListener("click", function () {
+  const children = button_background.children;
+  Array.from(children).forEach((child) => {
+    child.classList.toggle("add_button_gat");
+  });
+  let darkTheme = {
+    "--color_text_p": "#d0d0d0",
+    "--color_backgroud": "rgb(50, 50, 50)",
+    "--color_backgroud2": "rgb(200, 200, 200)",
+    "--color_hover": "rgb(100, 100, 100)",
+  };
+  let lightTheme = {
+    "--color_text_p": "rgb(10, 10, 10)",
+    "--color_backgroud": "#ccc",
+    "--color_backgroud2": "rgb(50, 50, 50)",
+    "--color_hover": "rgb(100, 100, 100)",
+  };
+  const theme = nen_background ? lightTheme : darkTheme;
+  for (const [property, value] of Object.entries(theme)) {
+    document.documentElement.style.setProperty(property, value);
+  }
+  create_data_setting("", "aaa", "");
+  nen_background = !nen_background;
+});
+
+let on_mouse = true;
+const button_mouse = document.getElementById("button_off_mouse");
+button_mouse.addEventListener("click", function () {
+  const children = button_mouse.children;
+  Array.from(children).forEach((child) => {
+    child.classList.toggle("add_button_gat");
+  });
+  const draggable = document.querySelector("#draggable");
+  if (on_mouse) {
+    draggable.style.display = "none";
+  } else {
+    draggable.style.display = "block";
+  }
+  create_data_setting("", "", "aaa");
+  on_mouse = !on_mouse;
+});
+
+function create_data_setting(colorsss, backgroundsss, mousesss) {
+  var retrievedDataSetting = {};
+  if (colorsss == "" && backgroundsss == "" && mousesss == "") {
+    var defaultSettings = {
+      color_st: "#007bff",
+      background_st: false,
+      mouse_st: true,
+    };
+    retrievedDataSetting =
+      JSON.parse(localStorage.getItem("data_setting")) || defaultSettings;
+    document.documentElement.style.setProperty(
+      "--color_text_h",
+      retrievedDataSetting.color_st
+    );
+    if (retrievedDataSetting.background_st) {
+      button_background.click();
+    }
+    if (!retrievedDataSetting.mouse_st) {
+      button_mouse.click();
+    }
+  } else {
+    retrievedDataSetting = JSON.parse(localStorage.getItem("data_setting"));
+    if (colorsss != "") {
+      retrievedDataSetting.color_st = colorsss;
+    } else if (backgroundsss != "") {
+      retrievedDataSetting.background_st = !retrievedDataSetting.background_st;
+    } else if (mousesss != "") {
+      retrievedDataSetting.mouse_st = !retrievedDataSetting.mouse_st;
+    }
+  }
+  localStorage.setItem("data_setting", JSON.stringify(retrievedDataSetting));
+}
+
+create_data_setting("", "", "");
+
+function edit_title() {
+  var retrievedDataTitle = JSON.parse(localStorage.getItem("data"));
+  document.getElementById("menu").click();
+  document.getElementById("class_box2_edit_title").style.display = "block";
+  create_title_icon("All");
+
+  document.getElementById("Close_Title").onclick = function () {
+    document.getElementById("class_box2_edit_title").style.display = "none";
+  };
+  var children_title = document.getElementById("list_title").children;
+  document.getElementById("Edit_Title").onclick = function () {
+    children_title = document.getElementById("list_title").children;
+    let new_title = [];
+    for (let i = 0; i < children_title.length; i++) {
+      new_title.push(children_title[i].getAttribute("for"));
+    }
+    console.log(new_title);
+    retrievedDataTitle.titlesss = new_title;
+    localStorage.setItem("data", JSON.stringify(retrievedDataTitle));
+    document.getElementById("class_box2_edit_title").style.display = "none";
+    thong_bao_chung("Lưu title thành công");
+    console_data();
+    create_option();
+    title_pick("All");
+  };
+
+  document.getElementById("Reset_Title").onclick = function () {
+    create_title_icon("Reset");
+  };
+}
+
+function create_password() {
+  //
+}
+
+const button_link_an = document.getElementById("button_link_an");
+button_link_an.addEventListener("click", function () {
+  const children = button_link_an.children;
+  Array.from(children).forEach((child) => {
+    child.classList.toggle("add_button_gat");
+  });
+  if (ZZ_on) {
+    create_option(false);
+  } else {
+    create_option(true);
+  }
+});
+
+const targetValues = ["ZZ", "File", "Anime"];
+function create_title_icon(All, new_title) {
+  if (All === "All") {
+    document.getElementById("list_title").innerHTML = "";
+    new_title = title;
+  } else if (All == "Reset") {
+    document.getElementById("list_title").innerHTML = "";
+    new_title = title_mac_dinh;
+  } else {
+    new_title = [new_title];
+  }
+  for (var i = 0; i < new_title.length; i++) {
+    const newTitleDiv = document.createElement("div");
+    newTitleDiv.className = "title_icon";
+    newTitleDiv.setAttribute("for", new_title[i]);
+
+    const div_content = document.createElement("div");
+    if (new_title[i] == "ZZ") {
+      div_content.innerHTML = "link ẩn";
+    } else {
+      div_content.innerHTML = new_title[i];
+    }
+
+    // Tạo nút Lên
+    const upButton = document.createElement("button");
+    upButton.innerHTML = "<i class='fa-solid fa-down-long fa-rotate-180'></i>";
+    upButton.addEventListener("click", function () {
+      const prevSibling = newTitleDiv.previousElementSibling;
+      if (prevSibling) {
+        newTitleDiv.parentNode.insertBefore(newTitleDiv, prevSibling);
+      }
+    });
+
+    // Tạo nút Xuống
+    const downButton = document.createElement("button");
+    downButton.innerHTML = "<i class='fa-solid fa-down-long'></i>";
+    downButton.addEventListener("click", function () {
+      const nextSibling = newTitleDiv.nextElementSibling;
+      if (nextSibling) {
+        newTitleDiv.parentNode.insertBefore(nextSibling, newTitleDiv);
+      }
+    });
+
+    // Tạo nút Xóa
+    const deleteButton = document.createElement("button");
+    if (targetValues.includes(new_title[i])) {
+      deleteButton.innerHTML = "<i class='fa-solid fa-ban'></i>";
+      deleteButton.style.cursor = "auto";
+      deleteButton.addEventListener("click", function () {
+        thong_bao_chung("Không thể xóa title mặc định");
+      });
+    } else {
+      deleteButton.innerHTML = "<i class='fa-solid fa-trash'></i>";
+      deleteButton.addEventListener("click", function () {
+        newTitleDiv.remove();
+      });
+    }
+
+    newTitleDiv.appendChild(div_content);
+    newTitleDiv.appendChild(upButton);
+    newTitleDiv.appendChild(downButton);
+    newTitleDiv.appendChild(deleteButton);
+    document.getElementById("list_title").appendChild(newTitleDiv);
+  }
+}
+
+document.getElementById("add_title").addEventListener("click", function () {
+  // Khởi tạo lại mảng title mỗi khi nhấp nút Add
+  let title = [];
+  const title_icon = document.querySelectorAll(".title_icon");
+
+  // Lấy tất cả các tiêu đề hiện có
+  title_icon.forEach(function (a) {
+    title.push(a.getAttribute("for").toLowerCase()); // Chuyển đổi thành chữ thường
+  });
+
+  const titleInput = document.getElementById("title_input");
+  const newTitle = titleInput.value.trim();
+  const newTitle2 = titleInput.value.trim().toLowerCase();
+
+  const regexSpecialChars = /["']/;
+  const regexStartsWithSpecial =
+    /^[!@#\$%\^&\*\(\)_\+\-=\[\]\{\};':"\\|,.>\/?~`]/;
+  const regexBrTags = /<br\s*\/?>/i;
+
+  if (
+    newTitle !== "" &&
+    title.indexOf(newTitle2) === -1 &&
+    !regexSpecialChars.test(newTitle) &&
+    !regexStartsWithSpecial.test(newTitle) &&
+    !regexBrTags.test(newTitle)
+  ) {
+    create_title_icon("", newTitle);
+  } else {
+    if (regexSpecialChars.test(newTitle)) {
+      thong_bao_chung("title không thể chứa kí tự ngoặc đơn và kép ");
+    }
+    if (regexStartsWithSpecial.test(newTitle)) {
+      thong_bao_chung("title không thể bắt đầu bằng kí tự đặt biệt");
+    }
+    if (regexBrTags.test(newTitle)) {
+      thong_bao_chung("title không thể có thẻ <br> và <br/>");
+    }
+    if (newTitle === "") {
+      thong_bao_chung("Vui lòng đặt tên title");
+    }
+    if (title.indexOf(newTitle2) !== -1) {
+      thong_bao_chung("Đã có title");
+    }
+  }
+  titleInput.value = "";
+});
+!(function () {})();
