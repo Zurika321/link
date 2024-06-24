@@ -13,15 +13,14 @@
   </head>
   <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <div id="draggable" class="draggable"></div>
-    <button class="button">Go link</button>
     <header>
+      <div id="draggable" class="draggable"></div>
+      <button class="button">Go link</button>
       <select
         id="select"
         onchange="title_pick(this.value)"
-        class="select_t"
       ></select>
-      <input type="file" id="input-excel" class="pick_excel" />
+      <input type="file" id="input-excel"/>
       <form id="searchForm">
         <input
           type="search"
@@ -30,10 +29,131 @@
           placeholder="Tìm kiếm"
           autocomplete="off"
         />
-        <button type="submit" id="btn_tim" class="btn_tim">
-          <i class="fa-solid fa-arrow-rotate-right" style="color: #000000"></i>
+        <button type="submit" id="btn_tim">
+          <i class="fa-solid fa-arrow-rotate-right"></i>
         </button>
       </form>
+      <div id="menu">
+        <div class="ruler1"></div>
+        <div class="ruler2"></div>
+        <div class="menu_content">
+          <div class="setting">
+            <h3>Cài đặt</h3>
+            <table id="table" border="0">
+              <tr>
+                <td>Màu sắc:</td>
+                <td>
+                  <div id="text_color" style="grid-area: div; margin: 0">
+                    <label value="red" style="--color: red"></label>
+                    <label value="orange" style="--color: orange"></label>
+                    <label value="yellow" style="--color: yellow"></label>
+                    <label value="green" style="--color: green"></label>
+                    <label value="aqua" style="--color: aqua"></label>
+                    <label value="#007bff" style="--color: #007bff"></label>
+                    <label value="violet" style="--color: violet"></label>
+                    <input type="color" />
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Chế độ tối:</td>
+                <td>
+                  <div id="button_mode_dark">
+                    <div class="nut_gat"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tắt chuột ảo</td>
+                <td>
+                  <div id="button_off_mouse">
+                    <div class="nut_gat"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Link ẩn</td>
+                <td>
+                  <div id="button_link_an">
+                    <div class="nut_gat"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Mật khẩu:</td>
+                <td>
+                  <button onclick="create_password()" id="doi_mat_khau">
+                      Đặt mật khẩu
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Sửa Title:</td>
+                <td>
+                  <button onclick="edit_title()" id="tuy_chinh_title">
+                    Chỉnh
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Lưu link vào Excel:</td>
+                <td><button id="add-link2">Lưu</button></td>
+              </tr>
+            </table>
+          </div>
+          <div class="huong_dan">
+            <h3>Hướng dẫn</h3>
+            <ol>
+              <li>Thêm dữ liệu bằng file Excel.</li>
+              <li>Sử dụng tính năng thông báo anime ra tập mới</li>
+            </ol>
+          </div>
+          <div class="site-footer">
+            <div class="container">
+              <div class="col-md-6 col-sm-12">
+                <h3>Về Trang Web</h3>
+                <p>
+                  Chào mừng bạn đến với trang web của tôi (Zurika321),
+                  <i> nơi lưu trữ và quản lý các liên kết theo trình duyệt</i>.
+                  Tôi cam kết mang đến trải nghiệm lưu trữ và tìm kiếm những
+                  đường link nhanh chóng, dễ dàng và hiệu quả.
+                </p>
+              </div>
+              <div class="col-md-3 col-sm-6">
+                <h3>Liên Kết Nhanh</h3>
+                <ul class="footer-links">
+                  <li><a href="#">Thêm đóng góp ý kiến</a></li>
+                  <li><a href="#">Liên hệ Facebook</a></li>
+                  <li><a href="#">Hỗ trợ</a></li>
+                </ul>
+              </div>
+              <div class="col-md-3 col-sm-6">
+                <h3>Liên Hệ</h3>
+                <p><i class="fa fa-map-marker"></i>Địa chỉ: Quận 12</p>
+                <p><i class="fa fa-phone"></i> Số điện thoại: ##########</p>
+                <p>
+                  <i class="fa fa-envelope"></i> Email: conan17032004@gmail.com
+                </p>
+              </div>
+              <hr />
+            </div>
+            <div class="container-fluid">
+              <div class="text-center">
+                <p>
+                  &copy; 2024 Bản quyền đã được đăng ký.
+                  <br />
+                  Thiết kế bởi
+                  <a
+                    href="https://github.com/Zurika321?tab=repositories"
+                    target="_blank"
+                    >Zurika321 Studio</a
+                  >
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </header>
     <main id="div_main">
       <fieldset>
@@ -43,8 +163,6 @@
     </main>
     <footer>
       <p id="whaticon" class="what-icon">Title<br />Note 1<br />Note 2</p>
-      <button id="scroll_up" class="scroll_up">Up</button>
-      <button id="scroll_down" class="scroll_down">Down</button>
     </footer>
     <div id="box_2">
       <div class="box2">
@@ -52,14 +170,16 @@
           <li>Chỉnh Sửa</li>
           <li>
             Đánh dấu
-            <label id="danhdau" style="color: rgba(255, 255, 255, 0)"
-              ><i class="fa-solid fa-check"></i
+            <label id="danhdau"
+              ><i class="fa-solid fa-check" style="color: var(--color_backgroud2)"></i
             ></label>
           </li>
           <li>Copy link</li>
           <li>Mở cửa sổ mới</li>
           <hr />
-          <li>Xóa</li>
+          <li>
+            <label style="margin-right: 10px;"><i class='fa-solid fa-trash'></i></label>Xóa
+          </li>
         </ul>
       </div>
     </div>
@@ -86,15 +206,40 @@
           placeholder="note 2"
         />
       </div>
-      <button id="cancel_edit">Hủy</button>
+      <button id="cancel_edit">Đóng</button>
       <button id="save_edit">Lưu</button>
+    </div>
+
+    <div id="class_box2_edit_title" style="display: none">
+      <h3>Chỉnh Sửa Title</h3>
+      <div class="div_add_title">
+        <input type="text" placeholder="New Title" autocomplete="off" id="title_input"/>
+        <button id="add_title">Add</button>
+      </div class="div_add_title">
+      <div id="list_title">
+      </div>
+      <button id="Close_Title">Đóng</button>
+      <button id="Edit_Title">Lưu</button>
+      <button id="Reset_Title">Cài lại</button>
     </div>
 
     <div id="class_box2_remove" style="display: none">
       <h3>Bạn có chắc muốn xóa:</h3>
       <p id="noteToDelete"></p>
-      <button id="confirmYes">Yes</button>
-      <button id="confirmNo">No</button>
+      <button id="confirmYes">Đồng ý</button>
+      <button id="confirmNo">Đóng</button>
+    </div>
+    <div id="class_box2_edit_backgroud" style="display: none">
+      <h3>Chỉnh sửa chế độ <label id="background_mode">Sáng</label></h3>
+      <select
+      id="select"
+      onchange="title_pick(this.value)"
+    >
+        <option value="Sáng">Chế độ sáng</option>
+        <option value="Tối">Chế độ tối</option>
+      </select>
+      <button id="Close_edit_backgroud">Đóng</button>
+      <button id="Set_edit_backgroud">Lưu</button>
     </div>
 
     <div id="box_" style="display: none">
@@ -106,10 +251,8 @@
           id="link_input"
           placeholder="Link"
           autocomplete="off"
-          style="width: 150px"
+          style="width: 208px"
         />
-        <input type="file" id="input-excel2" />
-
         <input
           type="text"
           id="note1_input"
@@ -132,19 +275,16 @@
             margin: 10px 3px;
           "
         >
-          <button id="close" class="btn" style="border: none">Close</button>
+          <button id="close" class="btn" style="border: none">Đóng</button>
           <button id="add-link" class="btn" style="background-color: yellow">
-            Add Key
-          </button>
-          <button id="add-link2" class="btn" style="background-color: green">
-            Add Excel
+            Thêm Link
           </button>
         </div>
       </div>
     </div>
+  </body>
     <script>
       // localStorage.removeItem("data");
     </script>
     <script src="script.js"></script>
-  </body>
 </html>
