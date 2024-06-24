@@ -177,7 +177,7 @@
           <li>
             Đánh dấu
             <label id="danhdau"
-              ><i class="fa-solid fa-check" style="color: var(--color_backgroud2)"></i
+              ><i class="fa-solid fa-check"></i
             ></label>
           </li>
           <li>Copy link</li>
@@ -231,21 +231,8 @@
 
     <div id="class_box2_remove" style="display: none">
       <h3>Bạn có chắc muốn xóa:</h3>
-      <p id="noteToDelete"></p>
+      <p id="noteToDelete"></p><button id="confirmNo">Đóng</button>
       <button id="confirmYes">Đồng ý</button>
-      <button id="confirmNo">Đóng</button>
-    </div>
-    <div id="class_box2_edit_backgroud" style="display: none">
-      <h3>Chỉnh sửa chế độ <label id="background_mode">Sáng</label></h3>
-      <select
-      id="select"
-      onchange="title_pick(this.value)"
-    >
-        <option value="Sáng">Chế độ sáng</option>
-        <option value="Tối">Chế độ tối</option>
-      </select>
-      <button id="Close_edit_backgroud">Đóng</button>
-      <button id="Set_edit_backgroud">Lưu</button>
     </div>
 
     <div id="box_" style="display: none">
@@ -281,8 +268,8 @@
             margin: 10px 3px;
           "
         >
-          <button id="close" class="btn" style="border: none">Đóng</button>
-          <button id="add-link" class="btn" style="background-color: yellow">
+          <button id="close" class="btn">Đóng</button>
+          <button id="add-link" class="btn">
             Thêm Link
           </button>
         </div>
