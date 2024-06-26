@@ -1,25 +1,49 @@
 * {
   border-radius: 5px;
   transition: color 0.1s ease, background-color 1s ease;
+  font-family: Futura;
 }
-#favicon1 {
-  width: 70px;
-  height: 70px;
+.logo {
   position: absolute;
   z-index: 50;
-  left: 10px;
-  top: 4px;
-  filter: contrast(200%) brightness(110%);
+  left: 5px;
+  top: 5px;
+  display: flex;
+  align-items: end;
+  height: 70px;
+  color: var(--color_backgroud2);
+  font-family: Lobster;
 }
-#favicon2 {
+.favicon {
   width: 70px;
   height: 70px;
-  position: absolute;
-  z-index: 100;
-  left: 20px;
-  top: 5px;
   filter: contrast(200%) brightness(110%);
+  animation-name: shake;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
+/* Định nghĩa keyframes cho animation */
+@keyframes shake {
+  0% {
+    transform: rotateZ(-5deg);
+  }
+  100% {
+    transform: rotateZ(5deg);
+  }
+}
+
+/* Xóa animation khi không hover */
+.favicon:hover {
+  animation-play-state: paused;
+}
+@media screen and (max-width: 600px) {
+  #h1_logo {
+    display: none;
+  }
+}
+
 #add-link {
   color: var(--color_text_p);
   border: 1px solid var(--color_text_h);
@@ -66,40 +90,27 @@
 }
 #btn_tim {
   background-color: var(--color_backgroud);
-  border: 2px solid var(--color_text_h);
+  border: 3px solid var(--color_text_h);
   color: var(--color_text_p);
-  border-left: none;
-  border-radius: 0 10px 10px 0;
-  height: 24.5px;
-  left: 50%;
-  margin-left: -5px;
-  padding-left: 12px;
-  padding-right: 13px;
-  position: absolute;
-  transform: translateX(85px) translateY(15px);
+  border-radius: 10px;
+  height: 26px;
+  padding-right: 9px;
+  padding-left: 9px;
   cursor: pointer;
+  transform: translateX(-17px);
+  transition: border-radius 0.5s ease;
 }
-#btn_tim:focus > i,
-#btn_tim:hover > i {
-  color: var(--color_hover);
-  animation: xoay 1s infinite;
-}
-@keyframes xoay {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+#btn_tim > i {
+  transform: translateY(5px);
 }
 #class_box2_edit {
   background-color: var(--color_backgroud);
   display: flex;
-  height: 150px;
+  height: 210px;
   left: calc(50% - 175px);
   position: fixed;
   text-align: left;
-  top: calc(50% - 75px);
+  top: calc(50% - 105px);
   width: 350px;
   z-index: 500;
 }
@@ -122,6 +133,67 @@
 }
 #class_box2_edit > h3 {
   margin-top: 10px;
+}
+#class_box2_password {
+  background-color: var(--color_backgroud);
+  height: 170px;
+  left: calc(50% - 150px);
+  position: fixed;
+  text-align: left;
+  top: calc(50% - 75px);
+  width: 300px;
+  z-index: 500;
+}
+#class_box2_password > button {
+  background-color: var(--color_backgroud);
+  color: var(--color_text_p);
+  border: 1px solid var(--color_text_h);
+  bottom: 15px;
+  height: 20px;
+  margin-left: 15px;
+  position: absolute;
+  width: 100px;
+  cursor: pointer;
+}
+#class_box2_password > button:nth-child(2n) {
+  background-color: rgba(0, 0, 0, 0);
+  color: var(--color_text_h);
+  border-color: var(--color_text_p);
+  right: 15px;
+}
+.password_box {
+  position: relative;
+  display: block;
+  margin: -10px 15px 25px 15px;
+  width: auto;
+  color: var(--color_text_p);
+}
+.password_box input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 5px;
+  border-radius: 4px;
+}
+.password_box label {
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  font-size: 16px;
+}
+.password_box input:focus + label,
+.password_box input:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 10px;
+  font-size: 12px;
+  border: 1px solid var(--color_text_h);
+  background-color: var(--color_backgroud);
+  padding: 0 5px;
+}
+.password_box input:focus {
+  outline: none;
+  border: 1px solid #007bff;
 }
 #class_box2_remove {
   background-color: var(--color_backgroud);
@@ -184,21 +256,22 @@
   display: block;
   margin: auto;
   width: 250px;
-  height: 20px;
+  height: 30px;
   margin-top: -10px;
 }
 #class_box2_edit_title > .div_add_title > input {
-  width: 195px;
+  width: 200px;
 }
 #class_box2_edit_title > .div_add_title > button {
   background-color: var(--color_backgroud);
   border-color: var(--color_text_h);
   color: var(--color_text_p);
   cursor: pointer;
+  height: 30px;
 }
 #list_title {
   width: 250px;
-  height: 170px;
+  height: 160px;
   background-color: var(--color_backgroud2);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -270,42 +343,44 @@
   overflow-x: hidden;
   overflow-y: hidden;
   padding: 0 10px 10px 10px;
+  box-sizing: content-box;
 }
 #edit_input {
   display: grid;
   grid-gap: 5px;
+  grid-row-gap: 14px;
   grid-template-areas:
     "select link link link"
     "note1 note1 note1 note1"
     "note2 note2 note2 note2";
   margin: auto;
-  margin-top: -15px;
+  margin-top: -5px;
   width: 320px;
+  margin-left: 15px;
 }
 #input-excel {
-  border-radius: 10px;
-  height: 23px;
-  left: 50%;
-  padding: 0%;
-  position: absolute;
   border: 1px solid var(--color_text_h);
-  transform: translateX(-120px) translateY(10px);
-  width: 150px;
-  z-index: 100;
+  width: 120px;
+  height: 20px;
+  border-radius: 10px;
+  margin: 0px;
+  padding: 0;
 }
 #input-excel::before {
-  content: "Thêm dữ liệu file Excel";
-  height: 23px;
-  left: 0px;
-  padding: 0%;
+  content: "File Excel";
+  font-weight: bold;
+  border: 1px solid var(--color_text_h);
+  width: 120px;
+  height: 20px;
+  border-radius: 10px;
   position: absolute;
-  width: 100%;
-  background-color: var(--color_backgroud);
-  color: var(--color_text_p);
+  background-color: var(--color_backgroud2);
+  color: var(--color_text_h);
   transition: background-color 1s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 #menu {
   background-color: var(--color_backgroud);
@@ -327,14 +402,15 @@
   transition: background-color 1s;
 }
 #mySelect {
+  grid-area: mySelect;
   background-color: var(--color_backgroud);
   border-radius: 10px;
   font-weight: bold;
-  height: 20px;
-  width: 80px;
+  height: 30px;
   color: var(--color_text_p);
   border-color: var(--color_text_h);
   cursor: pointer;
+  margin-right: 5px;
 }
 #noteToDelete {
   border: 1px solid var(--color_text_h);
@@ -348,46 +424,36 @@
   color: var(--color_text_p);
 }
 #searchForm {
-  align-items: center;
-  background-color: var(--color_backgroud);
   display: flex;
-  height: 80px;
   justify-content: center;
-  left: 0;
-  position: sticky;
-  right: 0;
-  top: 0;
+  align-items: center;
+  width: 100px;
+  height: 80px;
   z-index: 10;
 }
 #searchInput {
   border: 2px solid var(--color_text_h);
   border-radius: 10px 0 0 10px;
+  border-right-width: 0;
   caret-color: var(--color_text_p);
   color: var(--color_text_p);
-  font-weight: bold;
-  height: 24.5px;
-  left: 50%;
-  margin-right: 0;
-  padding-left: 10px;
-  position: absolute;
-  transform: translateX(-120px) translateY(15px);
-  width: 200px;
+  height: 30px;
+  width: 17px;
+  margin: auto;
   z-index: 100;
+  background-color: var(--color_backgroud);
+  transition: width 1s ease;
 }
 #select {
   background-color: var(--color_backgroud);
   border-radius: 10px;
   font-weight: bold;
   height: 25px;
-  left: 50%;
-  position: absolute;
   border-color: var(--color_text_h);
-  transform: translateX(37px) translateY(10px);
   width: 83px;
+  color: var(--color_text_p);
   z-index: 200;
-  color: var(--color_text_p);
-  cursor: pointer;
-  color: var(--color_text_p);
+  margin-right: 5px;
 }
 #select_edit {
   color: var(--color_text_p);
@@ -553,8 +619,6 @@
 .box {
   background-color: var(--color_backgroud);
   height: auto;
-  padding: 0 15px;
-  text-align: left;
   width: 300px;
 }
 .box2 {
@@ -659,6 +723,7 @@
   text-align: center;
   transition: border 1s ease;
   width: 48px;
+  box-sizing: content-box;
 }
 .div_link:hover {
   border: 2px solid rgba(255, 255, 255, 0);
@@ -942,7 +1007,6 @@ fieldset {
   border-radius: 10px;
   margin: 0 10px;
   padding: 0%;
-  width: calc(100%-40px);
 }
 footer {
   background-color: var(--color_backgroud);
@@ -962,6 +1026,9 @@ header {
   height: 80px;
   position: relative;
   z-index: 500;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 hr {
   margin: 5px;
@@ -983,12 +1050,14 @@ legend {
   color: var(--color_backgroud);
   font-size: 20px;
   font-weight: bold;
-  padding: -10px 10px;
   position: relative;
   text-align: center;
-  transform: translateY(2.5px);
-  width: 100px;
+  width: 200px;
 }
 button {
   font-weight: bold;
+  transition: transform 0.5s;
+}
+button:hover {
+  transform: scale(0.9); /* Thu nhỏ lại còn 95% */
 }
