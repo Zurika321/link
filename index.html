@@ -9,6 +9,7 @@
     <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="theme-color" content="#ffffff">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
@@ -20,29 +21,39 @@
     <header>
       <div id="draggable" class="draggable"></div>
       <button class="button">Go link</button>
-      <select
+      <div class="logo">
+        <img src="zurika.png" class="favicon" onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',5)">
+        <h1 style="margin: 0" id="h1_logo">Zurika</h1>
+      </div>
+      <div id="searchForm">
+        <select
         id="select"
         onchange="title_pick(this.value)"
       ></select>
-      <input type="file" id="input-excel"/>
-      <form id="searchForm">
-      <img src="zurika.png" id="favicon1" onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',5)">
-        <input
-          type="search"
-          id="searchInput"
-          class="searchInput"
-          placeholder="Tìm kiếm"
-          autocomplete="off"
-        />
-        <button type="submit" id="btn_tim">
-          <i class="fa-solid fa-arrow-rotate-right"></i>
-        </button>
-      </form>
+        <div class="password_box" style="margin: 0;">
+          <input
+            type="search"
+            id="searchInput"
+            class="searchInput"
+            placeholder=" "
+            autocomplete="off"
+          />
+          <label for="Tìm kiếm" id="label_search" style="display: none;">Tìm kiếm</label>
+        </div>
+        <div type="submit" id="btn_tim" onclick="document.getElementById('searchInput').click();
+          document.getElementById('searchInput').focus()
+        ">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+      </div>
       <div id="menu">
         <div class="ruler1"></div>
         <div class="ruler2"></div>
         <div class="menu_content">
-          <img src="zurika.png" id="favicon2" onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',5)">
+          <div class="logo">
+            <img src="zurika.png" class="favicon" onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',5)">
+            <h1 style="margin: 0">Zurika</h1>
+          </div>
           <div class="setting">
             <h3>Cài đặt</h3>
             <table id="table" border="0">
@@ -70,7 +81,7 @@
                 </td>
               </tr>
               <tr>
-                <td>Tắt chuột ảo</td>
+                <td>Tắt chuột ảo:</td>
                 <td>
                   <div id="button_off_mouse">
                     <div class="nut_gat"></div>
@@ -78,7 +89,7 @@
                 </td>
               </tr>
               <tr>
-                <td>Link ẩn</td>
+                <td>Link ẩn:</td>
                 <td>
                   <div id="button_link_an">
                     <div class="nut_gat"></div>
@@ -101,9 +112,15 @@
                   </button>
                 </td>
               </tr>
+              <tr style="max-height: 10px;">
+                <td>Thêm dữ liệu:</td>
+                <td>
+                  <button style="padding: 0;background-color: var(--color_background);border: none;"><input type="file" id="input-excel"/></button>
+                </td>
+              </tr>
               <tr>
-                <td>Lưu link vào Excel:</td>
-                <td><button id="add-link2">Lưu</button></td>
+                <td>Lưu dữ liệu:</td>
+                <td><button id="add-link2">File Excel</button></td>
               </tr>
             </table>
           </div>
@@ -193,33 +210,39 @@
       <h3>Chỉnh Sửa</h3>
       <div id="edit_input">
         <select id="select_edit" style="grid-area: select"></select>
-        <input
-          id="link_edit"
-          style="grid-area: link"
-          autocomplete="off"
-          placeholder="link"
-        />
-        <input
-          id="note1_edit"
-          style="grid-area: note1"
-          autocomplete="off"
-          placeholder="note 1"
-        />
-        <input
-          id="note2_edit"
-          style="grid-area: note2"
-          autocomplete="off"
-          placeholder="note 2"
-        />
-      </div>
+        <div class="password_box" style="grid-area: link;width: auto;height: 30px;margin: 0;">
+          <input
+            id="link_edit"
+            autocomplete="off"
+            placeholder=" "
+          />
+          <label for="link">link</label>
+        </div>
+        <div class="password_box"style="grid-area: note1 ;margin: 0">
+          <input
+            id="note1_edit"
+            autocomplete="off"
+            placeholder=" "
+          />
+          <label for="note 1">note 1</label>
+        </div>
+        <div class="password_box"style="grid-area: note2 ;margin: 0">
+          <input
+            id="note2_edit"
+            autocomplete="off"
+            placeholder=" "
+          />
+          <label for="note 2">note 2</label>
+      </div></div>
       <button id="cancel_edit">Đóng</button>
       <button id="save_edit">Lưu</button>
     </div>
 
     <div id="class_box2_edit_title" style="display: none">
       <h3>Chỉnh Sửa Title</h3>
-      <div class="div_add_title">
-        <input type="text" placeholder="New Title" autocomplete="off" id="title_input"/>
+      <div class="div_add_title password_box">
+        <input type="text" placeholder=" " autocomplete="off" id="title_input"/>
+        <label for="New Title">New Title</label>
         <button id="add_title">Add</button>
       </div class="div_add_title">
       <div id="list_title">
@@ -235,37 +258,64 @@
       <button id="confirmYes">Đồng ý</button>
     </div>
 
+    <div id="class_box2_password" style="display: none">
+      <h3>Mật khẩu</h3>
+      <div class="password_box">
+        <input type="password" id="pass" placeholder=" " autocomplete="off">
+        <label for="pass">Password</label>
+      </div>
+      
+      <div class="password_box">
+        <input type="password" id="confirm_pass" placeholder=" " autocomplete="off">
+        <label for="confirm_pass">Confirm Password</label>
+      </div>
+      <button id="Save_pass">Lưu</button>
+      <button id="Close_pass">Đóng</button>
+    </div>
+
     <div id="box_" style="display: none">
       <div class="box">
         <h3>Thêm icon mới</h3>
-        <select id="mySelect" change="this.value"></select>
-        <input
-          type="text"
-          id="link_input"
-          placeholder="Link"
-          autocomplete="off"
-          style="width: 208px"
-        />
-        <input
-          type="text"
-          id="note1_input"
-          class="note"
-          placeholder="Note 1"
-          autocomplete="off"
-        />
+        <div style="display: grid;grid-template-areas: 'mySelect input_link input_link input_link';" class="password_box">
+          <select id="mySelect" change="this.value"></select>
+          <input
+            type="text"
+            id="link_input"
+            placeholder=" "
+            autocomplete="off"
+            style="grid-area: input_link;"
+          />
+          <label for="Link" style="left: 90px;">Link</label>
+        </div>
+        
+        <div class="password_box">
+            <input
+            type="text"
+            id="note1_input"
+            class="note"
+            placeholder=" "
+            autocomplete="off"
+            style="margin-top: -5px;"
+          />
+          <label for="Note 1" style="transform: translateY(-3px);">Note 1</label>
+        </div>
+        <div class="password_box" style="margin-bottom: 0;">
         <input
           type="text"
           id="note2_input"
           class="note"
-          placeholder="Note 2"
+          placeholder=" "
           autocomplete="off"
+          style="margin-top: -5px;"
         />
+        <label for="Note 2" style="transform: translateY(-3px);">Note 2</label>
+      </div>
         <div
           style="
             display: flex;
             justify-content: space-between;
-            width: calc(100%-30px);
-            margin: 10px 3px;
+            width: auto;
+            margin: 10px 15px;
           "
         >
           <button id="close" class="btn">Đóng</button>
