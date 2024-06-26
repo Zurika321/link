@@ -712,32 +712,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
   document.addEventListener("mouseover", function (event) {
-    if (event.target.classList.contains("select_t")) {
-      whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Pick title</p>`;
-    } else if (event.target.classList.contains("pick_excel")) {
+    if (event.target.classList.contains("pick_excel")) {
       whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Pick file</p>`;
-    } else if (event.target.classList.contains("scroll_up")) {
-      whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Cuộn lên</p>`;
-    } else if (event.target.classList.contains("scroll_down")) {
-      whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Cuộn xuống</p>`;
     } else if (event.target.classList.contains("what-icon")) {
       whaticon.innerHTML = `Khung Name List`;
       document.getElementById("whaticon").style =
         "font-size: 20px;align-items: center;display: flex;justify-content: center;";
-    } else if (event.target.classList.contains("btn_tim")) {
-      whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Reload</p>`;
-    } else if (event.target.classList.contains("searchInput")) {
-      whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Search</p>`;
-    } else if (event.target.classList.contains("fa-solid")) {
-      whaticon.innerHTML = `<p style="font-size:30px;transform: translateY(-17.5px);">Reload</p>`;
     }
   });
   document.addEventListener("mouseout", function (event) {
     if (
       event.target.classList.contains("select_t") ||
       event.target.classList.contains("pick_excel") ||
-      event.target.classList.contains("scroll_up") ||
-      event.target.classList.contains("scroll_down") ||
       event.target.classList.contains("btn_tim") ||
       event.target.classList.contains("searchInput") ||
       event.target.closest(".what-icon")
@@ -966,13 +952,25 @@ document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("searchForm")
     .addEventListener("submit", function (event) {
-      event.preventDefault(); // Ngăn chặn reload trang
-      location.reload();
+      event.preventDefault();
+      // location.reload();
     });
+  searchInput.addEventListener("click", function () {
+    searchInput.style.width = 150 + "px";
+    setTimeout(() => {
+      document.getElementById("label_search").style.display = "block";
+    }, 300);
+    document.getElementById("btn_tim").style.borderRadius = "0 10px 10px 0";
+  });
   searchInput.addEventListener("input", function () {
     const searchValue = remove_space(searchInput.value.toLowerCase());
     const divScroll = document.getElementById("div_scroll");
     sortDivLinks(searchValue, divScroll);
+  });
+  searchInput.addEventListener("blur", function () {
+    searchInput.style.width = 17 + "px";
+    document.getElementById("label_search").style.display = "none";
+    document.getElementById("btn_tim").style.borderRadius = "10px";
   });
 
   function handleFile(e) {
@@ -1177,7 +1175,7 @@ function addLinkAndNoteToKey() {
 function setDivHeight() {
   let divScroll = document.getElementById("div_scroll");
   let windowHeight = window.innerHeight;
-  divScroll.style.height = windowHeight - 205 + "px";
+  divScroll.style.height = windowHeight - 206 + "px";
   window_width = window.innerWidth;
   const draggable = document.querySelector("#draggable");
   document.querySelectorAll(".button").forEach(function (button) {
@@ -1349,7 +1347,6 @@ function edit_title() {
     for (let i = 0; i < children_title.length; i++) {
       new_title.push(children_title[i].getAttribute("for"));
     }
-    console.log(new_title);
     retrievedDataTitle.titlesss = new_title;
     localStorage.setItem("data", JSON.stringify(retrievedDataTitle));
     document.getElementById("class_box2_edit_title").style.display = "none";
@@ -1458,15 +1455,17 @@ document.getElementById("add_title").addEventListener("click", function () {
   });
 
   const titleInput = document.getElementById("title_input");
-  const newTitle = titleInput.value.trim();
+  const newTitle = titleInput;
   const newTitle2 = titleInput.value.trim().toLowerCase();
+  const newTitle3 = removeTags(titleInput.value);
 
-  const regexSpecialChars = /["']/;
+  const regexSpecialChars = /["]/;
   const regexStartsWithSpecial =
     /^[!@#\$%\^&\*\(\)_\+\-=\[\]\{\};':"\\|,.>\/?~`]/;
   const regexBrTags = /<br\s*\/?>/i;
 
   if (
+    newTitle3.length < 11 &&
     newTitle !== "" &&
     title.indexOf(newTitle2) === -1 &&
     !regexSpecialChars.test(newTitle) &&
@@ -1474,21 +1473,20 @@ document.getElementById("add_title").addEventListener("click", function () {
     !regexBrTags.test(newTitle)
   ) {
     create_title_icon("", newTitle);
+    thong_bao_chung("Đã thêm title " + newTitle);
   } else {
     if (regexSpecialChars.test(newTitle)) {
-      thong_bao_chung("title không thể chứa kí tự ngoặc đơn và kép ");
-    }
-    if (regexStartsWithSpecial.test(newTitle)) {
+      thong_bao_chung("title không thể chứa kí tự ngoặc kép");
+    } else if (regexStartsWithSpecial.test(newTitle)) {
       thong_bao_chung("title không thể bắt đầu bằng kí tự đặt biệt");
-    }
-    if (regexBrTags.test(newTitle)) {
+    } else if (regexBrTags.test(newTitle)) {
       thong_bao_chung("title không thể có thẻ <br> và <br/>");
-    }
-    if (newTitle === "") {
+    } else if (newTitle === "") {
       thong_bao_chung("Vui lòng đặt tên title");
-    }
-    if (title.indexOf(newTitle2) !== -1) {
+    } else if (title.indexOf(newTitle2) !== -1) {
       thong_bao_chung("Đã có title");
+    } else if (newTitle3.length > 10) {
+      thong_bao_chung("Title không thể dài quá 10 ký tự");
     }
   }
   titleInput.value = "";
