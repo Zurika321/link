@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Link</title>
     <link rel="icon" href="zurika.jpg" type="image/jpg" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
-    <meta name="msapplication-TileColor" content="#da532c">
-    <meta name="theme-color" content="#ffffff">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
+    <meta name="msapplication-TileColor" content="#da532c" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
@@ -22,15 +22,16 @@
       <div id="draggable" class="draggable"></div>
       <button class="button">Go link</button>
       <div class="logo">
-        <img src="zurika.png" class="favicon" onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',5)">
+        <img
+          src="zurika.png"
+          class="favicon"
+          onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',3)"
+        />
         <h1 style="margin: 0" id="h1_logo">Zurika</h1>
       </div>
-      <div id="searchForm">
-        <select
-        id="select"
-        onchange="title_pick(this.value)"
-      ></select>
-        <div class="password_box" style="margin: 0;">
+      <form id="searchForm">
+        <select id="select"></select>
+        <div class="password_box" style="margin: 0">
           <input
             type="search"
             id="searchInput"
@@ -38,20 +39,30 @@
             placeholder=" "
             autocomplete="off"
           />
-          <label for="Tìm kiếm" id="label_search" style="display: none;">Tìm kiếm</label>
+          <label for="Tìm kiếm" id="label_search" style="display: none"
+            >Tìm kiếm</label
+          >
         </div>
-        <div type="submit" id="btn_tim" onclick="document.getElementById('searchInput').click();
+        <div
+          type="submit"
+          id="btn_tim"
+          onclick="document.getElementById('searchInput').click();
           document.getElementById('searchInput').focus()
-        ">
+        "
+        >
           <i class="fa-solid fa-magnifying-glass"></i>
         </div>
-      </div>
+      </form>
       <div id="menu">
         <div class="ruler1"></div>
         <div class="ruler2"></div>
         <div class="menu_content">
           <div class="logo">
-            <img src="zurika.png" class="favicon" onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',5)">
+            <img
+              src="zurika.png"
+              class="favicon"
+              onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',3)"
+            />
             <h1 style="margin: 0">Zurika</h1>
           </div>
           <div class="setting">
@@ -99,23 +110,27 @@
               <tr>
                 <td>Mật khẩu:</td>
                 <td>
-                  <button onclick="create_password()" id="doi_mat_khau">
-                      Đặt mật khẩu
-                  </button>
+                  <button id="doi_mat_khau">Đặt mật khẩu</button>
                 </td>
               </tr>
               <tr>
                 <td>Sửa Title:</td>
                 <td>
-                  <button onclick="edit_title()" id="tuy_chinh_title">
-                    Chỉnh
-                  </button>
+                  <button id="tuy_chinh_title">Chỉnh</button>
                 </td>
               </tr>
-              <tr style="max-height: 10px;">
+              <tr style="max-height: 10px">
                 <td>Thêm dữ liệu:</td>
                 <td>
-                  <button style="padding: 0;background-color: var(--color_background);border: none;"><input type="file" id="input-excel"/></button>
+                  <button
+                    style="
+                      padding: 0;
+                      background-color: var(--color_background);
+                      border: none;
+                    "
+                  >
+                    <input type="file" id="input-excel" />
+                  </button>
                 </td>
               </tr>
               <tr>
@@ -152,7 +167,7 @@
               </div>
               <div class="col-md-3 col-sm-6">
                 <h3>Liên Hệ</h3>
-                <p><i class="fa fa-map-marker"></i>Địa chỉ: Quận 12</p>
+                <p><i class="fa fa-map-marker"></i> Địa chỉ: Quận 12</p>
                 <p><i class="fa fa-phone"></i> Số điện thoại: ##########</p>
                 <p>
                   <i class="fa fa-envelope"></i> Email: conan17032004@gmail.com
@@ -193,15 +208,16 @@
           <li>Chỉnh Sửa</li>
           <li>
             Đánh dấu
-            <label id="danhdau"
-              ><i class="fa-solid fa-check"></i
-            ></label>
+            <label id="danhdau"><i class="fa-solid fa-check"></i></label>
           </li>
           <li>Copy link</li>
+          <li>Mở link</li>
           <li>Mở cửa sổ mới</li>
           <hr />
           <li>
-            <label style="margin-right: 10px;"><i class='fa-solid fa-trash'></i></label>Xóa
+            <label style="margin-right: 10px"
+              ><i class="fa-solid fa-trash"></i></label
+            >Xóa
           </li>
         </ul>
       </div>
@@ -210,43 +226,44 @@
       <h3>Chỉnh Sửa</h3>
       <div id="edit_input">
         <select id="select_edit" style="grid-area: select"></select>
-        <div class="password_box" style="grid-area: link;width: auto;height: 30px;margin: 0;">
-          <input
-            id="link_edit"
-            autocomplete="off"
-            placeholder=" "
-          />
+        <div
+          class="password_box"
+          style="grid-area: link; width: auto; height: 30px; margin: 0"
+        >
+          <input id="link_edit" autocomplete="off" placeholder=" " />
           <label for="link">link</label>
         </div>
-        <div class="password_box"style="grid-area: note1 ;margin: 0">
-          <input
-            id="note1_edit"
-            autocomplete="off"
-            placeholder=" "
-          />
+        <div class="password_box" style="grid-area: note1; margin: 0">
+          <input id="note1_edit" autocomplete="off" placeholder=" " />
           <label for="note 1">note 1</label>
         </div>
-        <div class="password_box"style="grid-area: note2 ;margin: 0">
-          <input
-            id="note2_edit"
-            autocomplete="off"
-            placeholder=" "
-          />
+        <div class="password_box" style="grid-area: note2; margin: 0">
+          <input id="note2_edit" autocomplete="off" placeholder=" " />
           <label for="note 2">note 2</label>
-      </div></div>
+        </div>
+      </div>
       <button id="cancel_edit">Đóng</button>
       <button id="save_edit">Lưu</button>
     </div>
 
     <div id="class_box2_edit_title" style="display: none">
       <h3>Chỉnh Sửa Title</h3>
-      <div class="div_add_title password_box">
-        <input type="text" placeholder=" " autocomplete="off" id="title_input"/>
-        <label for="New Title">New Title</label>
-        <button id="add_title">Add</button>
-      </div class="div_add_title">
-      <div id="list_title">
+      <div class="div_add_title">
+        <div
+          class="password_box"
+          style="grid-area: input_title; margin: 0 10px 0 0"
+        >
+          <input
+            type="text"
+            placeholder=" "
+            autocomplete="off"
+            id="title_input"
+          />
+          <label for="New Title">New Title</label>
+        </div>
+        <button id="add_title" style="grid-area: button_add_title">Add</button>
       </div>
+      <div id="list_title"></div>
       <button id="Close_Title">Đóng</button>
       <button id="Edit_Title">Lưu</button>
       <button id="Reset_Title">Cài lại</button>
@@ -254,19 +271,25 @@
 
     <div id="class_box2_remove" style="display: none">
       <h3>Bạn có chắc muốn xóa:</h3>
-      <p id="noteToDelete"></p><button id="confirmNo">Đóng</button>
+      <p id="noteToDelete"></p>
+      <button id="confirmNo">Đóng</button>
       <button id="confirmYes">Đồng ý</button>
     </div>
 
     <div id="class_box2_password" style="display: none">
       <h3>Mật khẩu</h3>
       <div class="password_box">
-        <input type="password" id="pass" placeholder=" " autocomplete="off">
+        <input type="password" id="pass" placeholder=" " autocomplete="off" />
         <label for="pass">Password</label>
       </div>
-      
+
       <div class="password_box">
-        <input type="password" id="confirm_pass" placeholder=" " autocomplete="off">
+        <input
+          type="password"
+          id="confirm_pass"
+          placeholder=" "
+          autocomplete="off"
+        />
         <label for="confirm_pass">Confirm Password</label>
       </div>
       <button id="Save_pass">Lưu</button>
@@ -276,40 +299,47 @@
     <div id="box_" style="display: none">
       <div class="box">
         <h3>Thêm icon mới</h3>
-        <div style="display: grid;grid-template-areas: 'mySelect input_link input_link input_link';" class="password_box">
+        <div
+          style="
+            display: grid;
+            grid-template-areas: 'mySelect input_link input_link input_link input_link';
+            grid-template-columns: 90px;
+          "
+          class="password_box"
+        >
           <select id="mySelect" change="this.value"></select>
           <input
             type="text"
             id="link_input"
             placeholder=" "
             autocomplete="off"
-            style="grid-area: input_link;"
+            style="grid-area: input_link"
           />
-          <label for="Link" style="left: 90px;">Link</label>
+          <label for="Link" style="left: 100px">Link</label>
         </div>
-        
+
         <div class="password_box">
-            <input
+          <input
             type="text"
             id="note1_input"
             class="note"
             placeholder=" "
             autocomplete="off"
-            style="margin-top: -5px;"
+            style="margin-top: -5px"
           />
-          <label for="Note 1" style="transform: translateY(-3px);">Note 1</label>
+          <label for="Note 1" style="transform: translateY(-3px)">Note 1</label>
         </div>
-        <div class="password_box" style="margin-bottom: 0;">
-        <input
-          type="text"
-          id="note2_input"
-          class="note"
-          placeholder=" "
-          autocomplete="off"
-          style="margin-top: -5px;"
-        />
-        <label for="Note 2" style="transform: translateY(-3px);">Note 2</label>
-      </div>
+        <div class="password_box" style="margin-bottom: 0">
+          <input
+            type="text"
+            id="note2_input"
+            class="note"
+            placeholder=" "
+            autocomplete="off"
+            style="margin-top: -5px"
+          />
+          <label for="Note 2" style="transform: translateY(-3px)">Note 2</label>
+        </div>
         <div
           style="
             display: flex;
@@ -319,12 +349,10 @@
           "
         >
           <button id="close" class="btn">Đóng</button>
-          <button id="add-link" class="btn">
-            Thêm Link
-          </button>
+          <button id="add-link" class="btn">Thêm Link</button>
         </div>
       </div>
     </div>
   </body>
-    <script src="script.js"></script>
+  <script src="script.js"></script>
 </html>
