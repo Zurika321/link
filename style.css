@@ -11,12 +11,13 @@
   display: flex;
   align-items: end;
   height: 70px;
+  width: auto;
   color: var(--color_backgroud2);
   font-family: Lobster;
 }
 .favicon {
-  width: 70px;
-  height: 70px;
+  width: 65px;
+  height: 65px;
   filter: contrast(200%) brightness(110%);
   animation-name: shake;
   animation-duration: 0.5s;
@@ -33,17 +34,9 @@
     transform: rotateZ(5deg);
   }
 }
-
-/* Xóa animation khi không hover */
 .favicon:hover {
   animation-play-state: paused;
 }
-@media screen and (max-width: 600px) {
-  #h1_logo {
-    display: none;
-  }
-}
-
 #add-link {
   color: var(--color_text_p);
   border: 1px solid var(--color_text_h);
@@ -90,7 +83,7 @@
 }
 #btn_tim {
   background-color: var(--color_backgroud);
-  border: 3px solid var(--color_text_h);
+  border: 2.5px solid var(--color_text_h);
   color: var(--color_text_p);
   border-radius: 10px;
   height: 26px;
@@ -107,11 +100,11 @@
   background-color: var(--color_backgroud);
   display: flex;
   height: 210px;
-  left: calc(50% - 175px);
+  left: var(--size_box2);
   position: fixed;
   text-align: left;
   top: calc(50% - 105px);
-  width: 350px;
+  width: var(--size_box);
   z-index: 500;
 }
 #class_box2_edit > button {
@@ -120,13 +113,12 @@
   margin-left: 15px;
   position: absolute;
   width: 100px;
-  background-color: rgba(0, 0, 0, 0);
+  background-color: var(--color_backgroud);
   color: var(--color_text_h);
   cursor: pointer;
   border: 1px solid var(--color_backgroud2);
 }
 #class_box2_edit > button:nth-child(2n) {
-  background-color: var(--color_backgroud);
   color: var(--color_text_p);
   border: 1px solid var(--color_text_h);
   right: 15px;
@@ -137,11 +129,11 @@
 #class_box2_password {
   background-color: var(--color_backgroud);
   height: 170px;
-  left: calc(50% - 150px);
+  left: var(--size_box2);
   position: fixed;
   text-align: left;
   top: calc(50% - 75px);
-  width: 300px;
+  width: var(--size_box);
   z-index: 500;
 }
 #class_box2_password > button {
@@ -198,17 +190,17 @@
 #class_box2_remove {
   background-color: var(--color_backgroud);
   height: 150px;
-  left: calc(50% - 150px);
+  left: var(--size_box2);
   position: fixed;
   text-align: left;
   top: calc(50% - 75px);
-  width: 300px;
+  width: var(--);
   z-index: 500;
 }
 #class_box2_remove > button {
   background-color: var(--color_backgroud);
-  color: var(--color_text_p);
-  border: 1px solid var(--color_text_h);
+  color: var(--color_text_h);
+  border-color: var(--color_text_p);
   bottom: 15px;
   height: 20px;
   margin-left: 15px;
@@ -217,9 +209,8 @@
   cursor: pointer;
 }
 #class_box2_remove > button:nth-child(2n) {
-  background-color: rgba(0, 0, 0, 0);
-  color: var(--color_text_h);
-  border-color: var(--color_text_p);
+  color: var(--color_text_p);
+  border: 1px solid var(--color_text_h);
   right: 15px;
 }
 #class_box2_edit_title {
@@ -232,7 +223,7 @@
   z-index: 500;
 }
 #class_box2_edit_title > button {
-  background-color: rgba(0, 0, 0, 0);
+  background-color: var(--color_backgroud);
   color: var(--color_text_p);
   bottom: 10px;
   height: 20px;
@@ -253,14 +244,12 @@
   margin-left: 100px;
 }
 #class_box2_edit_title > .div_add_title {
-  display: block;
-  margin: auto;
+  display: grid;
+  margin: 0 auto;
   width: 250px;
   height: 30px;
   margin-top: -10px;
-}
-#class_box2_edit_title > .div_add_title > input {
-  width: 200px;
+  grid-template-areas: "input_title input_title input_title  button_add_title";
 }
 #class_box2_edit_title > .div_add_title > button {
   background-color: var(--color_backgroud);
@@ -344,19 +333,26 @@
   overflow-y: hidden;
   padding: 0 10px 10px 10px;
   box-sizing: content-box;
+  position: relative;
+}
+#div_scroll::after {
+  content: "";
+  display: block;
+  height: 110px;
+  width: 100%;
 }
 #edit_input {
   display: grid;
   grid-gap: 5px;
   grid-row-gap: 14px;
+  grid-template-columns: 85px;
   grid-template-areas:
-    "select link link link"
-    "note1 note1 note1 note1"
-    "note2 note2 note2 note2";
+    "select link link"
+    "note1 note1 note1"
+    "note2 note2 note2";
   margin: auto;
-  margin-top: -5px;
-  width: 320px;
-  margin-left: 15px;
+  margin: -5px 15px 0 15px;
+  width: auto;
 }
 #input-excel {
   border: 1px solid var(--color_text_h);
@@ -401,17 +397,6 @@
   background-color: rgba(255, 255, 255, 0);
   transition: background-color 1s;
 }
-#mySelect {
-  grid-area: mySelect;
-  background-color: var(--color_backgroud);
-  border-radius: 10px;
-  font-weight: bold;
-  height: 30px;
-  color: var(--color_text_p);
-  border-color: var(--color_text_h);
-  cursor: pointer;
-  margin-right: 5px;
-}
 #noteToDelete {
   border: 1px solid var(--color_text_h);
   border-radius: 15px;
@@ -422,6 +407,9 @@
   text-align: center;
   width: 270px;
   color: var(--color_text_p);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 #searchForm {
   display: flex;
@@ -450,16 +438,36 @@
   font-weight: bold;
   height: 25px;
   border-color: var(--color_text_h);
-  width: 83px;
+  max-width: 65px;
   color: var(--color_text_p);
   z-index: 200;
   margin-right: 5px;
+  overflow: hidden;
+}
+#mySelect {
+  grid-area: mySelect;
+  background-color: var(--color_backgroud);
+  border-radius: 10px;
+  font-weight: bold;
+  height: 30px;
+  color: var(--color_text_p);
+  border-color: var(--color_text_h);
+  cursor: pointer;
+  margin-right: 5px;
+  max-width: 80px;
+  width: 80px;
+  overflow: hidden;
+  margin-left: 0;
 }
 #select_edit {
   color: var(--color_text_p);
   border-color: var(--color_text_h);
   background-color: var(--color_backgroud);
   cursor: pointer;
+  border-radius: 10px;
+  max-width: 80px;
+  width: 80px;
+  overflow: hidden;
 }
 #whaticon {
   align-items: center;
@@ -472,6 +480,9 @@
   margin: auto;
   transform: translateY(7.5px);
   width: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .setting {
   color: var(--color_text_h);
@@ -619,7 +630,7 @@
 .box {
   background-color: var(--color_backgroud);
   height: auto;
-  width: 300px;
+  width: var(--size_box);
 }
 .box2 {
   background-color: var(--color_backgroud);
@@ -874,6 +885,8 @@
 .add_rules2::before {
   left: 0;
   top: -14px;
+  background-color: var(--color_backgroud2);
+  opacity: 0.1;
 }
 .site-footer {
   background-color: rgb(0, 0, 0, 0);
@@ -995,12 +1008,16 @@
   --color_hover: rgb(100, 100, 100);
   --color_text_h: #007bff;
   --color_text_p: rgb(10, 10, 10);
+  --size_search: 200px;
+  --size_box: 350px;
+  --size_box2: calc(50% - 175px);
 }
 body {
   margin: 0px;
   background-color: var(--color_backgroud2);
   border-radius: 10px;
   color: var(--color_text_h);
+  overflow: hidden;
 }
 fieldset {
   border: 2px solid var(--color_backgroud);
@@ -1013,9 +1030,10 @@ footer {
   color: var(--color_text_h);
   height: 80px;
   text-align: center;
-  z-index: 400;
+  z-index: 401;
   margin-top: 10px;
   padding: 0 10px;
+  border-radius: 0;
 }
 h3 {
   text-align: center;
@@ -1026,6 +1044,7 @@ header {
   height: 80px;
   position: relative;
   z-index: 500;
+  border-radius: 0;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1046,18 +1065,77 @@ input {
   border-color: var(--color_text_h);
   caret-color: var(--color_text_p);
 }
+select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 legend {
   color: var(--color_backgroud);
   font-size: 20px;
   font-weight: bold;
   position: relative;
   text-align: center;
-  width: 200px;
+  width: 180px;
 }
 button {
   font-weight: bold;
   transition: transform 0.5s;
 }
 button:hover {
-  transform: scale(0.9); /* Thu nhỏ lại còn 95% */
+  transform: scale(0.9);
+}
+@media screen and (max-width: 650px) {
+  #menu {
+    height: 40px;
+    width: 40px;
+    right: 5px;
+    top: 5px;
+  }
+  .ruler1,
+  .ruler2 {
+    width: 20px;
+    height: 2px;
+    transform: translateY(-5.5px);
+  }
+  .add_rules1 {
+    transform: rotate(45deg);
+    top: 20px;
+  }
+  .add_rules2 {
+    transform: rotate(-45deg);
+    top: 20px;
+  }
+  .add_rules2::before {
+    left: -2px;
+    top: -12px;
+    width: 25px;
+    height: 25px;
+  }
+  #searchForm {
+    margin-top: 37.5px;
+  }
+  .logo:nth-of-type(2) {
+    height: 40px;
+  }
+  .logo:nth-of-type(2) > .favicon {
+    height: 40px;
+    width: 40px;
+  }
+  #h1_logo {
+    display: block;
+    font-size: 20px;
+  }
+}
+@media screen and (max-width: 365px) {
+  :root {
+    --size_search: 150px;
+    --size_box: 300px;
+    --size_box2: calc(50% - 150px);
+  }
+}
+@media screen and (max-width: 315px) {
+  :root {
+    --size_search: 100px;
+  }
 }
