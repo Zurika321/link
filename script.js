@@ -268,7 +268,6 @@ function thong_bao_chung(thong_bao, x) {
     var currentHour = now.getHours();
     var currentMinute = now.getMinutes();
 
-    // Chuyển đổi ngày hiện tại từ 0 (Chủ nhật) thành 8
     if (currentDay === 0) {
       currentDay = 8;
     } else {
@@ -306,8 +305,7 @@ function thong_bao_chung(thong_bao, x) {
             thong_bao_chung(removeTags(remove_space(element)), 5);
           }
           if (day == 8) {
-            day = 2;
-            let targetTotalMinutes = convertToMinutes(day, hour, minute);
+            let targetTotalMinutes = convertToMinutes(2, hour, minute);
             if (currentTotalMinutes <= targetTotalMinutes) {
               note_anime2.push(element);
             }
@@ -324,11 +322,9 @@ function thong_bao_chung(thong_bao, x) {
       let thong_bao_value = div.getAttribute("for");
       let index_thong_bao = note_anime2.indexOf(thong_bao_value);
       if (index_thong_bao !== -1) {
-        div.style.backgroundColor = "lightgreen";
-        div.style.borderWidth = 1 + "px";
+        div.style.display = "block";
       } else {
-        div.style.backgroundColor = "rgba(144, 238, 144, 0)";
-        div.style.borderWidth = 0 + "px";
+        div.style.display = "none";
       }
     });
   }
