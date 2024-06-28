@@ -892,10 +892,6 @@
   background-color: rgb(0, 0, 0, 0);
   margin: 20px 10px 5px 10px;
 }
-.site-footer .fa {
-  color: var(--color_text_h);
-  margin-right: 10px;
-}
 .site-footer .footer-links {
   list-style: none;
   padding: 0;
@@ -977,8 +973,8 @@
   display: block;
 }
 .thong_bao {
-  background-color: rgba(144, 238, 144, 0);
-  border: 2px solid var(--color_text_h);
+  background-color: lightgreen;
+  border: 1px solid var(--color_text_h);
   border-radius: 50%;
   height: 7.5px;
   left: 2px;
