@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web 2 - Receive Text</title>
+  </head>
+  <body>
+    <h1>Web 2 - Receive Text</h1>
+    <p id="receivedText">Text from Web 1 will appear here...</p>
+
+    <script>
+      const socket = new WebSocket("ws://192.168.1.100:8080"); // Địa chỉ WebSocket server
+
+      socket.onopen = () => {
+        console.log("WebSocket connection established");
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === "update_text") {
+          document.getElementById("receivedText").textContent = message.data;
+        }
+      };
+    </script>
+  </body>
+</html>
