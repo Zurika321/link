@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web 2 - Receive Text</title>
+  </head>
+  <body>
+    <h1>Web 2 - Receive Text</h1>
+    <p id="receivedText">Text from Web 1 will appear here...</p>
+    <input type="text" id="textInput" placeholder="Enter text..." />
+    <button onclick="sendMessage()">Update Web 1</button>
+
+    <script>
+      const socket = new WebSocket("ws://localhost:8080"); // Địa chỉ WebSocket server
+
+      socket.onopen = () => {
+        console.log("WebSocket đang bật");
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket đã tắt");
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket lỗi:", error);
+      };
+
+      socket.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === "update_text") {
+          document.getElementById("receivedText").textContent = message.data;
+        }
+      };
+
+      function sendMessage() {
+        const textInput = document.getElementById("textInput").value;
+        const message = {
+          type: "update_text",
+          data: textInput,
+        };
+        socket.send(JSON.stringify(message));
+      }
+    </script>
+  </body>
+</html>
