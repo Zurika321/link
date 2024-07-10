@@ -9,6 +9,8 @@
       const firebaseConfig = {
         apiKey: "AIzaSyAZa14eDyZTf28QrxSzKbQXSyUOOcMX4Ho",
         authDomain: "project-1429933812416947832.firebaseapp.com",
+        databaseURL:
+          "https://project-1429933812416947832-default-rtdb.asia-southeast1.firebasedatabase.app",
         projectId: "project-1429933812416947832",
         storageBucket: "project-1429933812416947832.appspot.com",
         messagingSenderId: "209081900486",
@@ -24,7 +26,7 @@
           .ref("data/")
           .on("value", (snapshot) => {
             let data = snapshot.val();
-            if (data && data.user === "a") {
+            if (data) {
               document.getElementById("output").textContent =
                 "Giá trị của biến a là: " + data.a;
             } else {
