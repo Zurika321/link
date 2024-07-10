@@ -25,7 +25,7 @@
       firebase.initializeApp(firebaseConfig);
 
       function sendData() {
-        let links = ["a1", "b1", "d1"];
+        let links = ["a", "b", "d"];
         let notes = ["1<br", "2<sd7", "3<83"];
         firebase
           .database()
@@ -76,21 +76,57 @@
         }
       }
 
-      function receiveData() {
-        firebase
-          .database()
-          .ref("data/")
-          .on("value", (snapshot) => {
-            let data = snapshot.val();
-            if (data) {
-              create_table(data.links, data.notes);
-            } else {
-              document.getElementById("output").textContent =
-                "Không có dữ liệu !";
-            }
-          });
-      }
-      receiveData();
+      // function receiveData() {
+      //   firebase
+      //     .database()
+      //     .ref("data/")
+      //     .on("value", (snapshot) => {
+      //       let data = snapshot.val();
+      //       if (data) {
+      //         create_table(data.links, data.notes);
+      //       } else {
+      //         document.getElementById("output").textContent =
+      //           "Không có dữ liệu !";
+      //       }
+      //     });
+      // }
+      // receiveData();
+      fetch(
+        "https://console.firebase.google.com/project/project-1429933812416947832/overview",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ action: "read" }),
+        }
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          create_table(data.links, data.notes);
+        })
+        .catch((error) => console.error("Error fetching data:", error));
+
+      // fetch(
+      //   "https://console.firebase.google.com/project/project-1429933812416947832/overview",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({
+      //       action: "write",
+      //       newData: {
+      //         /* your new data */
+      //       },
+      //     }),
+      //   }
+      // )
+      //   .then((response) => response.json())
+      //   .then((result) => {
+      //     console.log("Write result:", result);
+      //   })
+      //   .catch((error) => console.error("Error writing data:", error));
     </script>
   </body>
 </html>
