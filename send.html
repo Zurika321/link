@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Send Data</title>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <script>
+      // Cấu hình Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyAZa14eDyZTf28QrxSzKbQXSyUOOcMX4Ho",
+        authDomain: "project-1429933812416947832.firebaseapp.com",
+        projectId: "project-1429933812416947832",
+        storageBucket: "project-1429933812416947832.appspot.com",
+        messagingSenderId: "209081900486",
+        appId: "1:209081900486:web:7cd831494d0ccb3d8826c7",
+        measurementId: "G-6N5RCGRJ9Q",
+      };
+      // Khởi tạo Firebase
+      firebase.initializeApp(firebaseConfig);
+
+      function sendData() {
+        let user = "a"; // Giá trị của biến user
+        let a = 10; // Dữ liệu muốn gửi
+        firebase
+          .database()
+          .ref("data/")
+          .set({
+            user: user,
+            a: a,
+          })
+          .then(() => {
+            alert("Dữ liệu đã được gửi!");
+          })
+          .catch((error) => {
+            console.error("Lỗi khi gửi dữ liệu: ", error);
+          });
+      }
+    </script>
+  </head>
+  <body>
+    <button onclick="sendData()">Gửi dữ liệu</button>
+  </body>
+</html>
