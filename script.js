@@ -1,13 +1,23 @@
 function thong_bao_chung(thong_bao, x) {
-  if (x == undefined) {
+  if (x === undefined) {
     x = 2;
   }
+
   let div = document.createElement("div");
   div.className = "thong_bao_chung";
   div.textContent = thong_bao;
 
+  let remove_thong_bao = document.createElement("div");
+  remove_thong_bao.className = "remove_thong_bao";
+  remove_thong_bao.textContent = "X";
+  remove_thong_bao.addEventListener("click", () => {
+    document.body.removeChild(div);
+  });
+
+  div.appendChild(remove_thong_bao);
+
   document.body.appendChild(div);
-  div.offsetHeight; // Force reflow
+  div.offsetHeight;
   div.style.top = "10px";
   setTimeout(() => {
     div.style.opacity = "0";
@@ -71,6 +81,9 @@ function thong_bao_chung(thong_bao, x) {
         } else if (url.startsWith("file:///")) {
           faviconUrl =
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKc4f1B7TETp0s2EH9LvCiSU6TyYXsm1ewiQ&usqp=CAU";
+        } else if (url.includes("samsung.")) {
+          faviconUrl =
+            "https://w7.pngwing.com/pngs/176/171/png-transparent-samsung-galaxy-gurugram-faridabad-logo-samsung-blue-text-logo.png";
         } else {
           faviconUrl =
             `https://www.google.com/s2/favicons?sz=64&domain_url=` + url;
@@ -81,6 +94,7 @@ function thong_bao_chung(thong_bao, x) {
       }
     });
   }
+
   async function getFaviconUrl(url) {
     return new Promise((resolve, reject) => {
       fetch(url)
@@ -480,9 +494,13 @@ function thong_bao_chung(thong_bao, x) {
         Array.from(children).forEach((child) => {
           child.classList.toggle("add_button_gat");
         });
+        what_title = "All";
       }
     } else {
       ZZ_on = bool;
+      if (!ZZ_on && what_title == "ZZ") {
+        what_title = "All";
+      }
     }
     title_pick(what_title);
 
@@ -520,6 +538,7 @@ function thong_bao_chung(thong_bao, x) {
       select3.appendChild(option3);
     }
 
+    document.getElementById("select").value = what_title;
     localStorage.setItem("open_file_ẩn", JSON.stringify(ZZ_on));
   }
   create_option();
@@ -990,9 +1009,9 @@ function thong_bao_chung(thong_bao, x) {
         const reader = new FileReader();
         reader.onload = function (event) {
           const data = new Uint8Array(event.target.result);
-          workbook1 = XLSX.read(data, { type: "array" });
+          const workbook1 = XLSX.read(data, { type: "array" });
 
-          firstSheetName1 = workbook1.SheetNames[0];
+          const firstSheetName1 = workbook1.SheetNames[0];
           const worksheet = workbook1.Sheets[firstSheetName1];
           const jsonData = XLSX.utils.sheet_to_json(worksheet); // Chuyển đổi dữ liệu thành định dạng JSON
           link = [];
@@ -1119,11 +1138,79 @@ function thong_bao_chung(thong_bao, x) {
       return buf;
     }
 
-    // Gắn sự kiện change cho input type=file
+    // Gắn sự kiện change cho input type=file input-link-excel
     document
       .getElementById("input-excel")
       .addEventListener("change", handleFile, false);
+    document
+      .getElementById("input-link-excel")
+      .addEventListener("click", link_excel);
+    function link_excel() {
+      document.getElementById("menu").click();
+      document.getElementById("class_box2_link_excel").style.display = "block";
 
+      document.getElementById("Nhap_link_excel").onclick = function () {
+        let url_excel = document.getElementById("link_excel").value;
+        if (isValidURL(url_excel)) {
+          handleFileFromURL(url_excel);
+        } else {
+          thong_bao_chung("Đường liên kết không hợp lệ");
+        }
+      };
+
+      document.getElementById("Close_link_excel").onclick = function () {
+        document.getElementById("class_box2_link_excel").style.display = "none";
+      };
+    }
+    async function handleFileFromURL(url) {
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          thong_bao_chung("Không thể tải file từ URL.");
+          return;
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const data = new Uint8Array(arrayBuffer);
+        const workbook1 = XLSX.read(data, { type: "array" });
+
+        const firstSheetName1 = workbook1.SheetNames[0];
+        const worksheet = workbook1.Sheets[firstSheetName1];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet); // Chuyển đổi dữ liệu thành định dạng JSON
+        link = [];
+        note = [];
+
+        const jsonData_row = XLSX.utils.sheet_to_json(worksheet, {
+          header: 1,
+        });
+        const LinkIndex = jsonData_row[0].indexOf("Link");
+        const NoteIndex = jsonData_row[0].indexOf("Note");
+        if (LinkIndex === -1) {
+          thong_bao_chung("Không tìm thấy cột 'Link' trong file Excel.");
+          return;
+        } else if (NoteIndex === -1) {
+          thong_bao_chung("Không tìm thấy cột 'Note' trong file Excel.");
+          return;
+        }
+
+        jsonData.forEach((row) => {
+          if (row.Link) {
+            link.push(row.Link);
+          }
+          if (row.Note) {
+            note.push(row.Note);
+          }
+        });
+
+        create_data(link, note);
+        console_data();
+        anime_tap_moi = undate_date_anime();
+        title_pick("All");
+        thong_bao_chung("Nhập dữ liệu Excel thành công");
+        document.getElementById("class_box2_link_excel").style.display = "none";
+      } catch (error) {
+        thong_bao_chung("Đã xảy ra lỗi khi xử lý file từ URL.");
+      }
+    }
     let isExecuted = false;
 
     document.getElementById("add-link2").addEventListener("click", function () {
@@ -1377,8 +1464,8 @@ function thong_bao_chung(thong_bao, x) {
       document.getElementById("class_box2_edit_title").style.display = "none";
       thong_bao_chung("Lưu title thành công");
       console_data();
+      what_title = "All";
       create_option();
-      title_pick("All");
     };
 
     document.getElementById("Reset_Title").onclick = function () {
