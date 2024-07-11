@@ -2,6 +2,12 @@
 <html>
   <head>
     <title>Send Data</title>
+    <script>
+      
+      if (!localStorage.getItem("Admin")) {
+        location.href = "index.html";
+      }
+    </script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
     <style>
@@ -10,34 +16,80 @@
       }
       :root {
         --width_link: 0.3;
-        --min_width_link: 300px;
-        --width_title: 15%;
-        --min_width_title: 150px;
-        --width_note: 27.5%;
-        --min_width_note: 275px;
+        --width_title: 0.15;
+        --width_note: 0.275;
       }
       td {
         width: var(--width_link);
         min-width: calc(var(--width_link) * 1000px);
+        padding: 0;
       }
       td:nth-child(2n) {
-        width: 15%;
-        min-width: 150px;
+        width: var(--width_title);
+        min-width: calc(var(--width_title) * 1000px);
       }
       td:nth-child(3n) {
-        width: 27.5%;
-        min-width: 275px;
+        width: var(--width_note);
+        min-width: calc(var(--width_note) * 1000px);
       }
       td:nth-child(4n) {
-        width: 27.5%;
-        min-width: 275px;
+        width: var(--width_note);
+        min-width: calc(var(--width_note) * 1000px);
       }
       input {
-        width: calc(100% - 10px);
+        width: calc(100% - 30px);
+        height: 20px;
+        border: none;
       }
       select {
         max-width: 100%;
         width: 100%;
+        height: 100%;
+        border: none;
+      }
+      .error {
+        position: relative;
+      }
+      .error::after {
+        content: "";
+        background-image: url("https://w7.pngwing.com/pngs/711/621/png-transparent-warning-icon-error-computer-icons-orange-error-icon-miscellaneous-angle-triangle-thumbnail.png");
+        width: 20px;
+        background-size: cover;
+        height: 20px;
+        position: absolute;
+        right: 3px;
+        top: 1px;
+        background-color: aqua;
+      }
+      .oke {
+        position: relative;
+      }
+      .oke::after {
+        content: "";
+        background-image: url("https://banner2.cleanpng.com/20180418/wue/kisspng-computer-icons-check-mark-clip-art-green-tick-5ad76021a27d23.3470353515240642896656.jpg");
+        width: 20px;
+        background-size: cover;
+        background-position: center;
+        height: 20px;
+        position: absolute;
+        right: 3px;
+        top: 1px;
+        background-color: aqua;
+      }
+      .error_link {
+        position: relative;
+      }
+      .error_link::after {
+        content: "";
+        background-image: url("https://static.vecteezy.com/system/resources/previews/015/131/133/original/crossing-sign-error-404-png.png");
+        width: 20px;
+        background-size: cover;
+        background-position: center;
+        height: 20px;
+        position: absolute;
+        right: 3px;
+        top: 1px;
+        background-color: aqua;
       }
     </style>
   </head>
@@ -52,6 +104,14 @@
       </tr>
     </table>
     <script>
+      function isValidURL(string) {
+        try {
+          new URL(string);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
       document.addEventListener("DOMContentLoaded", function () {
         // Cấu hình Firebase
         const firebaseConfig = {
@@ -68,16 +128,17 @@
         // Khởi tạo Firebase
         firebase.initializeApp(firebaseConfig);
 
+        // Hàm trích xuất dữ liệu từ bảng
         function extractTableData() {
           let table = document.getElementById("table");
           let inputLinks = table.getElementsByClassName("input_link");
           let inputNote1 = table.getElementsByClassName("input_note1");
           let inputNote2 = table.getElementsByClassName("input_note2");
-          let selects = table.getElementsByTagName("select");
+          let selects = table.getElementsByClassName("select");
           let links = [];
           let notes = [];
 
-          for (var i = 0; i < inputLinks.length - 1; i++) {
+          for (let i = 0; i < inputLinks.length - 1; i++) {
             links.push(inputLinks[i].value);
             notes.push(
               selects[i].value +
@@ -91,18 +152,12 @@
           return [links, notes];
         }
 
-        document
-          .getElementById("btn_sendData")
-          .addEventListener("click", function () {
-            sendData();
-          });
-
+        // Gửi dữ liệu lên Firebase
         function sendData() {
-          let a = extractTableData();
-          let links = a[0];
-          let notes = a[1];
+          let [links, notes] = extractTableData();
           console.log(links);
           console.log(notes);
+
           firebase
             .database()
             .ref("data/")
@@ -111,72 +166,14 @@
               notes: notes,
             })
             .then(() => {
-              alert("Dữ liệu đã được gửi!");
+              alert("Dữ liệu đã được gửi lên Firebase!");
             })
             .catch((error) => {
               console.error("Lỗi khi gửi dữ liệu: ", error);
             });
         }
 
-        let table = document.getElementById("table");
-
-        function create_table(links, notes) {
-          table.innerHTML = "";
-          let trr = document.createElement("tr");
-          trr.style.backgroundColor = "aqua";
-          let content_colum = ["Link", "Title", "Note1", "Note2"];
-          for (let i = 0; i < 4; i++) {
-            let tdd = document.createElement("td");
-            tdd.textContent = content_colum[i];
-            trr.appendChild(tdd);
-          }
-          table.appendChild(trr);
-          if (links !== "new") {
-            for (let row = 0; row < links.length; row++) {
-              let tr = document.createElement("tr");
-              for (let column = 0; column < 4; column++) {
-                let td = document.createElement("td");
-                td.style.overflowX = "scroll";
-                td.style.whiteSpace = "nowrap";
-                switch (column) {
-                  case 0:
-                    let input = document.createElement("input");
-                    input.className = "input_link";
-                    input.value = links[row]; // Gán giá trị cho input
-                    td.appendChild(input);
-                    break;
-                  case 1:
-                    let select = document.createElement("select");
-                    select.className = "select";
-                    let option = document.createElement("option");
-                    option.value = "All";
-                    option.textContent = "All";
-                    select.appendChild(option);
-                    select.value = "All"; // Gán giá trị cho select
-                    td.appendChild(select);
-                    break;
-                  case 2:
-                    let input2 = document.createElement("input");
-                    input2.className = "input_note1";
-                    input2.value = notes[row].split("<br>")[1]; // Gán giá trị cho inputNote1
-                    td.appendChild(input2);
-                    break;
-                  case 3:
-                    let input3 = document.createElement("input");
-                    input3.className = "input_note2";
-                    input3.value = notes[row].split("<br>")[2]; // Gán giá trị cho inputNote2
-                    td.appendChild(input3);
-                    break;
-                  default:
-                }
-                tr.appendChild(td);
-              }
-              table.appendChild(tr);
-            }
-          }
-          create_new_input();
-        }
-
+        // Nhận dữ liệu từ Firebase và tạo bảng
         function receiveData() {
           firebase
             .database()
@@ -184,94 +181,269 @@
             .on("value", (snapshot) => {
               let data = snapshot.val();
               if (data) {
-                create_table(data.links, data.notes);
+                createTable(data.links, data.notes);
               } else {
-                alert("Không có dữ liệu!");
-                create_table("new");
+                alert("Không có dữ liệu trong Firebase!");
+                createTable("new");
               }
             });
         }
 
-        receiveData();
+        // Tạo bảng từ dữ liệu nhận được
+        function createTable(links, notes) {
+          let table = document.getElementById("table");
+          table.innerHTML = ""; // Xóa nội dung bảng hiện tại
 
-        // Hàm để kiểm tra các ô input và gọi create_new_input nếu cần thiết
-        function checkInputs() {
-          var table = document.getElementById("table");
-          var inputLinks = table.getElementsByClassName("input_link");
-          var inputNote1 = table.getElementsByClassName("input_note1");
-          var inputNote2 = table.getElementsByClassName("input_note2");
+          // Tạo hàng tiêu đề của bảng
+          let headerRow = table.insertRow();
+          let headerCells = ["Link", "Title", "Note1", "Note2"];
+          headerCells.forEach((cellText) => {
+            let headerCell = document.createElement("th");
+            headerCell.textContent = cellText;
+            headerRow.appendChild(headerCell);
+          });
 
-          var lastRowIndex = inputLinks.length - 1;
+          // Tạo các hàng dữ liệu từ links và notes
+          for (let i = 0; i < links.length; i++) {
+            let newRow = table.insertRow();
 
-          if (
-            inputLinks[lastRowIndex].value &&
-            inputNote1[lastRowIndex].value &&
-            inputNote2[lastRowIndex].value
-          ) {
-            console.log("Nhập các ô còn lại");
-            create_new_input();
+            // Tạo ô input cho Link
+            let linkCell = newRow.insertCell();
+            let linkInput = document.createElement("input");
+            linkInput.className = "input_link";
+            linkInput.value = links[i];
+            if (!isValidURL(links[i])) {
+              linkCell.className = "error_link";
+            } else if (links[i] != "") {
+              linkCell.className = "oke";
+            } else {
+              linkCell.className = "error";
+            }
+            linkCell.appendChild(linkInput);
+
+            // Tạo ô select cho Title
+            let titleCell = newRow.insertCell();
+            let select = document.createElement("select");
+            select.className = "select";
+            let option = document.createElement("option");
+            option.value = "All";
+            option.textContent = "All";
+            select.appendChild(option);
+            titleCell.appendChild(select);
+
+            // Tạo ô input cho Note1
+            let note1Cell = newRow.insertCell();
+            let note1Input = document.createElement("input");
+            note1Input.className = "input_note1";
+            note1Input.value = notes[i].split("<br>")[1];
+            if (notes[i].split("<br>")[1] != "") {
+              note1Cell.className = "oke";
+            } else {
+              note1Cell.className = "error";
+            }
+            note1Cell.appendChild(note1Input);
+
+            // Tạo ô input cho Note2
+            let note2Cell = newRow.insertCell();
+            let note2Input = document.createElement("input");
+            note2Input.className = "input_note2";
+            note2Input.value = notes[i].split("<br>")[2];
+            note2Cell.appendChild(note2Input);
+            note2Cell.className = "oke";
           }
+
+          // Tạo hàng mới để nhập dữ liệu
+          createNewRow();
         }
 
-        // Hàm để tạo hàng mới
-        function create_new_input() {
+        // Tạo hàng mới cho việc nhập dữ liệu mới
+        function createNewRow() {
           let table = document.getElementById("table");
-          let trr = document.createElement("tr");
+          let newRow = table.insertRow();
 
-          for (let i = 0; i < 4; i++) {
-            let tdd = document.createElement("td");
-            switch (i) {
-              case 0:
-                let input = document.createElement("input");
-                input.className = "input_link";
-                tdd.appendChild(input);
-                break;
-              case 1:
-                let select = document.createElement("select");
-                select.className = "select";
+          // Tạo ô input cho Link
+          let linkCell = newRow.insertCell();
+          let linkInput = document.createElement("input");
+          linkInput.className = "input_link";
+          linkCell.appendChild(linkInput);
 
-                let option = document.createElement("option");
-                option.value = "All";
-                option.textContent = "All";
-                select.appendChild(option);
+          // Tạo ô select cho Title
+          let titleCell = newRow.insertCell();
+          let select = document.createElement("select");
+          select.className = "select";
+          let option = document.createElement("option");
+          option.value = "All";
+          option.textContent = "All";
+          select.appendChild(option);
+          titleCell.appendChild(select);
 
-                tdd.appendChild(select);
-                break;
-              case 2:
-                let input2 = document.createElement("input");
-                input2.className = "input_note1";
-                tdd.appendChild(input2);
-                break;
-              case 3:
-                let input3 = document.createElement("input");
-                input3.className = "input_note2";
-                tdd.appendChild(input3);
-                break;
-              default:
-            }
+          // Tạo ô input cho Note1
+          let note1Cell = newRow.insertCell();
+          let note1Input = document.createElement("input");
+          note1Input.className = "input_note1";
+          note1Cell.appendChild(note1Input);
 
-            trr.appendChild(tdd);
-          }
-
-          table.appendChild(trr);
+          // Tạo ô input cho Note2
+          let note2Cell = newRow.insertCell();
+          let note2Input = document.createElement("input");
+          note2Input.className = "input_note2";
+          note2Cell.appendChild(note2Input);
 
           // Gắn sự kiện input cho các ô input mới
           attachInputEventListeners();
         }
 
-        // Hàm để gắn sự kiện input cho các ô input
+        // Gắn sự kiện input cho các ô input
         function attachInputEventListeners() {
-          var table = document.getElementById("table");
-          var inputLinks = table.getElementsByClassName("input_link");
-          var inputNote1 = table.getElementsByClassName("input_note1");
-          var inputNote2 = table.getElementsByClassName("input_note2");
+          let table = document.getElementById("table");
+          let inputLinks = table.getElementsByClassName("input_link");
+          let inputNote1 = table.getElementsByClassName("input_note1");
+          let inputNote2 = table.getElementsByClassName("input_note2");
 
-          var lastRowIndex = inputLinks.length - 1;
-
-          inputLinks[lastRowIndex].addEventListener("input", checkInputs);
-          inputNote1[lastRowIndex].addEventListener("input", checkInputs);
-          inputNote2[lastRowIndex].addEventListener("input", checkInputs);
+          for (let i = 0; i < inputLinks.length; i++) {
+            if (i + 1 != inputLinks.length) {
+              inputLinks[i].addEventListener("input", checkAndRemoveRow);
+              inputNote1[i].addEventListener("input", checkAndRemoveRow);
+              inputNote2[i].addEventListener("input", checkAndRemoveRow);
+            } else {
+              inputLinks[i].addEventListener("input", checkInputs);
+              inputNote1[i].addEventListener("input", checkInputs);
+              inputNote2[i].addEventListener("input", checkInputs);
+            }
+          }
         }
+
+        // Kiểm tra và xóa hàng nếu tất cả các ô input trong hàng đó đều rỗng
+        function checkAndRemoveRow() {
+          let table = document.getElementById("table");
+          let currentRow = this.closest("tr");
+          let inputLinkValue = currentRow
+            .querySelector(".input_link")
+            .value.trim();
+          let inputNote1Value = currentRow
+            .querySelector(".input_note1")
+            .value.trim();
+          let inputNote2Value = currentRow
+            .querySelector(".input_note2")
+            .value.trim();
+
+          if (
+            inputLinkValue === "" &&
+            inputNote1Value === "" &&
+            inputNote2Value === ""
+          ) {
+            table.deleteRow(currentRow.rowIndex);
+          }
+
+          if (
+            (inputLinkValue == "" &&
+              inputNote1Value == "" &&
+              inputNote2Value != "") ||
+            (inputLinkValue != "" && inputNote1Value == "") ||
+            (inputLinkValue == "" && inputNote1Value != "")
+          ) {
+            if (inputLinkValue == "") {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "error";
+            } else if (!isValidURL(inputLinkValue)) {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "error_link";
+            } else {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "oke";
+            }
+
+            if (inputNote1Value == "") {
+              let parent = currentRow.querySelector(".input_note1").parentNode;
+              parent.className = "error";
+            } else {
+              let parent = currentRow.querySelector(".input_note1").parentNode;
+              parent.className = "oke";
+            }
+          } else {
+            if (inputLinkValue == "") {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "error";
+            } else if (!isValidURL(inputLinkValue)) {
+              let parent1 = currentRow.querySelector(".input_link").parentNode;
+              parent1.className = "error_link";
+            } else {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "oke";
+            }
+            let parent2 = currentRow.querySelector(".input_note1").parentNode;
+            parent2.className = "oke";
+          }
+        }
+
+        function checkInputs() {
+          let table = document.getElementById("table");
+          let inputLinks = table.getElementsByClassName("input_link");
+          let inputNote1 = table.getElementsByClassName("input_note1");
+          let inputNote2 = table.getElementsByClassName("input_note2");
+
+          let lastRowIndex = inputLinks.length - 1;
+
+          if (
+            inputLinks[lastRowIndex].value != "" &&
+            inputNote1[lastRowIndex].value != ""
+          ) {
+            if (!isValidURL(inputLinks[lastRowIndex].value)) {
+              let parent = inputLinks[lastRowIndex].parentNode;
+              parent.className = "error_link";
+            } else {
+              let parent = inputLinks[lastRowIndex].parentNode;
+              parent.className = "oke";
+            }
+            let parent2 = inputNote1[lastRowIndex].parentNode;
+            parent2.className = "oke";
+            let parent3 = inputNote2[lastRowIndex].parentNode;
+            parent3.className = "oke";
+            createNewRow();
+          } else {
+            if (
+              (inputLinks[lastRowIndex].value == "" &&
+                inputNote1[lastRowIndex].value == "" &&
+                inputNote2[lastRowIndex].value != "") ||
+              (inputLinks[lastRowIndex].value != "" &&
+                inputNote1[lastRowIndex].value == "") ||
+              (inputLinks[lastRowIndex].value == "" &&
+                inputNote1[lastRowIndex].value != "")
+            ) {
+              if (inputLinks[lastRowIndex].value == "") {
+                let parent = inputLinks[lastRowIndex].parentNode;
+                parent.className = "error";
+              } else if (!isValidURL(inputLinks[lastRowIndex].value)) {
+                let parent = inputLinks[lastRowIndex].parentNode;
+                parent.className = "error_link";
+              } else {
+                let parent = inputLinks[lastRowIndex].parentNode;
+                parent.className = "oke";
+              }
+              if (inputNote1[lastRowIndex].value == "") {
+                let parent = inputNote1[lastRowIndex].parentNode;
+                parent.className = "error";
+              } else {
+                let parent = inputNote1[lastRowIndex].parentNode;
+                parent.className = "oke";
+              }
+            } else {
+              let parent1 = inputLinks[lastRowIndex].parentNode;
+              parent1.className = "";
+              let parent2 = inputNote1[lastRowIndex].parentNode;
+              parent2.className = "";
+            }
+          }
+        }
+
+        // Gửi dữ liệu khi nhấn nút
+        document
+          .getElementById("btn_sendData")
+          .addEventListener("click", function () {
+            sendData();
+          });
+
+        receiveData();
       });
     </script>
   </body>
