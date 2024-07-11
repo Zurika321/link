@@ -580,10 +580,16 @@ function thong_bao_chung(thong_bao, x) {
     title_no_icon = removeIcon(title);
   }
   function add_data(link, note) {
-    let retrievedData = JSON.parse(localStorage.getItem("data"));
-    retrievedData.linksss.push(link);
-    retrievedData.notesss.push(note);
-    localStorage.setItem("data", JSON.stringify(retrievedData));
+    if (!localStorage.getItem("data")) {
+      var data = { linksss: [link], notesss: [note], titlesss: title };
+      localStorage.setItem("data", JSON.stringify(data));
+    } else {
+      let retrievedData = JSON.parse(localStorage.getItem("data"));
+
+      retrievedData.linksss.push(link);
+      retrievedData.notesss.push(note);
+      localStorage.setItem("data", JSON.stringify(retrievedData));
+    }
     console_data();
     title_pick("All");
   }
