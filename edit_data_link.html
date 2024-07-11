@@ -3,7 +3,7 @@
   <head>
     <title>Send Data</title>
     <script>
-      
+      localStorage.setItem("Admin", true);
       if (!localStorage.getItem("Admin")) {
         location.href = "index.html";
       }
@@ -94,7 +94,10 @@
     </style>
   </head>
   <body>
-    <button id="btn_sendData">Gửi dữ liệu</button>
+    <button id="btn_get_firebase">Lấy dữ liệu Firebase</button>
+    <button id="btn_sendData">Gửi dữ liệu Firebase</button>
+    <button id="btn_get_local">Lấy dữ liệu localStorage</button>
+    <button id="btn_save_local">lưu dữ liệu localStorage</button>
     <table border="1" id="table">
       <tr style="background-color: aqua">
         <td>Link</td>
@@ -155,8 +158,6 @@
         // Gửi dữ liệu lên Firebase
         function sendData() {
           let [links, notes] = extractTableData();
-          console.log(links);
-          console.log(notes);
 
           firebase
             .database()
@@ -441,6 +442,34 @@
           .getElementById("btn_sendData")
           .addEventListener("click", function () {
             sendData();
+          });
+        document
+          .getElementById("btn_get_firebase")
+          .addEventListener("click", function () {
+            receiveData();
+          });
+        document
+          .getElementById("btn_save_local")
+          .addEventListener("click", function () {
+            if (!localStorage.getItem("data")) {
+              alert("không có dữ liệu");
+              return;
+            }
+            let [links, notes] = extractTableData();
+            let data = JSON.parse(localStorage.getItem("data"));
+            data.linksss = links;
+            data.notesss = notes;
+            localStorage.setItem("data", JSON.stringify(data));
+          });
+        document
+          .getElementById("btn_get_local")
+          .addEventListener("click", function () {
+            if (!localStorage.getItem("data")) {
+              alert("không có dữ liệu");
+              return;
+            }
+            let data = JSON.parse(localStorage.getItem("data"));
+            createTable(data.linksss, data.notesss);
           });
 
         receiveData();
