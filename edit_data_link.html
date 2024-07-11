@@ -4,129 +4,275 @@
     <title>Send Data</title>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <style>
+      table {
+        width: 100%;
+      }
+      :root {
+        --width_link: 0.3;
+        --min_width_link: 300px;
+        --width_title: 15%;
+        --min_width_title: 150px;
+        --width_note: 27.5%;
+        --min_width_note: 275px;
+      }
+      td {
+        width: var(--width_link);
+        min-width: calc(var(--width_link) * 1000px);
+      }
+      td:nth-child(2n) {
+        width: 15%;
+        min-width: 150px;
+      }
+      td:nth-child(3n) {
+        width: 27.5%;
+        min-width: 275px;
+      }
+      td:nth-child(4n) {
+        width: 27.5%;
+        min-width: 275px;
+      }
+      input {
+        width: calc(100% - 10px);
+      }
+      select {
+        max-width: 100%;
+        width: 100%;
+      }
+    </style>
   </head>
   <body>
-    <button onclick="sendData()">Gửi dữ liệu</button>
-    <table border="1" id="table"></table>
+    <button id="btn_sendData">Gửi dữ liệu</button>
+    <table border="1" id="table">
+      <tr style="background-color: aqua">
+        <td>Link</td>
+        <td>Title</td>
+        <td>Note1</td>
+        <td>Note2</td>
+      </tr>
+    </table>
     <script>
-      // Cấu hình Firebase
-      const firebaseConfig = {
-        apiKey: "AIzaSyAZa14eDyZTf28QrxSzKbQXSyUOOcMX4Ho",
-        authDomain: "project-1429933812416947832.firebaseapp.com",
-        databaseURL:
-          "https://project-1429933812416947832-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "project-1429933812416947832",
-        storageBucket: "project-1429933812416947832.appspot.com",
-        messagingSenderId: "209081900486",
-        appId: "1:209081900486:web:7cd831494d0ccb3d8826c7",
-        measurementId: "G-6N5RCGRJ9Q",
-      };
-      // Khởi tạo Firebase
-      firebase.initializeApp(firebaseConfig);
+      document.addEventListener("DOMContentLoaded", function () {
+        // Cấu hình Firebase
+        const firebaseConfig = {
+          apiKey: "AIzaSyAZa14eDyZTf28QrxSzKbQXSyUOOcMX4Ho",
+          authDomain: "project-1429933812416947832.firebaseapp.com",
+          databaseURL:
+            "https://project-1429933812416947832-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "project-1429933812416947832",
+          storageBucket: "project-1429933812416947832.appspot.com",
+          messagingSenderId: "209081900486",
+          appId: "1:209081900486:web:7cd831494d0ccb3d8826c7",
+          measurementId: "G-6N5RCGRJ9Q",
+        };
+        // Khởi tạo Firebase
+        firebase.initializeApp(firebaseConfig);
 
-      function sendData() {
-        let links = ["a", "b", "d"];
-        let notes = ["1<br", "2<sd7", "3<83"];
-        firebase
-          .database()
-          .ref("data/")
-          .set({
-            links: links,
-            notes: notes,
-          })
-          .then(() => {
-            alert("Dữ liệu đã được gửi!");
-          })
-          .catch((error) => {
-            console.error("Lỗi khi gửi dữ liệu: ", error);
-          });
-      }
-      let table = document.getElementById("table");
+        function extractTableData() {
+          let table = document.getElementById("table");
+          let inputLinks = table.getElementsByClassName("input_link");
+          let inputNote1 = table.getElementsByClassName("input_note1");
+          let inputNote2 = table.getElementsByClassName("input_note2");
+          let selects = table.getElementsByTagName("select");
+          let links = [];
+          let notes = [];
 
-      function create_table(links, notes) {
-        table.innerHTML = "";
-        let trr = document.createElement("tr");
-        let content_colum = ["Link", "Note", "Title"];
-        for (let i = 0; i < 3; i++) {
-          let tdd = document.createElement("td");
-          tdd.textContent = content_colum[i];
-          trr.appendChild(tdd);
+          for (var i = 0; i < inputLinks.length - 1; i++) {
+            links.push(inputLinks[i].value);
+            notes.push(
+              selects[i].value +
+                "<br>" +
+                inputNote1[i].value +
+                "<br>" +
+                inputNote2[i].value
+            );
+          }
+
+          return [links, notes];
         }
-        table.appendChild(trr);
-        for (let row = 0; row < links.length; row++) {
-          let tr = document.createElement("tr");
-          for (let column = 0; column < 3; column++) {
-            let td = document.createElement("td");
-            switch (column) {
+
+        document
+          .getElementById("btn_sendData")
+          .addEventListener("click", function () {
+            sendData();
+          });
+
+        function sendData() {
+          let a = extractTableData();
+          let links = a[0];
+          let notes = a[1];
+          console.log(links);
+          console.log(notes);
+          firebase
+            .database()
+            .ref("data/")
+            .set({
+              links: links,
+              notes: notes,
+            })
+            .then(() => {
+              alert("Dữ liệu đã được gửi!");
+            })
+            .catch((error) => {
+              console.error("Lỗi khi gửi dữ liệu: ", error);
+            });
+        }
+
+        let table = document.getElementById("table");
+
+        function create_table(links, notes) {
+          table.innerHTML = "";
+          let trr = document.createElement("tr");
+          trr.style.backgroundColor = "aqua";
+          let content_colum = ["Link", "Title", "Note1", "Note2"];
+          for (let i = 0; i < 4; i++) {
+            let tdd = document.createElement("td");
+            tdd.textContent = content_colum[i];
+            trr.appendChild(tdd);
+          }
+          table.appendChild(trr);
+          if (links !== "new") {
+            for (let row = 0; row < links.length; row++) {
+              let tr = document.createElement("tr");
+              for (let column = 0; column < 4; column++) {
+                let td = document.createElement("td");
+                td.style.overflowX = "scroll";
+                td.style.whiteSpace = "nowrap";
+                switch (column) {
+                  case 0:
+                    let input = document.createElement("input");
+                    input.className = "input_link";
+                    input.value = links[row]; // Gán giá trị cho input
+                    td.appendChild(input);
+                    break;
+                  case 1:
+                    let select = document.createElement("select");
+                    select.className = "select";
+                    let option = document.createElement("option");
+                    option.value = "All";
+                    option.textContent = "All";
+                    select.appendChild(option);
+                    select.value = "All"; // Gán giá trị cho select
+                    td.appendChild(select);
+                    break;
+                  case 2:
+                    let input2 = document.createElement("input");
+                    input2.className = "input_note1";
+                    input2.value = notes[row].split("<br>")[1]; // Gán giá trị cho inputNote1
+                    td.appendChild(input2);
+                    break;
+                  case 3:
+                    let input3 = document.createElement("input");
+                    input3.className = "input_note2";
+                    input3.value = notes[row].split("<br>")[2]; // Gán giá trị cho inputNote2
+                    td.appendChild(input3);
+                    break;
+                  default:
+                }
+                tr.appendChild(td);
+              }
+              table.appendChild(tr);
+            }
+          }
+          create_new_input();
+        }
+
+        function receiveData() {
+          firebase
+            .database()
+            .ref("data/")
+            .on("value", (snapshot) => {
+              let data = snapshot.val();
+              if (data) {
+                create_table(data.links, data.notes);
+              } else {
+                alert("Không có dữ liệu!");
+                create_table("new");
+              }
+            });
+        }
+
+        receiveData();
+
+        // Hàm để kiểm tra các ô input và gọi create_new_input nếu cần thiết
+        function checkInputs() {
+          var table = document.getElementById("table");
+          var inputLinks = table.getElementsByClassName("input_link");
+          var inputNote1 = table.getElementsByClassName("input_note1");
+          var inputNote2 = table.getElementsByClassName("input_note2");
+
+          var lastRowIndex = inputLinks.length - 1;
+
+          if (
+            inputLinks[lastRowIndex].value &&
+            inputNote1[lastRowIndex].value &&
+            inputNote2[lastRowIndex].value
+          ) {
+            console.log("Nhập các ô còn lại");
+            create_new_input();
+          }
+        }
+
+        // Hàm để tạo hàng mới
+        function create_new_input() {
+          let table = document.getElementById("table");
+          let trr = document.createElement("tr");
+
+          for (let i = 0; i < 4; i++) {
+            let tdd = document.createElement("td");
+            switch (i) {
               case 0:
-                td.textContent = links[row];
+                let input = document.createElement("input");
+                input.className = "input_link";
+                tdd.appendChild(input);
                 break;
               case 1:
-                td.textContent = notes[row];
+                let select = document.createElement("select");
+                select.className = "select";
+
+                let option = document.createElement("option");
+                option.value = "All";
+                option.textContent = "All";
+                select.appendChild(option);
+
+                tdd.appendChild(select);
                 break;
               case 2:
-                td.textContent = notes[row].split("<")[0];
+                let input2 = document.createElement("input");
+                input2.className = "input_note1";
+                tdd.appendChild(input2);
+                break;
+              case 3:
+                let input3 = document.createElement("input");
+                input3.className = "input_note2";
+                tdd.appendChild(input3);
                 break;
               default:
-                break;
             }
-            tr.appendChild(td);
+
+            trr.appendChild(tdd);
           }
-          table.appendChild(tr);
-        }
-      }
 
-      // function receiveData() {
-      //   firebase
-      //     .database()
-      //     .ref("data/")
-      //     .on("value", (snapshot) => {
-      //       let data = snapshot.val();
-      //       if (data) {
-      //         create_table(data.links, data.notes);
-      //       } else {
-      //         document.getElementById("output").textContent =
-      //           "Không có dữ liệu !";
-      //       }
-      //     });
-      // }
-      // receiveData();
-      fetch(
-        "https://console.firebase.google.com/project/project-1429933812416947832/overview",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ action: "read" }),
-        }
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          create_table(data.links, data.notes);
-        })
-        .catch((error) => console.error("Error fetching data:", error));
+          table.appendChild(trr);
 
-      // fetch(
-      //   "https://console.firebase.google.com/project/project-1429933812416947832/overview",
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify({
-      //       action: "write",
-      //       newData: {
-      //         /* your new data */
-      //       },
-      //     }),
-      //   }
-      // )
-      //   .then((response) => response.json())
-      //   .then((result) => {
-      //     console.log("Write result:", result);
-      //   })
-      //   .catch((error) => console.error("Error writing data:", error));
+          // Gắn sự kiện input cho các ô input mới
+          attachInputEventListeners();
+        }
+
+        // Hàm để gắn sự kiện input cho các ô input
+        function attachInputEventListeners() {
+          var table = document.getElementById("table");
+          var inputLinks = table.getElementsByClassName("input_link");
+          var inputNote1 = table.getElementsByClassName("input_note1");
+          var inputNote2 = table.getElementsByClassName("input_note2");
+
+          var lastRowIndex = inputLinks.length - 1;
+
+          inputLinks[lastRowIndex].addEventListener("input", checkInputs);
+          inputNote1[lastRowIndex].addEventListener("input", checkInputs);
+          inputNote2[lastRowIndex].addEventListener("input", checkInputs);
+        }
+      });
     </script>
   </body>
 </html>
