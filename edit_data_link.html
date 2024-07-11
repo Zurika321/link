@@ -5,7 +5,8 @@
     <script>
       localStorage.setItem("Admin", true);
       if (!localStorage.getItem("Admin")) {
-        location.href = "index.html";
+        //location.href = "index.html";
+        alert("chưa có key");
       }
     </script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
