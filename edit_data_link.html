@@ -14,24 +14,28 @@
         width: 100%;
       }
       :root {
+        --width_stt: 0.05;
         --width_link: 0.3;
-        --width_title: 0.15;
+        --width_title: 0.1;
         --width_note: 0.275;
       }
       td {
-        width: var(--width_link);
-        min-width: calc(var(--width_link) * 1000px);
-        padding: 0;
+        width: var(--width_stt);
+        min-width: calc(var(--width_stt) * 1000px);
       }
       td:nth-child(2n) {
+        width: var(--width_link);
+        min-width: calc(var(--width_link) * 1000px);
+      }
+      td:nth-child(3n) {
         width: var(--width_title);
         min-width: calc(var(--width_title) * 1000px);
       }
-      td:nth-child(3n) {
+      td:nth-child(4n) {
         width: var(--width_note);
         min-width: calc(var(--width_note) * 1000px);
       }
-      td:nth-child(4n) {
+      td:nth-child(5n) {
         width: var(--width_note);
         min-width: calc(var(--width_note) * 1000px);
       }
@@ -39,12 +43,16 @@
         width: calc(100% - 30px);
         height: 20px;
         border: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       select {
         max-width: 100%;
         width: 100%;
         height: 100%;
         border: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .error {
         position: relative;
@@ -97,6 +105,7 @@
     <button id="btn_sendData">Gửi dữ liệu Firebase</button>
     <button id="btn_get_local">Lấy dữ liệu localStorage</button>
     <button id="btn_save_local">lưu dữ liệu localStorage</button>
+    <button id="sortButton">sắp xếp</button>
     <table border="1" id="table">
       <tr style="background-color: aqua">
         <td>Link</td>
@@ -113,6 +122,21 @@
         } catch (_) {
           return false;
         }
+      }
+      function removeTags(str) {
+        return str.replace(/<\/?[^>]+>/gi, "");
+      }
+      function removeIcon(titles) {
+        // Tạo một bản sao của mảng titles để tránh thay đổi trực tiếp mảng gốc
+        const titlesCopy = titles.slice();
+
+        for (let i = 0; i < titlesCopy.length; i++) {
+          if (titlesCopy[i].startsWith("<")) {
+            // Loại bỏ các thẻ HTML
+            titlesCopy[i] = removeTags(titlesCopy[i]).trim();
+          }
+        }
+        return titlesCopy;
       }
       document.addEventListener("DOMContentLoaded", function () {
         // Cấu hình Firebase
@@ -190,13 +214,17 @@
         }
 
         // Tạo bảng từ dữ liệu nhận được
+        let data = JSON.parse(localStorage.getItem("data"));
+        let title = data.titlesss;
+        let title_no_icon = removeIcon(title);
+
         function createTable(links, notes) {
           let table = document.getElementById("table");
           table.innerHTML = ""; // Xóa nội dung bảng hiện tại
 
           // Tạo hàng tiêu đề của bảng
           let headerRow = table.insertRow();
-          let headerCells = ["Link", "Title", "Note1", "Note2"];
+          let headerCells = ["STT", "Link", "Title", "Note1", "Note2"];
           headerCells.forEach((cellText) => {
             let headerCell = document.createElement("th");
             headerCell.textContent = cellText;
@@ -206,6 +234,11 @@
           // Tạo các hàng dữ liệu từ links và notes
           for (let i = 0; i < links.length; i++) {
             let newRow = table.insertRow();
+
+            // Tạo ô stt
+            let STTcell = newRow.insertCell();
+            STTcell.textContent = i + 1;
+            STTcell.className = "stt_cell";
 
             // Tạo ô input cho Link
             let linkCell = newRow.insertCell();
@@ -225,10 +258,21 @@
             let titleCell = newRow.insertCell();
             let select = document.createElement("select");
             select.className = "select";
-            let option = document.createElement("option");
-            option.value = "All";
-            option.textContent = "All";
-            select.appendChild(option);
+            for (let z = 0; z < title.length; z++) {
+              let option = document.createElement("option");
+
+              option.textContent = removeTags(title[z]);
+              option.value = title[z];
+              select.appendChild(option);
+            }
+            let index = title_no_icon.indexOf(
+              removeTags(notes[i].split("<br>")[0]).trim()
+            );
+            if (index != -1) {
+              select.value = title[index];
+            } else {
+              select.value = "Khác";
+            }
             titleCell.appendChild(select);
 
             // Tạo ô input cho Note1
@@ -262,6 +306,14 @@
           let newRow = table.insertRow();
 
           // Tạo ô input cho Link
+          let STTcell = newRow.insertCell();
+          let stt_cell = document.getElementsByClassName("stt_cell");
+          let last_stt = document.getElementsByClassName("stt_cell").length - 1;
+          let last_stt_cell = stt_cell[last_stt];
+          STTcell.textContent = parseInt(last_stt_cell.textContent, 10) + 1;
+          STTcell.className = "stt_cell";
+
+          // Tạo ô input cho Link
           let linkCell = newRow.insertCell();
           let linkInput = document.createElement("input");
           linkInput.className = "input_link";
@@ -271,10 +323,14 @@
           let titleCell = newRow.insertCell();
           let select = document.createElement("select");
           select.className = "select";
-          let option = document.createElement("option");
-          option.value = "All";
-          option.textContent = "All";
-          select.appendChild(option);
+          for (let z = 0; z < title.length; z++) {
+            let option = document.createElement("option");
+
+            option.innerHTML = title[z];
+            option.value = title[z];
+            select.appendChild(option);
+          }
+          select.value = "Khác";
           titleCell.appendChild(select);
 
           // Tạo ô input cho Note1
@@ -299,16 +355,19 @@
           let inputLinks = table.getElementsByClassName("input_link");
           let inputNote1 = table.getElementsByClassName("input_note1");
           let inputNote2 = table.getElementsByClassName("input_note2");
+          let select = table.getElementsByClassName("select");
 
           for (let i = 0; i < inputLinks.length; i++) {
             if (i + 1 != inputLinks.length) {
               inputLinks[i].addEventListener("input", checkAndRemoveRow);
               inputNote1[i].addEventListener("input", checkAndRemoveRow);
               inputNote2[i].addEventListener("input", checkAndRemoveRow);
+              select[i].addEventListener("change", checkAndRemoveRow);
             } else {
               inputLinks[i].addEventListener("input", checkInputs);
               inputNote1[i].addEventListener("input", checkInputs);
               inputNote2[i].addEventListener("input", checkInputs);
+              select[i].addEventListener("change", checkInputs);
             }
           }
         }
@@ -326,6 +385,7 @@
           let inputNote2Value = currentRow
             .querySelector(".input_note2")
             .value.trim();
+          let select = currentRow.querySelector(".select").value.trim();
 
           if (
             inputLinkValue === "" &&
@@ -333,6 +393,7 @@
             inputNote2Value === ""
           ) {
             table.deleteRow(currentRow.rowIndex);
+            stt_reset();
           }
 
           if (
@@ -345,6 +406,13 @@
             if (inputLinkValue == "") {
               let parent = currentRow.querySelector(".input_link").parentNode;
               parent.className = "error";
+            } else if (select == "File") {
+              let parent1 = currentRow.querySelector(".input_link").parentNode;
+              if (inputLinkValue.startsWith("file:///")) {
+                parent1.className = "oke";
+              } else {
+                parent1.className = "error_link";
+              }
             } else if (!isValidURL(inputLinkValue)) {
               let parent = currentRow.querySelector(".input_link").parentNode;
               parent.className = "error_link";
@@ -364,12 +432,24 @@
             if (inputLinkValue == "") {
               let parent = currentRow.querySelector(".input_link").parentNode;
               parent.className = "error";
+            } else if (select == "File") {
+              let parent1 = currentRow.querySelector(".input_link").parentNode;
+              if (inputLinkValue.startsWith("file:///")) {
+                parent1.className = "oke";
+              } else {
+                parent1.className = "error_link";
+              }
             } else if (!isValidURL(inputLinkValue)) {
               let parent1 = currentRow.querySelector(".input_link").parentNode;
               parent1.className = "error_link";
             } else {
-              let parent = currentRow.querySelector(".input_link").parentNode;
-              parent.className = "oke";
+              if (inputLinkValue.startsWith("file:///")) {
+                let parent = currentRow.querySelector(".input_link").parentNode;
+                parent.className = "error_link";
+              } else {
+                let parent = currentRow.querySelector(".input_link").parentNode;
+                parent.className = "oke";
+              }
             }
             let parent2 = currentRow.querySelector(".input_note1").parentNode;
             parent2.className = "oke";
@@ -381,6 +461,7 @@
           let inputLinks = table.getElementsByClassName("input_link");
           let inputNote1 = table.getElementsByClassName("input_note1");
           let inputNote2 = table.getElementsByClassName("input_note2");
+          let select = table.getElementsByClassName("select");
 
           let lastRowIndex = inputLinks.length - 1;
 
@@ -413,12 +494,23 @@
               if (inputLinks[lastRowIndex].value == "") {
                 let parent = inputLinks[lastRowIndex].parentNode;
                 parent.className = "error";
+              } else if (select[lastRowIndex].value == "File") {
+                let parent = inputLinks[lastRowIndex].parentNode;
+                if (inputLinks[lastRowIndex].value.startsWith("file:///")) {
+                  parent.className = "oke";
+                } else {
+                  parent.className = "error_link";
+                }
               } else if (!isValidURL(inputLinks[lastRowIndex].value)) {
                 let parent = inputLinks[lastRowIndex].parentNode;
                 parent.className = "error_link";
               } else {
                 let parent = inputLinks[lastRowIndex].parentNode;
-                parent.className = "oke";
+                if (inputLinks[lastRowIndex].value.startsWith("file:///")) {
+                  parent.className = "error_link";
+                } else {
+                  parent.className = "oke";
+                }
               }
               if (inputNote1[lastRowIndex].value == "") {
                 let parent = inputNote1[lastRowIndex].parentNode;
@@ -436,7 +528,43 @@
           }
         }
 
-        // Gửi dữ liệu khi nhấn nút
+        function sortTableBySelect() {
+          let table = document.getElementById("table");
+          let rows = Array.from(table.rows).slice(1); // Lấy tất cả các hàng trừ hàng tiêu đề
+          let lastRow = rows.pop(); // Lấy và loại bỏ hàng cuối cùng
+
+          // Sắp xếp các hàng dựa trên giá trị của ô chọn (select)
+          rows.sort((rowA, rowB) => {
+            let selectA = removeTags(
+              rowA.cells[1].querySelector("select").value
+            ).trim();
+            let selectB = removeTags(
+              rowB.cells[1].querySelector("select").value
+            ).trim();
+            return selectA.localeCompare(selectB);
+          });
+
+          // Thêm lại hàng cuối cùng vào cuối danh sách
+          rows.push(lastRow);
+
+          // Cập nhật lại bảng sau khi đã sắp xếp
+          rows.forEach((row, index) => {
+            table.appendChild(row); // Di chuyển hàng vào vị trí mới
+          });
+        }
+
+        function stt_reset() {
+          let stt_cell = document.getElementsByClassName("stt_cell");
+          let stt_cell_length =
+            document.getElementsByClassName("stt_cell").length;
+          for (let index = 0; index < stt_cell_length; index++) {
+            stt_cell[index].textContent = index + 1;
+          }
+        }
+
+        document
+          .getElementById("sortButton")
+          .addEventListener("click", sortTableBySelect);
         document
           .getElementById("btn_sendData")
           .addEventListener("click", function () {
