@@ -11,21 +11,26 @@ function thong_bao_chung(thong_bao, x) {
   remove_thong_bao.className = "remove_thong_bao";
   remove_thong_bao.textContent = "X";
   remove_thong_bao.addEventListener("click", () => {
-    document.body.removeChild(div);
+    if (document.body.contains(div)) {
+      document.body.removeChild(div);
+    }
   });
 
   div.appendChild(remove_thong_bao);
-
   document.body.appendChild(div);
+
   div.offsetHeight;
   div.style.top = "10px";
   setTimeout(() => {
     div.style.opacity = "0";
     setTimeout(() => {
-      document.body.removeChild(div);
+      if (document.body.contains(div)) {
+        document.body.removeChild(div);
+      }
     }, 1000);
   }, 1000 * x);
 }
+thong_bao_chung("a", 10);
 
 !(function () {
   function isMobile() {
@@ -166,6 +171,7 @@ function thong_bao_chung(thong_bao, x) {
     "<i class='fa-solid fa-couch' style='color: #664600;'></i> MXH",
     "<i class='fa-solid fa-book' style='color: #b38300'></i> Study",
     "<i class='fa-solid fa-brain' style='color: #949494;'></i> Tips",
+    "Khác",
     "ZZ",
   ];
   var title_mac_dinh = title;
@@ -390,34 +396,57 @@ function thong_bao_chung(thong_bao, x) {
     items = item(what_title);
     create_icon(titles);
   }
+  let time_error_sort = false;
   function sortDivLinks(searchValue, divScroll) {
-    const divLinks = Array.from(divScroll.children);
-    divLinks.sort((a, b) => {
-      const aValue = a.getAttribute("for").toLowerCase();
-      const bValue = b.getAttribute("for").toLowerCase();
+    const divLinks = Array.from(divScroll.children).filter((child) =>
+      child.classList.contains("div_link")
+    );
 
-      const aSimilarity = aValue.indexOf(searchValue) !== -1 ? 1 : 0;
-      const bSimilarity = bValue.indexOf(searchValue) !== -1 ? 1 : 0;
-
-      // Kiểm tra nếu giá trị bắt đầu bằng dấu chấm "."
-      const aStartsWithDot = aValue.startsWith(".") ? 1 : 0;
-      const bStartsWithDot = bValue.startsWith(".") ? 1 : 0;
-
-      // Nếu cả hai đều bắt đầu hoặc không bắt đầu bằng dấu chấm, sắp xếp theo độ tương tự và chữ "ừ"
-      if (aStartsWithDot !== bStartsWithDot) {
-        return bStartsWithDot - aStartsWithDot;
-      } else if (aSimilarity !== bSimilarity) {
-        return bSimilarity - aSimilarity;
-      } else if (aValue.includes("ừ") && !bValue.includes("ừ")) {
-        return 1;
-      } else if (!aValue.includes("ừ") && bValue.includes("ừ")) {
-        return -1;
-      } else {
-        return aValue.localeCompare(bValue);
+    if (divLinks.length == 1) {
+      if (!time_error_sort) {
+        time_error_sort = !time_error_sort;
+        thong_bao_chung("chưa có dữ liệu để tìm kiếm");
+        setTimeout(() => {
+          time_error_sort = !time_error_sort;
+        }, 3000);
       }
-    });
+    } else {
+      // Sắp xếp các phần tử theo các tiêu chí đã cho
+      divLinks.sort((a, b) => {
+        const aValue = a.getAttribute("for").toLowerCase();
+        const bValue = b.getAttribute("for").toLowerCase();
 
-    divLinks.forEach((divLink) => divScroll.appendChild(divLink));
+        // Tính độ tương tự của giá trị với searchValue
+        const aSimilarity = aValue.indexOf(searchValue) !== -1 ? 1 : 0;
+        const bSimilarity = bValue.indexOf(searchValue) !== -1 ? 1 : 0;
+
+        // Kiểm tra nếu giá trị bắt đầu bằng dấu chấm "."
+        const aStartsWithDot = aValue.startsWith(".") ? 1 : 0;
+        const bStartsWithDot = bValue.startsWith(".") ? 1 : 0;
+
+        // Sắp xếp theo dấu chấm trước
+        if (aStartsWithDot !== bStartsWithDot) {
+          return bStartsWithDot - aStartsWithDot;
+        }
+        // Sắp xếp theo độ tương tự
+        else if (aSimilarity !== bSimilarity) {
+          return bSimilarity - aSimilarity;
+        }
+        // Sắp xếp theo sự hiện diện của chữ "ừ"
+        else if (aValue.includes("ừ") && !bValue.includes("ừ")) {
+          return 1;
+        } else if (!aValue.includes("ừ") && bValue.includes("ừ")) {
+          return -1;
+        }
+        // Sắp xếp theo thứ tự chữ cái
+        else {
+          return aValue.localeCompare(bValue);
+        }
+      });
+
+      // Cập nhật các phần tử con vào divScroll theo thứ tự đã sắp xếp
+      divLinks.forEach((divLink) => divScroll.appendChild(divLink));
+    }
   }
 
   function create_icon() {
@@ -549,47 +578,50 @@ function thong_bao_chung(thong_bao, x) {
   }
 
   function console_data() {
+    if (!localStorage.getItem("data")) {
+      var data = { linksss: [link], notesss: [note], titlesss: title };
+      localStorage.setItem("data", JSON.stringify(data));
+    }
     if (localStorage.getItem("data")) {
       var retrievedData = JSON.parse(localStorage.getItem("data"));
       var link_data = retrievedData.linksss;
       var note_data = retrievedData.notesss;
       var title_data = retrievedData.titlesss;
-      var thiet_bi = getDeviceType();
-      document.getElementById("whaticon").innerHTML =
-        "Icons :" +
-        link_data.length +
-        "<br>" +
-        thiet_bi +
-        "<br>" +
-        "Titles :" +
-        title_data.length;
-      link = link_data;
-      note = note_data;
-      title = title_data;
-      fixDuplicateNotes();
-    } else {
-      setTimeout(() => {
-        var div_scroll = document.getElementById("div_scroll");
-        var div = document.createElement(div);
-        div.style =
-          "width: 200px;font-size:20px;position: fixed;left:calc(50% - 65px);top:calc(50% - 65px)";
-        div.textContent = "Chưa có dữ liệu";
-        div_scroll.appendChild(div);
-      }, 1000);
+      if (link_data.length == 0) {
+        link = link_data;
+        note = note_data;
+        title = title_data;
+        setTimeout(() => {
+          var div_scroll = document.getElementById("div_scroll");
+          var div = document.createElement(div);
+          div.style =
+            "width: 200px;font-size:20px;position: fixed;left:calc(50% - 65px);top:calc(50% - 65px)";
+          div.textContent = "Chưa có dữ liệu";
+          div_scroll.appendChild(div);
+        }, 1000);
+      } else {
+        let thiet_bi = getDeviceType();
+        document.getElementById("whaticon").innerHTML =
+          "Icons :" +
+          link_data.length +
+          "<br>" +
+          thiet_bi +
+          "<br>" +
+          "Titles :" +
+          title_data.length;
+        link = link_data;
+        note = note_data;
+        title = title_data;
+        fixDuplicateNotes();
+      }
     }
     title_no_icon = removeIcon(title);
   }
   function add_data(link, note) {
-    if (!localStorage.getItem("data")) {
-      var data = { linksss: [link], notesss: [note], titlesss: title };
-      localStorage.setItem("data", JSON.stringify(data));
-    } else {
-      let retrievedData = JSON.parse(localStorage.getItem("data"));
-
-      retrievedData.linksss.push(link);
-      retrievedData.notesss.push(note);
-      localStorage.setItem("data", JSON.stringify(retrievedData));
-    }
+    let retrievedData = JSON.parse(localStorage.getItem("data"));
+    retrievedData.linksss.push(link);
+    retrievedData.notesss.push(note);
+    localStorage.setItem("data", JSON.stringify(retrievedData));
     console_data();
     title_pick("All");
   }
