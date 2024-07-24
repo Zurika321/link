@@ -30,7 +30,6 @@ function thong_bao_chung(thong_bao, x) {
     }, 1000);
   }, 1000 * x);
 }
-thong_bao_chung("a", 10);
 
 !(function () {
   function isMobile() {
