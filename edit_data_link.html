@@ -460,9 +460,16 @@
           // Tạo ô input cho Link
           let STTcell = newRow.insertCell();
           let stt_cell = document.getElementsByClassName("stt_cell");
-          let last_stt = document.getElementsByClassName("stt_cell").length - 1;
-          let last_stt_cell = stt_cell[last_stt];
-          STTcell.textContent = parseInt(last_stt_cell.textContent, 10) + 1;
+          alert(stt_cell.length);
+          if (stt_cell.length != 0) {
+            let last_stt =
+              document.getElementsByClassName("stt_cell").length - 1;
+            let last_stt_cell = stt_cell[last_stt];
+            STTcell.textContent = parseInt(last_stt_cell.textContent, 10) + 1;
+          } else {
+            STTcell.textContent = 1;
+          }
+
           STTcell.className = "stt_cell";
 
           // Tạo ô input cho Link
