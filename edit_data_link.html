@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Send Data</title>
+    <script>
+      localStorage.removeItem("Admin");
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+    <style>
+      table {
+        width: 100%;
+      }
+      :root {
+        --width_stt: 0.05;
+        --width_link: 0.3;
+        --width_title: 0.1;
+        --width_note: 0.275;
+      }
+      td {
+        width: var(--width_stt);
+        min-width: calc(var(--width_stt) * 1000px);
+      }
+      td:nth-child(2n) {
+        width: var(--width_link);
+        min-width: calc(var(--width_link) * 1000px);
+      }
+      td:nth-child(3n) {
+        width: var(--width_title);
+        min-width: calc(var(--width_title) * 1000px);
+      }
+      td:nth-child(4n) {
+        width: var(--width_note);
+        min-width: calc(var(--width_note) * 1000px);
+      }
+      td:nth-child(5n) {
+        width: var(--width_note);
+        min-width: calc(var(--width_note) * 1000px);
+      }
+      input {
+        width: calc(100% - 30px);
+        height: 20px;
+        border: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      select {
+        max-width: 100%;
+        width: 100%;
+        height: 100%;
+        border: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .error {
+        position: relative;
+      }
+      .error::after {
+        content: "";
+        background-image: url("https://w7.pngwing.com/pngs/711/621/png-transparent-warning-icon-error-computer-icons-orange-error-icon-miscellaneous-angle-triangle-thumbnail.png");
+        width: 20px;
+        background-size: cover;
+        height: 20px;
+        position: absolute;
+        right: 3px;
+        top: 1px;
+        background-color: aqua;
+      }
+      .oke {
+        position: relative;
+      }
+      .oke::after {
+        content: "";
+        background-image: url("https://banner2.cleanpng.com/20180418/wue/kisspng-computer-icons-check-mark-clip-art-green-tick-5ad76021a27d23.3470353515240642896656.jpg");
+        width: 20px;
+        background-size: cover;
+        background-position: center;
+        height: 20px;
+        position: absolute;
+        right: 3px;
+        top: 1px;
+        background-color: aqua;
+      }
+      .error_link {
+        position: relative;
+      }
+      .error_link::after {
+        content: "";
+        background-image: url("https://static.vecteezy.com/system/resources/previews/015/131/133/original/crossing-sign-error-404-png.png");
+        width: 20px;
+        background-size: cover;
+        background-position: center;
+        height: 20px;
+        position: absolute;
+        right: 3px;
+        top: 1px;
+        background-color: aqua;
+      }
+      .form-container {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        background-color: #00000076;
+        z-index: 10;
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+      #firebaseConfigForm {
+        position: relative;
+        width: 260px;
+        max-height: 100px;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #ffffff;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid black;
+      }
+      .form-group button {
+        width: 100%;
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      .form-group button:hover {
+        background-color: #45a049;
+      }
+      .thong_bao_chung {
+        position: fixed;
+        z-index: 500;
+        width: 200px;
+        height: 60px;
+        padding: 10px;
+        color: white;
+        border: 1px solid white;
+        border-radius: 10px;
+        background-color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        left: calc(50% - 100px);
+        top: -60px;
+        transition: top 0.5s, opacity 1s;
+        box-shadow: 2px 2px 10px white;
+      }
+      .remove_thong_bao {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        font-size: 12px;
+        cursor: pointer;
+        color: black;
+      }
+      .remove_get_key {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        font-size: 12px;
+        cursor: pointer;
+        color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="btn_get_firebase">Lấy dữ liệu Firebase</button>
+    <button id="btn_sendData">Gửi dữ liệu Firebase</button>
+    <button id="btn_get_local">Lấy dữ liệu localStorage</button>
+    <button id="btn_save_local">lưu dữ liệu localStorage</button>
+    <button id="sortButton">sắp xếp</button>
+    <div class="form-container" id="form_container">
+      <form id="firebaseConfigForm">
+        <div
+          class="remove_get_key"
+          onclick="this.parentElement.parentElement.style.display= 'none'"
+        >
+          X
+        </div>
+        <div class="form-group">
+          <label for="apiKey">API Key:</label>
+          <input
+            type="text"
+            id="apiKey"
+            name="apiKey"
+            autocomplete="off"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <button type="submit">Submit</button>
+        </div>
+      </form>
+    </div>
+    <table border="1" id="table">
+      <tr>
+        <td>STT</td>
+        <td>Link</td>
+        <td>Title</td>
+        <td>Note1</td>
+        <td>Note2</td>
+      </tr>
+    </table>
+    <script>
+      function thong_bao_chung(thong_bao, x) {
+        if (x === undefined) {
+          x = 2;
+        }
+
+        let div = document.createElement("div");
+        div.className = "thong_bao_chung";
+        div.textContent = thong_bao;
+
+        let remove_thong_bao = document.createElement("div");
+        remove_thong_bao.className = "remove_thong_bao";
+        remove_thong_bao.textContent = "X";
+        remove_thong_bao.addEventListener("click", () => {
+          if (document.body.contains(div)) {
+            document.body.removeChild(div);
+          }
+        });
+
+        div.appendChild(remove_thong_bao);
+        document.body.appendChild(div);
+
+        div.offsetHeight;
+        div.style.top = "10px";
+        setTimeout(() => {
+          div.style.opacity = "0";
+          setTimeout(() => {
+            if (document.body.contains(div)) {
+              document.body.removeChild(div);
+            }
+          }, 1000);
+        }, 1000 * x);
+      }
+      var apiKey_get = localStorage.getItem("apikey") || "";
+      document
+        .getElementById("firebaseConfigForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          apiKey_get = document.getElementById("apiKey").value;
+          localStorage.setItem("apikey", apiKey_get);
+          document.getElementById("form_container").style.display = "none";
+        });
+
+      function isValidURL(string) {
+        try {
+          new URL(string);
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+      function removeTags(str) {
+        return str.replace(/<\/?[^>]+>/gi, "");
+      }
+      function removeIcon(titles) {
+        // Tạo một bản sao của mảng titles để tránh thay đổi trực tiếp mảng gốc
+        const titlesCopy = titles.slice();
+
+        for (let i = 0; i < titlesCopy.length; i++) {
+          if (titlesCopy[i].startsWith("<")) {
+            // Loại bỏ các thẻ HTML
+            titlesCopy[i] = removeTags(titlesCopy[i]).trim();
+          }
+        }
+        return titlesCopy;
+      }
+      document.addEventListener("DOMContentLoaded", function () {
+        // Cấu hình Firebase
+        const firebaseConfig = {
+          apiKey: apiKey_get,
+          authDomain: "project-1429933812416947832.firebaseapp.com",
+          databaseURL: `https://project-1429933812416947832-default-rtdb.asia-southeast1.firebasedatabase.app`,
+          projectId: "project-1429933812416947832",
+          storageBucket: "project-1429933812416947832.appspot.com",
+          messagingSenderId: "209081900486",
+          appId: "1:209081900486:web:7cd831494d0ccb3d8826c7",
+          measurementId: "G-6N5RCGRJ9Q",
+        };
+        // Khởi tạo Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Hàm trích xuất dữ liệu từ bảng
+        function extractTableData() {
+          let table = document.getElementById("table");
+          let inputLinks = table.getElementsByClassName("input_link");
+          let inputNote1 = table.getElementsByClassName("input_note1");
+          let inputNote2 = table.getElementsByClassName("input_note2");
+          let selects = table.getElementsByClassName("select");
+          let links = [];
+          let notes = [];
+
+          for (let i = 0; i < inputLinks.length - 1; i++) {
+            links.push(inputLinks[i].value);
+            notes.push(
+              selects[i].value +
+                "<br>" +
+                inputNote1[i].value +
+                "<br>" +
+                inputNote2[i].value
+            );
+          }
+
+          return [links, notes];
+        }
+
+        // Gửi dữ liệu lên Firebase
+        function sendData() {
+          let [links, notes] = extractTableData();
+
+          firebase
+            .database()
+            .ref("data/")
+            .set({
+              links: links,
+              notes: notes,
+            })
+            .then(() => {
+              thong_bao_chung("Dữ liệu đã được gửi lên Firebase!");
+            })
+            .catch((error) => {
+              console.error("Lỗi khi gửi dữ liệu: ", error);
+            });
+        }
+
+        // Nhận dữ liệu từ Firebase và tạo bảng
+        function receiveData() {
+          if (apiKey_get == "") {
+            document.getElementById("form_container").style.display = "flex";
+            return;
+          }
+          firebase
+            .database()
+            .ref("data/")
+            .on("value", (snapshot) => {
+              let data = snapshot.val();
+              if (data) {
+                createTable(data.links, data.notes);
+              } else {
+                thong_bao_chung("Không có dữ liệu trong Firebase!");
+                createTable([], []);
+              }
+            });
+        }
+        receiveData();
+        // Tạo bảng từ dữ liệu nhận được
+        let data = JSON.parse(localStorage.getItem("data"));
+        let title = data.titlesss;
+        let title_no_icon = removeIcon(title);
+
+        function createTable(links, notes) {
+          let table = document.getElementById("table");
+          table.innerHTML = ""; // Xóa nội dung bảng hiện tại
+
+          // Tạo hàng tiêu đề của bảng
+          let headerRow = table.insertRow();
+          let headerCells = ["STT", "Link", "Title", "Note1", "Note2"];
+          headerCells.forEach((cellText) => {
+            let headerCell = document.createElement("th");
+            headerCell.textContent = cellText;
+            headerCell.style.backgroundColor = "aqua";
+            headerRow.appendChild(headerCell);
+          });
+
+          // Tạo các hàng dữ liệu từ links và notes
+          for (let i = 0; i < links.length; i++) {
+            let newRow = table.insertRow();
+
+            // Tạo ô stt
+            let STTcell = newRow.insertCell();
+            STTcell.textContent = i + 1;
+            STTcell.className = "stt_cell";
+
+            // Tạo ô input cho Link
+            let linkCell = newRow.insertCell();
+            let linkInput = document.createElement("input");
+            linkInput.className = "input_link";
+            linkInput.value = links[i];
+            if (!isValidURL(links[i])) {
+              linkCell.className = "error_link";
+            } else if (links[i] != "") {
+              linkCell.className = "oke";
+            } else {
+              linkCell.className = "error";
+            }
+            linkCell.appendChild(linkInput);
+
+            // Tạo ô select cho Title
+            let titleCell = newRow.insertCell();
+            let select = document.createElement("select");
+            select.className = "select";
+            for (let z = 0; z < title.length; z++) {
+              let option = document.createElement("option");
+
+              option.textContent = removeTags(title[z]);
+              option.value = title[z];
+              select.appendChild(option);
+            }
+            let index = title_no_icon.indexOf(
+              removeTags(notes[i].split("<br>")[0]).trim()
+            );
+            if (index != -1) {
+              select.value = title[index];
+            } else {
+              select.value = "Khác";
+            }
+            titleCell.appendChild(select);
+
+            // Tạo ô input cho Note1
+            let note1Cell = newRow.insertCell();
+            let note1Input = document.createElement("input");
+            note1Input.className = "input_note1";
+            note1Input.value = notes[i].split("<br>")[1];
+            if (notes[i].split("<br>")[1] != "") {
+              note1Cell.className = "oke";
+            } else {
+              note1Cell.className = "error";
+            }
+            note1Cell.appendChild(note1Input);
+
+            // Tạo ô input cho Note2
+            let note2Cell = newRow.insertCell();
+            let note2Input = document.createElement("input");
+            note2Input.className = "input_note2";
+            note2Input.value = notes[i].split("<br>")[2];
+            note2Cell.appendChild(note2Input);
+            note2Cell.className = "oke";
+          }
+
+          // Tạo hàng mới để nhập dữ liệu
+          createNewRow();
+        }
+
+        // Tạo hàng mới cho việc nhập dữ liệu mới
+        function createNewRow() {
+          let table = document.getElementById("table");
+          let newRow = table.insertRow();
+
+          // Tạo ô input cho Link
+          let STTcell = newRow.insertCell();
+          let stt_cell = document.getElementsByClassName("stt_cell");
+          let last_stt = document.getElementsByClassName("stt_cell").length - 1;
+          let last_stt_cell = stt_cell[last_stt];
+          STTcell.textContent = parseInt(last_stt_cell.textContent, 10) + 1;
+          STTcell.className = "stt_cell";
+
+          // Tạo ô input cho Link
+          let linkCell = newRow.insertCell();
+          let linkInput = document.createElement("input");
+          linkInput.className = "input_link";
+          linkCell.appendChild(linkInput);
+
+          // Tạo ô select cho Title
+          let titleCell = newRow.insertCell();
+          let select = document.createElement("select");
+          select.className = "select";
+          for (let z = 0; z < title.length; z++) {
+            let option = document.createElement("option");
+
+            option.innerHTML = title[z];
+            option.value = title[z];
+            select.appendChild(option);
+          }
+          select.value = "Khác";
+          titleCell.appendChild(select);
+
+          // Tạo ô input cho Note1
+          let note1Cell = newRow.insertCell();
+          let note1Input = document.createElement("input");
+          note1Input.className = "input_note1";
+          note1Cell.appendChild(note1Input);
+
+          // Tạo ô input cho Note2
+          let note2Cell = newRow.insertCell();
+          let note2Input = document.createElement("input");
+          note2Input.className = "input_note2";
+          note2Cell.appendChild(note2Input);
+
+          // Gắn sự kiện input cho các ô input mới
+          attachInputEventListeners();
+        }
+
+        // Gắn sự kiện input cho các ô input
+        function attachInputEventListeners() {
+          let table = document.getElementById("table");
+          let inputLinks = table.getElementsByClassName("input_link");
+          let inputNote1 = table.getElementsByClassName("input_note1");
+          let inputNote2 = table.getElementsByClassName("input_note2");
+          let select = table.getElementsByClassName("select");
+
+          for (let i = 0; i < inputLinks.length; i++) {
+            if (i + 1 != inputLinks.length) {
+              inputLinks[i].addEventListener("input", checkAndRemoveRow);
+              inputNote1[i].addEventListener("input", checkAndRemoveRow);
+              inputNote2[i].addEventListener("input", checkAndRemoveRow);
+              select[i].addEventListener("change", checkAndRemoveRow);
+            } else {
+              inputLinks[i].addEventListener("input", checkInputs);
+              inputNote1[i].addEventListener("input", checkInputs);
+              inputNote2[i].addEventListener("input", checkInputs);
+              select[i].addEventListener("change", checkInputs);
+            }
+          }
+        }
+
+        // Kiểm tra và xóa hàng nếu tất cả các ô input trong hàng đó đều rỗng
+        function checkAndRemoveRow() {
+          let table = document.getElementById("table");
+          let currentRow = this.closest("tr");
+          let inputLinkValue = currentRow
+            .querySelector(".input_link")
+            .value.trim();
+          let inputNote1Value = currentRow
+            .querySelector(".input_note1")
+            .value.trim();
+          let inputNote2Value = currentRow
+            .querySelector(".input_note2")
+            .value.trim();
+          let select = currentRow.querySelector(".select").value.trim();
+
+          if (
+            inputLinkValue === "" &&
+            inputNote1Value === "" &&
+            inputNote2Value === ""
+          ) {
+            table.deleteRow(currentRow.rowIndex);
+            stt_reset();
+          }
+
+          if (
+            (inputLinkValue == "" &&
+              inputNote1Value == "" &&
+              inputNote2Value != "") ||
+            (inputLinkValue != "" && inputNote1Value == "") ||
+            (inputLinkValue == "" && inputNote1Value != "")
+          ) {
+            if (inputLinkValue == "") {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "error";
+            } else if (select == "File") {
+              let parent1 = currentRow.querySelector(".input_link").parentNode;
+              if (inputLinkValue.startsWith("file:///")) {
+                parent1.className = "oke";
+              } else {
+                parent1.className = "error_link";
+              }
+            } else if (!isValidURL(inputLinkValue)) {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "error_link";
+            } else {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "oke";
+            }
+
+            if (inputNote1Value == "") {
+              let parent = currentRow.querySelector(".input_note1").parentNode;
+              parent.className = "error";
+            } else {
+              let parent = currentRow.querySelector(".input_note1").parentNode;
+              parent.className = "oke";
+            }
+          } else {
+            if (inputLinkValue == "") {
+              let parent = currentRow.querySelector(".input_link").parentNode;
+              parent.className = "error";
+            } else if (select == "File") {
+              let parent1 = currentRow.querySelector(".input_link").parentNode;
+              if (inputLinkValue.startsWith("file:///")) {
+                parent1.className = "oke";
+              } else {
+                parent1.className = "error_link";
+              }
+            } else if (!isValidURL(inputLinkValue)) {
+              let parent1 = currentRow.querySelector(".input_link").parentNode;
+              parent1.className = "error_link";
+            } else {
+              if (inputLinkValue.startsWith("file:///")) {
+                let parent = currentRow.querySelector(".input_link").parentNode;
+                parent.className = "error_link";
+              } else {
+                let parent = currentRow.querySelector(".input_link").parentNode;
+                parent.className = "oke";
+              }
+            }
+            let parent2 = currentRow.querySelector(".input_note1").parentNode;
+            parent2.className = "oke";
+          }
+        }
+
+        function checkInputs() {
+          let table = document.getElementById("table");
+          let inputLinks = table.getElementsByClassName("input_link");
+          let inputNote1 = table.getElementsByClassName("input_note1");
+          let inputNote2 = table.getElementsByClassName("input_note2");
+          let select = table.getElementsByClassName("select");
+
+          let lastRowIndex = inputLinks.length - 1;
+
+          if (
+            inputLinks[lastRowIndex].value != "" &&
+            inputNote1[lastRowIndex].value != ""
+          ) {
+            if (!isValidURL(inputLinks[lastRowIndex].value)) {
+              let parent = inputLinks[lastRowIndex].parentNode;
+              parent.className = "error_link";
+            } else {
+              let parent = inputLinks[lastRowIndex].parentNode;
+              parent.className = "oke";
+            }
+            let parent2 = inputNote1[lastRowIndex].parentNode;
+            parent2.className = "oke";
+            let parent3 = inputNote2[lastRowIndex].parentNode;
+            parent3.className = "oke";
+            createNewRow();
+          } else {
+            if (
+              (inputLinks[lastRowIndex].value == "" &&
+                inputNote1[lastRowIndex].value == "" &&
+                inputNote2[lastRowIndex].value != "") ||
+              (inputLinks[lastRowIndex].value != "" &&
+                inputNote1[lastRowIndex].value == "") ||
+              (inputLinks[lastRowIndex].value == "" &&
+                inputNote1[lastRowIndex].value != "")
+            ) {
+              if (inputLinks[lastRowIndex].value == "") {
+                let parent = inputLinks[lastRowIndex].parentNode;
+                parent.className = "error";
+              } else if (select[lastRowIndex].value == "File") {
+                let parent = inputLinks[lastRowIndex].parentNode;
+                if (inputLinks[lastRowIndex].value.startsWith("file:///")) {
+                  parent.className = "oke";
+                } else {
+                  parent.className = "error_link";
+                }
+              } else if (!isValidURL(inputLinks[lastRowIndex].value)) {
+                let parent = inputLinks[lastRowIndex].parentNode;
+                parent.className = "error_link";
+              } else {
+                let parent = inputLinks[lastRowIndex].parentNode;
+                if (inputLinks[lastRowIndex].value.startsWith("file:///")) {
+                  parent.className = "error_link";
+                } else {
+                  parent.className = "oke";
+                }
+              }
+              if (inputNote1[lastRowIndex].value == "") {
+                let parent = inputNote1[lastRowIndex].parentNode;
+                parent.className = "error";
+              } else {
+                let parent = inputNote1[lastRowIndex].parentNode;
+                parent.className = "oke";
+              }
+            } else {
+              let parent1 = inputLinks[lastRowIndex].parentNode;
+              parent1.className = "";
+              let parent2 = inputNote1[lastRowIndex].parentNode;
+              parent2.className = "";
+            }
+          }
+        }
+
+        function sortTableBySelect() {
+          let table = document.getElementById("table");
+          let rows = Array.from(table.rows).slice(1); // Lấy tất cả các hàng trừ hàng tiêu đề
+          let lastRow = rows.pop(); // Lấy và loại bỏ hàng cuối cùng
+
+          // Sắp xếp các hàng dựa trên giá trị của ô chọn (select)
+          rows.sort((rowA, rowB) => {
+            let selectA = removeTags(
+              rowA.cells[2].querySelector("select").value
+            ).trim();
+            let selectB = removeTags(
+              rowB.cells[2].querySelector("select").value
+            ).trim();
+            return selectA.localeCompare(selectB);
+          });
+
+          // Thêm lại hàng cuối cùng vào cuối danh sách
+          rows.push(lastRow);
+
+          // Cập nhật lại bảng sau khi đã sắp xếp
+          rows.forEach((row, index) => {
+            table.appendChild(row); // Di chuyển hàng vào vị trí mới
+          });
+        }
+
+        function stt_reset() {
+          let stt_cell = document.getElementsByClassName("stt_cell");
+          let stt_cell_length =
+            document.getElementsByClassName("stt_cell").length;
+          for (let index = 0; index < stt_cell_length; index++) {
+            stt_cell[index].textContent = index + 1;
+          }
+        }
+
+        document
+          .getElementById("sortButton")
+          .addEventListener("click", sortTableBySelect);
+        document
+          .getElementById("btn_sendData")
+          .addEventListener("click", function () {
+            sendData();
+          });
+        document
+          .getElementById("btn_get_firebase")
+          .addEventListener("click", function () {
+            receiveData();
+          });
+        document
+          .getElementById("btn_save_local")
+          .addEventListener("click", function () {
+            if (!localStorage.getItem("data")) {
+              alert("không có dữ liệu");
+              return;
+            }
+            let [links, notes] = extractTableData();
+            let data = JSON.parse(localStorage.getItem("data"));
+            data.linksss = links;
+            data.notesss = notes;
+            localStorage.setItem("data", JSON.stringify(data));
+          });
+        document
+          .getElementById("btn_get_local")
+          .addEventListener("click", function () {
+            if (!localStorage.getItem("data")) {
+              alert("không có dữ liệu");
+              return;
+            }
+            let data = JSON.parse(localStorage.getItem("data"));
+            createTable(data.linksss, data.notesss);
+          });
+      });
+    </script>
+  </body>
+</html>
