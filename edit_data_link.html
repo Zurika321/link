@@ -185,6 +185,7 @@
     <button id="btn_get_local">Lấy dữ liệu localStorage</button>
     <button id="btn_save_local">lưu dữ liệu localStorage</button>
     <button id="sortButton">sắp xếp</button>
+    <div id="nguon_du_lieu">...</div>
     <div class="form-container" id="form_container">
       <form id="firebaseConfigForm">
         <div
@@ -208,15 +209,7 @@
         </div>
       </form>
     </div>
-    <table border="1" id="table">
-      <tr>
-        <td>STT</td>
-        <td>Link</td>
-        <td>Title</td>
-        <td>Note1</td>
-        <td>Note2</td>
-      </tr>
-    </table>
+    <table border="1" id="table"></table>
     <script>
       function thong_bao_chung(thong_bao, x) {
         if (x === undefined) {
@@ -325,7 +318,15 @@
         // Gửi dữ liệu lên Firebase
         function sendData() {
           let [links, notes] = extractTableData();
-
+          if (links.length == 0) {
+            thong_bao_chung("Không tìm thấy dữ liệu để gửi");
+            return;
+          }
+          if (apiKey_get == "") {
+            thong_bao_chung("Vui lòng nhập Apikey");
+            document.getElementById("form_container").style.display = "flex";
+            return;
+          }
           firebase
             .database()
             .ref("data/")
@@ -344,6 +345,7 @@
         // Nhận dữ liệu từ Firebase và tạo bảng
         function receiveData() {
           if (apiKey_get == "") {
+            thong_bao_chung("Vui lòng nhập Apikey");
             document.getElementById("form_container").style.display = "flex";
             return;
           }
@@ -354,13 +356,14 @@
               let data = snapshot.val();
               if (data) {
                 createTable(data.links, data.notes);
+                document.getElementById("nguon_du_lieu").textContent =
+                  "Đang nhập dữ liệu Firebase";
               } else {
                 thong_bao_chung("Không có dữ liệu trong Firebase!");
                 createTable([], []);
               }
             });
         }
-        receiveData();
         // Tạo bảng từ dữ liệu nhận được
         let data = JSON.parse(localStorage.getItem("data"));
         let title = data.titlesss;
@@ -711,6 +714,18 @@
           }
         }
 
+        function retri_local() {
+          if (!localStorage.getItem("data")) {
+            thong_bao_chung("không có dữ liệu");
+            return;
+          }
+          document.getElementById("nguon_du_lieu").textContent =
+            "Đang nhập dữ liệu localStorage";
+          let retri = JSON.parse(localStorage.getItem("data"));
+          createTable(data.linksss, data.notesss);
+        }
+        retri_local();
+
         document
           .getElementById("sortButton")
           .addEventListener("click", sortTableBySelect);
@@ -728,8 +743,21 @@
           .getElementById("btn_save_local")
           .addEventListener("click", function () {
             if (!localStorage.getItem("data")) {
-              alert("không có dữ liệu");
-              return;
+              let link = [];
+              let note = [];
+              let title = [
+                "AI",
+                "Anime",
+                "File",
+                "<i class='fab fa-github' style='color: black'></i> Github",
+                "<i class='fa-solid fa-couch' style='color: #664600;'></i> MXH",
+                "<i class='fa-solid fa-book' style='color: #b38300'></i> Study",
+                "<i class='fa-solid fa-brain' style='color: #949494;'></i> Tips",
+                "Khác",
+                "ZZ",
+              ];
+              let data = { linksss: link, notesss: note, titlesss: title };
+              localStorage.setItem("data", JSON.stringify(data));
             }
             let [links, notes] = extractTableData();
             let data = JSON.parse(localStorage.getItem("data"));
@@ -740,12 +768,7 @@
         document
           .getElementById("btn_get_local")
           .addEventListener("click", function () {
-            if (!localStorage.getItem("data")) {
-              alert("không có dữ liệu");
-              return;
-            }
-            let data = JSON.parse(localStorage.getItem("data"));
-            createTable(data.linksss, data.notesss);
+            retri_local();
           });
       });
     </script>
