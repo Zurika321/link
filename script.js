@@ -203,6 +203,9 @@ function thong_bao_chung(thong_bao, x) {
   function console_star(note_add, add_or_remove) {
     if (note_add == "") {
       star = JSON.parse(localStorage.getItem("star")) || [];
+      if (note.length == 0) {
+        return;
+      }
       let clean_notes = remove_space_from_array(
         note.map((item) => removeTags(item))
       );
@@ -254,8 +257,6 @@ function thong_bao_chung(thong_bao, x) {
   }
 
   function fixDuplicateNotes() {
-    // Đối với mỗi phần tử trong mảng, kiểm tra xem phần tử đó có xuất hiện lặp lại không
-    var bool = false;
     for (let z = 0; z < note.length; z++) {
       let count = -1; // Đếm số lần xuất hiện của phần tử
       for (let j = z + 1; j < note.length; j++) {
@@ -275,9 +276,6 @@ function thong_bao_chung(thong_bao, x) {
           }
         }
       }
-    }
-    if (bool) {
-      create_data(link, note);
     }
   }
   fixDuplicateNotes();
@@ -578,7 +576,7 @@ function thong_bao_chung(thong_bao, x) {
 
   function console_data() {
     if (!localStorage.getItem("data")) {
-      var data = { linksss: [link], notesss: [note], titlesss: title };
+      var data = { linksss: link, notesss: note, titlesss: title };
       localStorage.setItem("data", JSON.stringify(data));
     }
     if (localStorage.getItem("data")) {
