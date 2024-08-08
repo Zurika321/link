@@ -1441,6 +1441,8 @@ function thong_bao_chung(thong_bao, x) {
     const draggable = document.querySelector("#draggable");
     if (on_mouse) {
       draggable.style.display = "none";
+      let button = document.querySelector(".button");
+      button.style.display = "none";
     } else {
       draggable.style.display = "block";
     }
