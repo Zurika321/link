@@ -167,7 +167,7 @@
         top: 10px;
         font-size: 12px;
         cursor: pointer;
-        color: black;
+        color: rgb(255, 255, 255);
       }
       .remove_get_key {
         position: absolute;
@@ -460,7 +460,6 @@
           // Tạo ô input cho Link
           let STTcell = newRow.insertCell();
           let stt_cell = document.getElementsByClassName("stt_cell");
-          alert(stt_cell.length);
           if (stt_cell.length != 0) {
             let last_stt =
               document.getElementsByClassName("stt_cell").length - 1;
@@ -733,22 +732,49 @@
         }
         retri_local();
 
+        function countErrorClasses() {
+          return [
+            document.querySelectorAll(".error").length,
+            document.querySelectorAll(".error_link").length,
+          ];
+        }
+
         document
           .getElementById("sortButton")
-          .addEventListener("click", sortTableBySelect);
+          .addEventListener("click", function () {
+            sortTableBySelect();
+            stt_reset();
+          });
         document
           .getElementById("btn_sendData")
           .addEventListener("click", function () {
+            let error = countErrorClasses();
+            if (error[0] >= 1 || error[1] >= 1) {
+              thong_bao_chung(
+                `Bạn hiện đang có ${error[0]} lỗi chưa điền và ${error[1]} lỗi sai đường link.`,
+                5
+              );
+              return;
+            }
             sendData();
           });
         document
           .getElementById("btn_get_firebase")
           .addEventListener("click", function () {
             receiveData();
+            stt_reset();
           });
         document
           .getElementById("btn_save_local")
           .addEventListener("click", function () {
+            let error = countErrorClasses();
+            if (error[0] >= 1 || error[1] >= 1) {
+              thong_bao_chung(
+                `Bạn hiện đang có ${error[0]} lỗi chưa điền và ${error[1]} lỗi sai đường link.`,
+                5
+              );
+              return;
+            }
             if (!localStorage.getItem("data")) {
               let link = [];
               let note = [];
@@ -776,6 +802,7 @@
           .getElementById("btn_get_local")
           .addEventListener("click", function () {
             retri_local();
+            stt_reset();
           });
       });
     </script>
