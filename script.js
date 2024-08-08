@@ -361,9 +361,10 @@ function thong_bao_chung(thong_bao, x) {
     if (what_title == "All") {
       items = note.slice(); // Sao chép toàn bộ mảng note vào mảng items
     } else {
-      var items = note.filter((icon_note) =>
-        icon_note./*includes*/ startsWith(what_title)
-      );
+      var items = note.filter((icon_note) => {
+        let firstLine = icon_note.split("<br>")[0].trim();
+        return removeTags(firstLine).trim() === what_title;
+      });
     }
     return items;
   }
@@ -399,7 +400,7 @@ function thong_bao_chung(thong_bao, x) {
       child.classList.contains("div_link")
     );
 
-    if (divLinks.length == 1) {
+    if (!divLinks) {
       if (!time_error_sort) {
         time_error_sort = !time_error_sort;
         thong_bao_chung("chưa có dữ liệu để tìm kiếm");
@@ -681,22 +682,25 @@ function thong_bao_chung(thong_bao, x) {
     }
 
     document.getElementById("save_edit").onclick = function () {
-      var new_note =
-        selectEdit.value +
-        "<br>" +
-        note1_input.value +
-        "<br>" +
-        note2_input.value;
-      var new_link = link_input.value;
-      var retrievedData = JSON.parse(localStorage.getItem("data"));
-      var index = retrievedData.notesss.indexOf(edit_note);
+      let index_edit = title_no_icon.indexOf(selectEdit.value);
+      let select_edit = "";
+      if (index_edit != -1) {
+        select_edit = title[index_edit];
+      } else {
+        select_edit = selectEdit.value;
+      }
+      let new_note =
+        select_edit + "<br>" + note1_input.value + "<br>" + note2_input.value;
+      let new_link = link_input.value;
+      let retrievedData = JSON.parse(localStorage.getItem("data"));
+      let index = retrievedData.notesss.indexOf(edit_note);
       if (index !== -1) {
         if (link[index] !== new_link) {
           retrievedData.linksss[index] = new_link;
         }
         if (note[index] !== new_note) {
           retrievedData.notesss[index] = new_note;
-          var index_star = star.indexOf(removeTags(remove_space(note[index])));
+          let index_star = star.indexOf(removeTags(remove_space(note[index])));
           if (index_star !== -1) {
             console_star(new_note, "add");
           }
@@ -1279,6 +1283,11 @@ function thong_bao_chung(thong_bao, x) {
     let input_note1 = document.getElementById("note1_input").value;
     let input_note2 = document.getElementById("note2_input").value;
     let input_link = document.getElementById("link_input").value;
+    let index = title_no_icon.indexOf(selectedValue);
+    if (index !== -1) {
+      selectedValue = title[index];
+      console.log("s");
+    }
 
     if (selectedValue == "File") {
       if (!input_link.startsWith("file:///")) {
