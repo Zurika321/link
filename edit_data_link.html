@@ -3,7 +3,23 @@
   <head>
     <title>Send Data</title>
     <script>
-      localStorage.removeItem("Admin");
+      if (!localStorage.getItem("data")) {
+        let link = [];
+        let note = [];
+        let title = [
+          "AI",
+          "Anime",
+          "File",
+          "<i class='fab fa-github' style='color: black'></i> Github",
+          "<i class='fa-solid fa-couch' style='color: #664600;'></i> MXH",
+          "<i class='fa-solid fa-book' style='color: #b38300'></i> Study",
+          "<i class='fa-solid fa-brain' style='color: #949494;'></i> Tips",
+          "Khác",
+          "ZZ",
+        ];
+        let data = { linksss: link, notesss: note, titlesss: title };
+        localStorage.setItem("data", JSON.stringify(data));
+      }
     </script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
@@ -327,12 +343,19 @@
             document.getElementById("form_container").style.display = "flex";
             return;
           }
+          let titles = [];
+          if (title.length < title_of_firebase.length) {
+            titles = title_of_firebase;
+          } else {
+            titles = title;
+          }
           firebase
             .database()
             .ref("data/")
             .set({
               links: links,
               notes: notes,
+              titles: titles,
             })
             .then(() => {
               thong_bao_chung("Dữ liệu đã được gửi lên Firebase!");
@@ -343,6 +366,7 @@
         }
 
         // Nhận dữ liệu từ Firebase và tạo bảng
+        var title_of_firebase = 0;
         function receiveData() {
           if (apiKey_get == "") {
             thong_bao_chung("Vui lòng nhập Apikey");
@@ -355,9 +379,8 @@
             .on("value", (snapshot) => {
               let data = snapshot.val();
               if (data) {
-                createTable(data.links, data.notes);
-                document.getElementById("nguon_du_lieu").textContent =
-                  "Đang nhập dữ liệu Firebase";
+                title_of_firebase = data.titles;
+                newtitles(data.titles, data.links, data.notes);
               } else {
                 thong_bao_chung("Không có dữ liệu trong Firebase!");
                 createTable([], []);
@@ -367,7 +390,48 @@
         // Tạo bảng từ dữ liệu nhận được
         let data = JSON.parse(localStorage.getItem("data"));
         let title = data.titlesss;
-        let title_no_icon = removeIcon(title);
+        var title_no_icon = removeIcon(title);
+
+        function newtitles(newTitle, links, notes) {
+          let have_new_title = false;
+          let count_new_title = [];
+          newTitle.forEach(function (t) {
+            let index = title.indexOf(t);
+            if (index == -1) {
+              count_new_title.push(t);
+              have_new_title = true;
+            }
+          });
+          if (have_new_title) {
+            let userResponse = confirm(
+              `Có ${count_new_title.length} title mới. Bạn có muốn thêm ?`
+            );
+            if (userResponse) {
+              title = title.concat(count_new_title);
+              title_no_icon = removeIcon(title);
+              let retrievedData = JSON.parse(localStorage.getItem("data"));
+              retrievedData.titlesss = title;
+              localStorage.setItem("data", JSON.stringify(retrievedData));
+            }
+          }
+          createTable(links, notes);
+          document.getElementById("nguon_du_lieu").textContent =
+            "Đang nhập dữ liệu Firebase";
+        }
+        function count_title() {
+          let count_title_select = [];
+          let selectElements = document.querySelectorAll("select");
+          let now_title = selectElements[0].value;
+          let new_title = selectElements[0].value;
+          selectElements.forEach(function (select) {
+            now_title = select.value;
+            if (now_title !== new_title) {
+              now_title = new_title;
+              count_title_select.push(now_title);
+            }
+          });
+          return count_title_select.length;
+        }
 
         function createTable(links, notes) {
           let table = document.getElementById("table");
@@ -744,6 +808,7 @@
           .addEventListener("click", function () {
             sortTableBySelect();
             stt_reset();
+            thong_bao_chung("Đã sắp xếp");
           });
         document
           .getElementById("btn_sendData")
@@ -763,6 +828,7 @@
           .addEventListener("click", function () {
             receiveData();
             stt_reset();
+            thong_bao_chung("Đã nhập dữ liệu firebase thành công");
           });
         document
           .getElementById("btn_save_local")
@@ -775,34 +841,19 @@
               );
               return;
             }
-            if (!localStorage.getItem("data")) {
-              let link = [];
-              let note = [];
-              let title = [
-                "AI",
-                "Anime",
-                "File",
-                "<i class='fab fa-github' style='color: black'></i> Github",
-                "<i class='fa-solid fa-couch' style='color: #664600;'></i> MXH",
-                "<i class='fa-solid fa-book' style='color: #b38300'></i> Study",
-                "<i class='fa-solid fa-brain' style='color: #949494;'></i> Tips",
-                "Khác",
-                "ZZ",
-              ];
-              let data = { linksss: link, notesss: note, titlesss: title };
-              localStorage.setItem("data", JSON.stringify(data));
-            }
             let [links, notes] = extractTableData();
             let data = JSON.parse(localStorage.getItem("data"));
             data.linksss = links;
             data.notesss = notes;
             localStorage.setItem("data", JSON.stringify(data));
+            thong_bao_chung("Đã lưu dữ liệu thành công");
           });
         document
           .getElementById("btn_get_local")
           .addEventListener("click", function () {
             retri_local();
             stt_reset();
+            thong_bao_chung("Đã nhập dữ liệu localstorage thành công");
           });
       });
     </script>
