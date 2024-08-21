@@ -621,7 +621,7 @@ function thong_bao_chung(thong_bao, x) {
     retrievedData.notesss.push(note);
     localStorage.setItem("data", JSON.stringify(retrievedData));
     console_data();
-    title_pick("All");
+    title_pick(what_title);
   }
   function remove_data(remove_note) {
     // Hiển thị hộp thoại tùy chỉnh
@@ -650,11 +650,16 @@ function thong_bao_chung(thong_bao, x) {
     };
   }
   function selectOptionByValue(selectElement, value) {
+    let no_have_value = true;
     for (let i = 0; i < selectElement.options.length; i++) {
-      if (selectElement.options[i].value === value) {
+      if (selectElement.options[i].value.trim() === value) {
         selectElement.selectedIndex = i;
+        no_have_value = false;
         break;
       }
+    }
+    if (no_have_value) {
+      document.getElementById("select_edit").value = "Khác";
     }
   }
   function edit_data(edit_note, link_value) {
@@ -668,15 +673,15 @@ function thong_bao_chung(thong_bao, x) {
 
     var notes = edit_note.split("<br>");
     if (notes.length == 3) {
-      selectOptionByValue(selectEdit, notes[0].trim());
+      selectOptionByValue(selectEdit, removeTags(notes[0]).trim());
       note1_input.value = notes[1];
       note2_input.value = notes[2];
     } else if (notes.length == 2) {
-      selectOptionByValue(selectEdit, notes[0].trim());
+      selectOptionByValue(selectEdit, removeTags(notes[0]).trim());
       note1_input.value = notes[1];
-      note2_input.value = ""; // clear the second note if it doesn't exist
+      note2_input.value = "";
     } else {
-      selectOptionByValue(selectEdit, notes[0].trim());
+      selectOptionByValue(selectEdit, removeTags(notes[0]).trim());
       note1_input.value = "";
       note2_input.value = "";
     }
@@ -1276,6 +1281,8 @@ function thong_bao_chung(thong_bao, x) {
       box_.style.display = "none";
     } else {
       box_.style.display = "flex";
+      let what_title_now = what_title == "All" ? "Khác" : what_title;
+      document.getElementById("mySelect").value = what_title_now;
     }
   }
   function check_add() {
