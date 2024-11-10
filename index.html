@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="vi" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Web lưu trữ link</title>
+    <link rel="icon" href="zurika.jpg" type="image/jpg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
+    <meta name="msapplication-TileColor" content="#da532c" />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <header>
+      <div id="draggable" class="draggable"></div>
+      <button class="button">Go link</button>
+      <div class="logo">
+        <img
+          src="zurika.png"
+          class="favicon"
+          onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',3)"
+        />
+        <h1 style="margin: 0" id="h1_logo">Zurika</h1>
+      </div>
+      <form id="searchForm">
+        <select id="select" title="chọn title"></select>
+        <div class="password_box" style="margin: 0">
+          <input
+            type="search"
+            id="searchInput"
+            class="searchInput"
+            placeholder=" "
+            autocomplete="off"
+          />
+          <label for="Tìm kiếm" id="label_search" style="display: none"
+            >Tìm kiếm</label
+          >
+        </div>
+        <div
+          type="submit"
+          id="btn_tim"
+          title="search"
+          onclick="document.getElementById('searchInput').click();
+          document.getElementById('searchInput').focus()
+        "
+        >
+          <i class="fa-solid fa-magnifying-glass" id="fa-magnifying-glass"></i>
+        </div>
+      </form>
+      <div id="menu" title="Menu">
+        <div class="ruler1" id="ruler1"></div>
+        <div class="ruler2" id="ruler2"></div>
+        <div class="menu_content">
+          <div class="logo">
+            <img
+              src="zurika.png"
+              class="favicon"
+              onclick="thong_bao_chung('Chào mừng bạn đến web lưu trữ link tiện lợi và nhanh chóng.',3)"
+            />
+            <h1 style="margin: 0">Zurika</h1>
+          </div>
+          <div class="setting">
+            <h3>Cài đặt</h3>
+            <table id="table" border="0">
+              <tr>
+                <td>Màu sắc:</td>
+                <td>
+                  <div id="text_color" style="grid-area: div; margin: 0">
+                    <label value="red" style="--color: red"></label>
+                    <label value="orange" style="--color: orange"></label>
+                    <label value="yellow" style="--color: yellow"></label>
+                    <label value="green" style="--color: green"></label>
+                    <label value="aqua" style="--color: aqua"></label>
+                    <label value="#007bff" style="--color: #007bff"></label>
+                    <label value="violet" style="--color: violet"></label>
+                    <input type="color" />
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Chế độ tối:</td>
+                <td>
+                  <div id="button_mode_dark" class="btn_gat_mode">
+                    <div class="nut_gat"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Tắt chuột ảo:</td>
+                <td>
+                  <div id="button_off_mouse" class="btn_gat_mode">
+                    <div class="nut_gat"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Link ẩn:</td>
+                <td>
+                  <div id="button_link_an" class="btn_gat_mode">
+                    <div class="nut_gat"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>Hình nền (link):</td>
+                <td>
+                  <button class="btn_menu_gat" id="btn_link_anh_nen">
+                    Link
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Mật khẩu:</td>
+                <td>
+                  <button id="doi_mat_khau" class="btn_menu_gat">
+                    Đặt mật khẩu
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Sửa Title:</td>
+                <td>
+                  <button id="tuy_chinh_title" class="btn_menu_gat">
+                    Chỉnh
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Thêm dữ liệu:</td>
+                <td>
+                  <button
+                    style="
+                      padding: 0;
+                      background-color: var(--color_background);
+                      border: none;
+                      margin-bottom: 5px;
+                    "
+                  >
+                    <input type="file" id="input-excel" />
+                  </button>
+                  <button
+                    id="input-link-excel"
+                    class="btn_menu_gat"
+                    style="margin-bottom: 5px"
+                  >
+                    Link Excel
+                  </button>
+                  <button
+                    id="edit_data_link"
+                    onclick="location.href='edit_data_link.html'"
+                    class="btn_menu_gat"
+                  >
+                    Chỉnh
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Lưu dữ liệu:</td>
+                <td><button id="add-link2">File Excel</button></td>
+              </tr>
+            </table>
+          </div>
+          <div class="menu_">
+            <div>
+              <h3>Hướng dẫn</h3>
+              <ol>
+                <li>Thêm dữ liệu bằng file Excel.</li>
+                <li>Sử dụng tính năng thông báo anime ra tập mới</li>
+              </ol>
+            </div>
+            <div>
+              <h3>Lưu ý</h3>
+              <ol>
+                <li>
+                  Một số trang web không có favicon.io thì hình ảnh mà icon web
+                  đó hiển thị sẽ là
+                  <img src="favicon_error.png" alt="" width="16px" />
+                  .Nếu bạn ko muốn nó hiển thị như vậy, bạn có thể thay đổi ảnh
+                  khác cho các đường link bằng cách nhấn vào nút Thêm của mục
+                  Thêm ảnh icon link
+                </li>
+              </ol>
+            </div>
+            <div>
+              <h3>Về Trang Web</h3>
+              <p>
+                Chào mừng bạn đến với trang web của tôi (Zurika321),
+                <i> nơi lưu trữ và quản lý các liên kết theo trình duyệt</i>.
+                Tôi cam kết mang đến trải nghiệm lưu trữ và tìm kiếm những đường
+                link nhanh chóng, dễ dàng và hiệu quả.
+              </p>
+            </div>
+            <div>
+              <h3>Liên Kết Nhanh</h3>
+              <ul>
+                <li><a href="#">Thêm đóng góp ý kiến</a></li>
+                <li><a href="#">Liên hệ Facebook</a></li>
+                <li><a href="#">Hỗ trợ</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3>Liên Hệ</h3>
+              <table>
+                <tr>
+                  <td>
+                    <i
+                      class="fa fa-solid fa-location-dot"
+                      style="font-size: 12px"
+                    ></i>
+                  </td>
+                  <td style="color: var(--color_text_p)">Địa chỉ: Quận 12</td>
+                </tr>
+                <tr>
+                  <td><i class="fa fa-phone" style="font-size: 12px"></i></td>
+                  <td style="color: var(--color_text_p)">
+                    Số điện thoại: ##########
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <i class="fa fa-envelope" style="font-size: 12px"></i>
+                  </td>
+                  <td style="color: var(--color_text_p)">
+                    Email:conan17032004@gmail.com
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <hr />
+          </div>
+          <div style="text-align: center">
+            <p>
+              &copy; 2024 Bản quyền đã được đăng ký.
+              <br />
+              Thiết kế bởi
+              <a
+                href="https://github.com/Zurika321?tab=repositories"
+                target="_blank"
+                style="color: var(--color_text_h)"
+                >Zurika321 Studio</a
+              >
+            </p>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main id="div_main">
+      <fieldset>
+        <legend id="legend">All</legend>
+        <div id="div_scroll"></div>
+      </fieldset>
+    </main>
+    <footer id="footer">
+      <p id="whaticon" class="what-icon">Title<br />Note 1<br />Note 2</p>
+      <hr style="opacity: 0.1" />
+      <div id="animetoday">
+        <button id="btn-left" title="cuộn sang trái">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button id="btn-right" title="cuộn sang phải">
+          <i
+            class="fa-solid fa-chevron-left"
+            style="transform: rotate(180deg)"
+          ></i>
+        </button>
+        <button id="btn-setting" title="setting">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+        <button id="btn-autoscroll" title="tự động cuộn">
+          <i class="fa-brands fa-autoprefixer"></i>
+        </button>
+        <div id="list_anime0"><div id="list_anime"></div></div>
+      </div>
+      <script>
+        let autoscroll = localStorage.getItem("autoscroll");
+
+        if (autoscroll === null) {
+          localStorage.setItem("autoscroll", true);
+          autoscroll = true;
+        }
+
+        document
+          .getElementById("btn-autoscroll")
+          .addEventListener("click", () => {
+            autoscroll = !autoscroll;
+            localStorage.setItem("autoscroll", !autoscroll);
+          });
+
+        const track = document.querySelector("#list_anime");
+        let index = 0;
+        let interval;
+
+        // Hàm để cập nhật animeItems và chạy lại carousel
+        const updateAnimeItems = () => {
+          const animeItems = document.querySelectorAll(".anime"); // Cập nhật lại danh sách .anime
+          return animeItems;
+        };
+
+        const updateCarousel = () => {
+          const animeItems = updateAnimeItems(); // Lấy lại các phần tử anime
+          track.style.transform = `translateX(-${index * 100}%)`;
+        };
+
+        let tienlen = true;
+        const startAutoScroll = () => {
+          interval = setInterval(() => {
+            if (!autoscroll) return;
+            const animeItems = updateAnimeItems(); // Cập nhật lại animeItems
+            if (animeItems.length <= 1) return;
+            if (tienlen) {
+              index++;
+              if (index >= animeItems.length) {
+                index -= 2;
+                tienlen = false;
+              }
+            } else {
+              index--;
+              if (index <= -1) {
+                index += 2;
+                tienlen = true;
+              }
+            }
+            updateCarousel();
+          }, 6000);
+        };
+
+        const resetAndRestartAutoScroll = () => {
+          clearInterval(interval);
+          startAutoScroll();
+        };
+
+        document.getElementById("btn-left").addEventListener("click", () => {
+          index--;
+          const animeItems = updateAnimeItems(); // Cập nhật lại animeItems
+          if (index < 0) {
+            index = animeItems.length - 1;
+          }
+          updateCarousel();
+          resetAndRestartAutoScroll();
+        });
+
+        document.getElementById("btn-right").addEventListener("click", () => {
+          index++;
+          const animeItems = updateAnimeItems(); // Cập nhật lại animeItems
+          if (index >= animeItems.length) {
+            index = 0;
+          }
+          updateCarousel();
+          resetAndRestartAutoScroll();
+        });
+
+        // Cập nhật lại animeItems mỗi 5 giây
+        setInterval(() => {
+          updateCarousel(); // Cập nhật carousel sau mỗi 5 giây
+        }, 5000);
+
+        // Cập nhật lại kiểu của các phần tử anime
+        const updateAnimeStyle = () => {
+          const animeItems = updateAnimeItems(); // Cập nhật lại animeItems
+          animeItems.forEach((item) => {
+            item.style.flex = "0 0 100%"; // Đảm bảo mỗi phần tử chiếm 100% chiều rộng
+          });
+        };
+
+        // Khởi động carousel và auto scroll
+        startAutoScroll();
+
+        // Cập nhật lại kiểu sau khi phần tử anime được thay đổi
+        // setInterval(updateAnimeStyle, 10000);
+      </script>
+    </footer>
+    <div id="box_2">
+      <div class="box2">
+        <ul class="box2_ul">
+          <li>Chỉnh Sửa</li>
+          <li>
+            Đánh dấu
+            <label id="danhdau"><i class="fa-solid fa-check"></i></label>
+          </li>
+          <li>Copy link</li>
+          <li>Mở link</li>
+          <li>Mở cửa sổ mới</li>
+          <hr />
+          <li>
+            <label style="margin-right: 10px"
+              ><i class="fa-solid fa-trash"></i></label
+            >Xóa
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="class_box2_settinganime" style="display: none">
+      <h3>Cài đặt</h3>
+
+      <div style="margin: 0 10px; border: 1px solid var(--color_text_h)">
+        <div style="padding: 5px 5%">
+          <select id="select_anime" style="width: 100%"></select>
+          <br />
+          <select
+            onchange="document.getElementById('d').innerText = this.value"
+            style="width: 36%"
+          >
+            <script>
+              const days = [
+                "Thứ 2",
+                "Thứ 3",
+                "Thứ 4",
+                "Thứ 5",
+                "Thứ 6",
+                "Thứ 7",
+                "Chủ Nhật",
+              ];
+              days.forEach((day, index) => {
+                document.write(`<option value="${index + 2}">${day}</option>`);
+              });
+            </script>
+          </select>
+          <select
+            onchange="document.getElementById('h').innerText = this.value"
+            style="width: 30%"
+          >
+            <script>
+              for (let hour = 0; hour < 24; hour++) {
+                document.write(`<option value="${hour}">${hour} giờ </option>`);
+              }
+            </script>
+          </select>
+          <select
+            onchange="document.getElementById('m').innerText = this.value"
+            style="width: 30%"
+          >
+            <script>
+              for (let minute = 0; minute < 60; minute++) {
+                document.write(
+                  `<option value="${minute}">${minute} phút</option>`
+                );
+              }
+            </script>
+          </select>
+          <div style="display: flex; justify-content: center">
+            <p
+              style="
+                width: 150px;
+                height: 30px;
+                border: 1px solid var(--color_text_p);
+                border-radius: 5px;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >
+              (new <span style="width: 5px"></span><span id="d">2</span>-<span
+                id="h"
+                >0</span
+              >- <span id="m">0</span>)
+            </p>
+          </div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <button style="cursor: pointer" id="delete_anime">
+              Xóa khỏi thông báo anime
+            </button>
+            <button style="cursor: pointer" id="save_anime">Lưu</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="close_setting_anime">Đóng</button>
+    </div>
+    <script></script>
+
+    <div id="class_box2_edit" style="display: none">
+      <h3>Chỉnh Sửa</h3>
+      <div id="edit_input">
+        <select id="select_edit" style="grid-area: select"></select>
+        <div
+          class="password_box"
+          style="grid-area: link; width: auto; height: 30px; margin: 0"
+        >
+          <input id="link_edit" autocomplete="off" placeholder=" " />
+          <label for="link">link</label>
+        </div>
+        <div class="password_box" style="grid-area: note1; margin: 0">
+          <input id="note1_edit" autocomplete="off" placeholder=" " />
+          <label for="note 1">note 1</label>
+        </div>
+        <div class="password_box" style="grid-area: note2; margin: 0">
+          <input id="note2_edit" autocomplete="off" placeholder=" " />
+          <label for="note 2">note 2</label>
+        </div>
+      </div>
+      <button id="cancel_edit">Đóng</button>
+      <button id="save_edit">Lưu</button>
+    </div>
+
+    <div id="class_box2_edit_title" style="display: none">
+      <h3>Chỉnh Sửa Title</h3>
+      <div class="div_add_title">
+        <div
+          class="password_box"
+          style="grid-area: input_title; margin: 0 10px 0 0"
+        >
+          <input
+            type="text"
+            placeholder=" "
+            autocomplete="off"
+            id="title_input"
+          />
+          <label for="New Title">New Title</label>
+        </div>
+        <button id="add_title" style="grid-area: button_add_title">Add</button>
+      </div>
+      <div id="list_title"></div>
+      <button id="Close_Title">Đóng</button>
+      <button id="Edit_Title">Lưu</button>
+      <button id="Reset_Title">Cài lại</button>
+    </div>
+
+    <div id="class_box2_remove" style="display: none">
+      <h3>Bạn có chắc muốn xóa:</h3>
+      <p id="noteToDelete"></p>
+      <button id="confirmNo">Đóng</button>
+      <button id="confirmYes">Đồng ý</button>
+    </div>
+
+    <div id="class_box2_password" style="display: none">
+      <h3>Mật khẩu</h3>
+      <div class="password_box">
+        <input type="password" id="pass" placeholder=" " autocomplete="off" />
+        <label for="pass">Password</label>
+      </div>
+
+      <div class="password_box">
+        <input
+          type="password"
+          id="confirm_pass"
+          placeholder=" "
+          autocomplete="off"
+        />
+        <label for="confirm_pass">Confirm Password</label>
+      </div>
+      <button id="Save_pass">Lưu</button>
+      <button id="Close_pass">Đóng</button>
+    </div>
+
+    <div id="class_box2_link_excel" style="display: none">
+      <h3>Nhập Link Excel</h3>
+      <div class="password_box" style="margin-top: 15px">
+        <input type="text" id="link_excel" placeholder=" " autocomplete="off" />
+        <label for="link_excel">Link Excel</label>
+      </div>
+      <button id="Close_link_excel">Đóng</button>
+      <button id="Nhap_link_excel">Lưu</button>
+    </div>
+
+    <div id="box_" style="display: none">
+      <div class="box">
+        <h3>Thêm icon mới</h3>
+        <div
+          style="
+            display: grid;
+            grid-template-areas: 'mySelect input_link input_link input_link input_link';
+            grid-template-columns: 90px;
+          "
+          class="password_box"
+        >
+          <select id="mySelect" change="this.value"></select>
+          <input
+            type="text"
+            id="link_input"
+            placeholder=" "
+            autocomplete="off"
+            style="grid-area: input_link"
+          />
+          <label for="Link" style="left: 100px">Link</label>
+        </div>
+
+        <div class="password_box">
+          <input
+            type="text"
+            id="note1_input"
+            class="note"
+            placeholder=" "
+            autocomplete="off"
+            style="margin-top: -5px"
+          />
+          <label for="Note 1" style="transform: translateY(-3px)">Note 1</label>
+        </div>
+        <div class="password_box" style="margin-bottom: 0">
+          <input
+            type="text"
+            id="note2_input"
+            class="note"
+            placeholder=" "
+            autocomplete="off"
+            style="margin-top: -5px"
+          />
+          <label for="Note 2" style="transform: translateY(-3px)">Note 2</label>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            width: auto;
+            margin: 10px 15px;
+          "
+        >
+          <button id="close" class="btn">Đóng</button>
+          <button id="add-link" class="btn">Thêm Link</button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script src="script.js"></script>
+</html>
