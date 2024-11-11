@@ -352,12 +352,16 @@ function thong_bao_chung(thong_bao, x) {
           if (currentTotalMinutes == targetTotalMinutes) {
             thong_bao_chung(removeTags(remove_space(element)), 5);
           }
-          if (day == 8) {
+         if (day == 8) {
             let targetTotalMinutes = convertToMinutes(2, hour, minute);
             if (currentTotalMinutes <= targetTotalMinutes) {
               note_anime2.push(element);
               time.push(match);
-              let maytimetruoc = currentTotalMinutes - targetTotalMinutes;
+              let maytimetruoc =
+                convertToMinutes(9, 0, 0) -
+                convertToMinutes(day, hour, minute) +
+                currentTotalMinutes -
+                2880;
               let hours = Math.floor(maytimetruoc / 60); // Làm tròn xuống số giờ
               let minutes = maytimetruoc % 60;
               today.push(`hôm qua (khoản ${hours}h${minutes}m trước)`);
