@@ -1,318 +1,1052 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinkVault.ai - Modern Link Organizer</title>
-<style>
-/* ------------------------------
-   GLOBAL STYLES & DESIGN SYSTEM
---------------------------------*/
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
-}
-body {
-  height: 100vh;
-  display: flex;
-  background: linear-gradient(135deg, #0f172a, #1e1b4b);
-  color: #e2e8f0;
-  overflow: hidden;
-}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkVault.ai</title>
+  <!-- Nhúng Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --accent: #6366f1;
+      --accent-gradient: linear-gradient(90deg, var(--accent), #06b6d4);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-/* ------------------------------
-   SIDEBAR
---------------------------------*/
-.sidebar {
-  width: 260px;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-}
-.sidebar h1 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #6366f1;
-  margin-bottom: 40px;
-}
-.sidebar ul {
-  list-style: none;
-}
-.sidebar li {
-  padding: 12px 16px;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.sidebar li:hover,
-.sidebar li.active {
-  background: rgba(99, 102, 241, 0.15);
-  color: #06b6d4;
-}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* ------------------------------
-   MAIN DASHBOARD
---------------------------------*/
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  overflow: hidden;
-}
-.top-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-.search-bar {
-  flex: 1;
-  margin-right: 16px;
-}
-.search-bar input {
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: none;
-  outline: none;
-  background: rgba(255, 255, 255, 0.03);
-  color: #e2e8f0;
-  font-size: 0.95rem;
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-.add-btn {
-  background: linear-gradient(90deg, #6366f1, #06b6d4);
-  border: none;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.add-btn:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
-}
+    body {
+      font-family: var(--font-sans);
+      background: linear-gradient(135deg, #0f172a, #1e1b4b);
+      color: #e2e8f0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+    }
 
-/* ------------------------------
-   LINK GRID
---------------------------------*/
-.link-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 20px;
-  overflow-y: auto;
-  padding-right: 8px;
-}
-.link-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px;
-  padding: 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.link-card:hover {
-  transform: translateY(-6px) scale(1.03);
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
-}
-.link-card img {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  margin-bottom: 8px;
-}
-.link-card p {
-  font-size: 0.85rem;
-  color: #cbd5e1;
-  word-break: break-word;
-}
+    /* --- SIDEBAR --- */
+    aside {
+      width: 256px;
+      background: rgba(255, 255, 255, 0.03);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(24px);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.3s ease;
+      flex-shrink: 0;
+    }
+    aside.collapsed {
+      width: 84px;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    aside.collapsed .sidebar-header {
+      justify-content: center;
+    }
+    .sidebar-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #818cf8;
+      white-space: nowrap;
+      transition: opacity 0.2s;
+    }
+    aside.collapsed .sidebar-header h1 {
+      opacity: 0;
+      width: 0;
+      pointer-events: none;
+    }
+    .collapse-btn {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(99, 102, 241, 0.15);
+      color: #22d3ee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .collapse-btn:hover {
+      background: rgba(99, 102, 241, 0.3);
+    }
 
-/* ------------------------------
-   CUSTOM CONTEXT MENU
---------------------------------*/
-.context-menu {
-  position: absolute;
-  display: none;
-  flex-direction: column;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
-  overflow: hidden;
-  z-index: 1000;
-}
-.context-menu button {
-  background: transparent;
-  border: none;
-  color: #e2e8f0;
-  padding: 10px 16px;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.context-menu button:hover {
-  background: rgba(99, 102, 241, 0.15);
-  color: #06b6d4;
-}
+    .cat-list {
+      list-style: none;
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 16px;
+    }
+    .cat-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #94a3b8;
+      position: relative;
+    }
+    .cat-item:hover, .cat-item.active {
+      background: rgba(99, 102, 241, 0.15);
+      color: #22d3ee;
+    }
+    aside.collapsed .cat-item {
+      justify-content: center;
+      padding: 12px 0;
+    }
+    .cat-icon {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .cat-item.active .cat-icon {
+      background: var(--accent-gradient);
+      color: white;
+    }
+    .cat-label {
+      font-size: 14px;
+    }
+    aside.collapsed .cat-label, aside.collapsed .delete-cat-btn {
+      display: none;
+    }
+    .delete-cat-btn {
+      position: absolute;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: #f87171;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .cat-item:hover .delete-cat-btn {
+      opacity: 0.8;
+    }
 
-/* Scrollbar styling */
-.link-grid::-webkit-scrollbar {
-  width: 6px;
-}
-.link-grid::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-</style>
+    .sidebar-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px;
+      border-radius: 16px;
+      background: transparent;
+      color: #94a3b8;
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      cursor: pointer;
+      width: 100%;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .action-btn.solid {
+      border: none;
+    }
+    .action-btn:hover {
+      border-color: #22d3ee;
+      color: #22d3ee;
+      background: rgba(99, 102, 241, 0.15);
+    }
+    aside.collapsed .action-btn {
+      justify-content: center;
+      padding: 12px 0;
+    }
+
+    /* --- MAIN AREA --- */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      overflow: hidden;
+    }
+    .top-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+    }
+    .search-input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 12px 16px 12px 44px;
+      color: #e2e8f0;
+      font-size: 16px;
+      outline: none;
+      backdrop-filter: blur(24px);
+    }
+    .search-input::placeholder { color: #64748b; }
+    
+    /* UI Base Component Style phục dựng từ cva */
+    .btn-ui {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      outline: none;
+    }
+    .btn-ui-lg {
+      height: 44px;
+      padding: 0 20px;
+    }
+    .btn-ui-primary {
+      background: var(--accent-gradient);
+      color: white;
+    }
+    .btn-ui-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+    }
+
+    /* --- STATS --- */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 12px;
+      backdrop-filter: blur(24px);
+    }
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #22d3ee;
+    }
+    .stat-info { text-align: left; }
+    .stat-value { font-size: 18px; font-weight: bold; line-height: 1; color: #f1f5f9; }
+    .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+    .main-title { font-size: 20px; font-weight: 600; color: #f1f5f9; margin-bottom: 16px; }
+
+    /* --- GRID LINKS --- */
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Mặc định vừa */
+      gap: 20px;
+      overflow-y: auto;
+      padding-right: 8px;
+      align-content: start;
+      flex: 1;
+    }
+    .link-card {
+      position: relative;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      backdrop-filter: blur(24px);
+      transition: all 0.3s ease;
+    }
+    .link-card:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+    }
+    .card-badge-left, .card-badge-right {
+      position: absolute;
+      top: 8px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+    .card-badge-left { left: 8px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .card-badge-right { right: 8px; background: rgba(148, 163, 184, 0.2); color: #cbd5e1; }
+    
+    .link-icon-img { width: 48px; height: 48px; border-radius: 12px; margin: 0 auto 8px; display: block; }
+    .link-icon-fallback {
+      width: 48px; height: 48px; border-radius: 12px; margin: 0 auto 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(99, 102, 241, 0.2); color: #ddd6fe; font-size: 18px; font-weight: bold;
+    }
+    .link-name { font-size: 14px; color: #cbd5e1; word-break: break-all; }
+    .link-cat-badge {
+      display: inline-block; margin-top: 6px; padding: 2px 8px; border-radius: 99px;
+      background: rgba(99, 102, 241, 0.2); color: #a5b4fc; font-size: 10px;
+    }
+    .tags-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 6px; }
+    .tag-badge { background: rgba(255, 255, 255, 0.05); color: #94a3b8; padding: 2px 6px; border-radius: 4px; font-size: 9px; }
+    .empty-state { grid-column: 1 / -1; padding: 64px 0; text-center; color: #64748b; font-size: 14px; text-align: center;}
+
+    /* --- CONTEXT MENU --- */
+    .context-menu {
+      position: fixed; z-index: 50; min-width: 190px; display: none; flex-direction: column;
+      background: rgba(30, 27, 75, 0.9); border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px; overflow: hidden; shadow: 0 12px 40px rgba(0,0,0,0.5); backdrop-filter: blur(24px);
+    }
+    .menu-btn {
+      display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: transparent;
+      border: none; color: #e2e8f0; font-size: 14px; text-align: left; cursor: pointer; width: 100%;
+    }
+    .menu-btn:hover { background: rgba(99, 102, 241, 0.2); color: #22d3ee; }
+    .menu-btn.danger:hover { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+
+    /* --- MODAL --- */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center;
+    }
+    .modal-box {
+      width: 90%; max-width: 440px; background: #1e1b4b; border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px; padding: 28px;
+    }
+    .modal-box h2 { font-size: 20px; font-weight: 600; color: #f1f5f9; margin-bottom: 20px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+    .form-input, .form-select, .form-textarea {
+      width: 100%; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px; padding: 10px 14px; color: #e2e8f0; font-size: 16px; outline: none; font-family: inherit;
+    }
+    .form-textarea { resize: none; }
+    .form-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .btn-flex { flex: 1; padding: 12px 0; font-weight: 600; border-radius: 8px; font-size: 14px;}
+    .btn-cancel { background: rgba(255, 255, 255, 0.06); color: #cbd5e1; border: none; cursor: pointer;}
+    .btn-cancel:hover { background: rgba(255, 255, 255, 0.12); }
+
+    /* --- SETTINGS PANEL --- */
+    .settings-panel {
+      position: fixed; right: 0; top: 0; z-index: 200; h-full; width: 320px; height: 100%;
+      background: rgba(30, 27, 75, 0.95); border-left: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px; backdrop-filter: blur(24px); transition: transform 0.3s ease;
+      transform: translateX(100%);
+    }
+    .settings-panel.open { transform: translateX(0); }
+    .settings-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .close-settings-btn {
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1; cursor: pointer;
+    }
+    .close-settings-btn:hover { color: #22d3ee; }
+    .color-picker-group { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .color-input { width: 64px; height: 40px; background: transparent; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; cursor: pointer; }
+    .settings-panel .form-group { margin-bottom: 24px; }
+    .sys-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px; color: #f1f5f9; font-size: 14px; cursor: pointer; margin-bottom: 8px;
+    }
+    .sys-btn:hover { background: rgba(255, 255, 255, 0.1); }
+    .btn-danger-solid { background: rgba(239, 68, 68, 0.9); border: none; font-weight: 600; margin-top: 16px;}
+    .btn-danger-solid:hover { background: #ef4444; }
+
+    /* --- TOAST --- */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 300; display: none;
+      background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px; padding: 12px 20px; font-size: 14px; color: #f1f5f9;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); backdrop-filter: blur(12px);
+    }
+  </style>
 </head>
 <body>
+
   <!-- SIDEBAR -->
-  <div class="sidebar">
-    <h1>LinkVault.ai</h1>
-    <ul>
-      <li class="active" data-category="all">All Links</li>
-      <li data-category="social">Social Media</li>
-      <li data-category="dev">Development & Github</li>
-      <li data-category="work">Work & Productivity</li>
-      <li data-category="design">Design & Inspiration</li>
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <h1>LinkVault.ai</h1>
+      <button class="collapse-btn" id="collapseBtn" title="Thu gọn / Mở rộng" aria-label="Thu gọn hoặc mở rộng thanh bên">
+        <i data-lucide="chevron-left"></i>
+      </button>
+    </div>
+    <ul class="cat-list" id="catList">
+      <!-- Render Categories động tại đây -->
     </ul>
-  </div>
+    <div class="sidebar-actions">
+      <button class="action-btn" id="addCatBtn" title="Thêm danh mục">
+        <span class="cat-icon"><i data-lucide="plus"></i></span>
+        <span class="cat-label">Thêm danh mục</span>
+      </button>
+      <button class="action-btn solid" id="openSettingsBtn" title="Cài đặt">
+        <span class="cat-icon"><i data-lucide="settings"></i></span>
+        <span class="cat-label">Cài đặt</span>
+      </button>
+    </div>
+  </aside>
 
-  <!-- MAIN DASHBOARD -->
-  <div class="main">
+  <!-- MAIN MAIN -->
+  <main>
     <div class="top-bar">
-      <div class="search-bar">
-        <input type="text" id="searchInput" placeholder="Search links...">
+      <div class="search-wrapper">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm link, tag... (Ctrl+K)">
       </div>
-      <button class="add-btn" id="addLinkBtn">+ Add New Link</button>
+      <button class="btn-ui btn-ui-lg btn-ui-primary" id="addLinkBtn">+ Thêm link (Ctrl+N)</button>
     </div>
 
-    <div class="link-grid" id="linkGrid">
-      <!-- Example cards -->
-      <div class="link-card" data-category="social" data-url="https://twitter.com">
-        <img src="https://www.google.com/s2/favicons?sz=128&domain=twitter.com" alt="favicon">
-        <p>Twitter</p>
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon"><i data-lucide="layers"></i></span>
+        <div class="stat-info">
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-label">Tổng số</div>
+        </div>
       </div>
-      <div class="link-card" data-category="dev" data-url="https://github.com">
-        <img src="https://www.google.com/s2/favicons?sz=128&domain=github.com" alt="favicon">
-        <p>GitHub</p>
+      <div class="stat-card">
+        <span class="stat-icon"><i data-lucide="star"></i></span>
+        <div class="stat-info">
+          <div class="stat-value" id="statStarred">0</div>
+          <div class="stat-label">Đã đánh dấu</div>
+        </div>
       </div>
-      <div class="link-card" data-category="work" data-url="https://notion.so">
-        <img src="https://www.google.com/s2/favicons?sz=128&domain=notion.so" alt="favicon">
-        <p>Notion</p>
-      </div>
-      <div class="link-card" data-category="design" data-url="https://dribbble.com">
-        <img src="https://www.google.com/s2/favicons?sz=128&domain=dribbble.com" alt="favicon">
-        <p>Dribbble</p>
+      <div class="stat-card">
+        <span class="stat-icon"><i data-lucide="external-link"></i></span>
+        <div class="stat-info">
+          <div class="stat-value" id="statRecent">0</div>
+          <div class="stat-label">Gần đây (7 ngày)</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- CONTEXT MENU -->
+    <h2 class="main-title" id="mainTitle">Tất cả link</h2>
+    <div class="links-grid" id="linksGrid">
+      <!-- Render Link Items động tại đây -->
+    </div>
+  </main>
+
+  <!-- ACTION CONTEXT MENU -->
   <div class="context-menu" id="contextMenu">
-    <button id="openLink">Open Link</button>
-    <button id="copyUrl">Copy URL</button>
-    <button id="editInfo">Edit Info</button>
-    <button id="deleteLink">Delete</button>
+    <button class="menu-btn" id="menuStarBtn"><i data-lucide="bookmark"></i><span id="menuStarText">Đánh dấu</span></button>
+    <button class="menu-btn" id="menuVisitBtn"><i data-lucide="external-link"></i>Đi đến liên kết</button>
+    <button class="menu-btn" id="menuCopyBtn"><i data-lucide="copy"></i>Sao chép liên kết</button>
+    <button class="menu-btn" id="menuEditBtn"><i data-lucide="pencil"></i>Sửa</button>
+    <button class="menu-btn" id="menuArchiveBtn"><i data-lucide="archive"></i><span id="menuArchiveText">Lưu trữ</span></button>
+    <button class="menu-btn danger" id="menuDeleteBtn"><i data-lucide="trash-2"></i>Xoá</button>
   </div>
 
-<script>
-/* ------------------------------
-   JAVASCRIPT INTERACTIONS
---------------------------------*/
-const linkGrid = document.getElementById('linkGrid');
-const contextMenu = document.getElementById('contextMenu');
-let currentCard = null;
+  <!-- MODAL ADD/EDIT -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <h2 id="modalTitle">Thêm link mới</h2>
+      <div class="form-group">
+        <label>URL</label>
+        <input type="text" id="fUrl" class="form-input" placeholder="https://example.com">
+      </div>
+      <div class="form-group">
+        <label>Tên</label>
+        <input type="text" id="fName" class="form-input" placeholder="Tên hiển thị">
+      </div>
+      <div class="form-group">
+        <label>Danh mục</label>
+        <select id="fCat" class="form-select">
+          <!-- Option nạp động -->
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tags (phân cách bằng dấu phẩy)</label>
+        <input type="text" id="fTags" class="form-input" placeholder="vd: công cụ, ai, quan trọng">
+      </div>
+      <div class="form-group">
+        <label>Ghi chú</label>
+        <textarea id="fNotes" class="form-textarea" rows="3" placeholder="Ghi chú thêm..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn-ui btn-flex btn-cancel" id="closeModalBtn">Huỷ</button>
+        <button class="btn-ui btn-flex btn-ui-primary" id="saveModalBtn">Lưu</button>
+      </div>
+    </div>
+  </div>
 
-// Right-click context menu
-linkGrid.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-  const card = e.target.closest('.link-card');
-  if (card) {
-    currentCard = card;
-    contextMenu.style.display = 'flex';
-    contextMenu.style.top = e.pageY + 'px';
-    contextMenu.style.left = e.pageX + 'px';
-  }
-});
-window.addEventListener('click', () => {
-  contextMenu.style.display = 'none';
-});
+  <!-- SETTINGS PANEL -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <h3>Cài đặt</h3>
+      <button class="close-settings-btn" id="closeSettingsBtn" aria-label="Đóng cài đặt">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+    <div class="form-group">
+      <label>Màu nhấn</label>
+      <div class="color-picker-group">
+        <input type="color" id="accentColor" class="color-input" value="#6366f1">
+        <span id="accentText" style="font-size: 14px; color: #94a3b8;">#6366f1</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Cỡ lưới</label>
+      <select id="gridSizeSelect" class="form-select">
+        <option value="small">Nhỏ</option>
+        <option value="medium" selected>Vừa</option>
+        <option value="large">Lớn</option>
+      </select>
+    </div>
+    <div style="margin-top: 24px;">
+      <button class="sys-btn" id="exportBtn"><i data-lucide="download"></i> Xuất bản sao lưu</button>
+      <button class="sys-btn" id="importBtn"><i data-lucide="upload"></i> Nhập dữ liệu</button>
+      <input type="file" id="fileInput" accept="application/json" style="display: none;">
+      <button class="sys-btn btn-danger-solid" id="clearBtn"><i data-lucide="trash-2"></i> Xoá toàn bộ dữ liệu</button>
+    </div>
+  </div>
 
-// Context menu actions
-document.getElementById('openLink').addEventListener('click', () => {
-  if (currentCard) window.open(currentCard.dataset.url, '_blank');
-});
-document.getElementById('copyUrl').addEventListener('click', () => {
-  if (currentCard) navigator.clipboard.writeText(currentCard.dataset.url);
-});
-document.getElementById('editInfo').addEventListener('click', () => {
-  if (currentCard) {
-    const newName = prompt('Edit link name:', currentCard.querySelector('p').textContent);
-    if (newName) currentCard.querySelector('p').textContent = newName;
-  }
-});
-document.getElementById('deleteLink').addEventListener('click', () => {
-  if (currentCard) currentCard.remove();
-});
+  <!-- TOAST -->
+  <div class="toast" id="toast">Thông báo ở đây</div>
 
-// Category filtering
-document.querySelectorAll('.sidebar li').forEach(li => {
-  li.addEventListener('click', () => {
-    document.querySelectorAll('.sidebar li').forEach(el => el.classList.remove('active'));
-    li.classList.add('active');
-    const category = li.dataset.category;
-    document.querySelectorAll('.link-card').forEach(card => {
-      card.style.opacity = 0;
-      setTimeout(() => {
-        if (category === 'all' || card.dataset.category === category) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
+  <!-- APP JAVASCRIPT LOGIC -->
+  <script>
+    // --- KHỞI TẠO STATE & CONSTANT ---
+    const LS_LINKS = "linkvault_links";
+    const LS_CATS = "linkvault_categories";
+    const LS_SETTINGS = "linkvault_settings";
+    const RECENT_WINDOW = 7 * 24 * 60 * 60 * 1000;
+
+    const defaultCategories = [
+      { id: "social", name: "Mạng xã hội" },
+      { id: "dev", name: "Lập trình & Github" },
+      { id: "work", name: "Công việc" },
+      { id: "design", name: "Thiết kế" }
+    ];
+
+    const uid = () => "id_" + Math.random().toString(36).slice(2, 10);
+
+    const defaultLinks = [
+      { id: uid(), name: "Twitter", url: "https://twitter.com", cat: "social", tags: ["mxh"] },
+      { id: uid(), name: "GitHub", url: "https://github.com", cat: "dev", tags: ["code", "git"] },
+      { id: uid(), name: "Notion", url: "https://notion.so", cat: "work", tags: ["ghi chú"] },
+      { id: uid(), name: "Dribbble", url: "https://dribbble.com", cat: "design", tags: ["ui"] }
+    ];
+
+    let links = JSON.parse(localStorage.getItem(LS_LINKS)) || defaultLinks;
+    let categories = JSON.parse(localStorage.getItem(LS_CATS)) || defaultCategories;
+    let settings = JSON.parse(localStorage.getItem(LS_SETTINGS)) || { accent: "#6366f1", gridSize: "medium" };
+
+    let currentFilter = "all";
+    let searchQuery = "";
+    let selectedMenuLinkId = null;
+    let editingId = null;
+    let isCollapsed = false;
+
+    // --- DOM SELECTORS ---
+    const sidebar = document.getElementById("sidebar");
+    const collapseBtn = document.getElementById("collapseBtn");
+    const catList = document.getElementById("catList");
+    const linksGrid = document.getElementById("linksGrid");
+    const mainTitle = document.getElementById("mainTitle");
+    const searchInput = document.getElementById("searchInput");
+    const addLinkBtn = document.getElementById("addLinkBtn");
+    const addCatBtn = document.getElementById("addCatBtn");
+    const openSettingsBtn = document.getElementById("openSettingsBtn");
+    const settingsPanel = document.getElementById("settingsPanel");
+    const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+    const accentColor = document.getElementById("accentColor");
+    const accentText = document.getElementById("accentText");
+    const gridSizeSelect = document.getElementById("gridSizeSelect");
+    const contextMenu = document.getElementById("contextMenu");
+    const modalOverlay = document.getElementById("modalOverlay");
+    const modalTitle = document.getElementById("modalTitle");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const saveModalBtn = document.getElementById("saveModalBtn");
+    const fileInput = document.getElementById("fileInput");
+
+    // Modal Input Fields
+    const fUrl = document.getElementById("fUrl");
+    const fName = document.getElementById("fName");
+    const fCat = document.getElementById("fCat");
+    const fTags = document.getElementById("fTags");
+    const fNotes = document.getElementById("fNotes");
+
+    // --- TOAST FUNCTION ---
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.style.display = "block";
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.style.display = "none"; }, 2200);
+    }
+
+    // --- SAVE TO LOCALSTORAGE ---
+    function saveData() {
+      localStorage.setItem(LS_LINKS, JSON.stringify(links));
+      localStorage.setItem(LS_CATS, JSON.stringify(categories));
+      localStorage.setItem(LS_SETTINGS, JSON.stringify(settings));
+      renderStats();
+    }
+
+    // --- THEME & ACCENT MANAGEMENT ---
+    function applySettings() {
+      document.documentElement.style.setProperty('--accent', settings.accent);
+      accentColor.value = settings.accent;
+      accentText.innerText = settings.accent;
+      gridSizeSelect.value = settings.gridSize;
+
+      const gridColumns = { small: "96px", medium: "120px", large: "160px" };
+      linksGrid.style.gridTemplateColumns = `repeat(auto-fill, minmax(${gridColumns[settings.gridSize]}, 1fr))`;
+    }
+
+    // --- UTILS ---
+    function getDomain(url) {
+      try { return new URL(url).hostname; } catch { return ""; }
+    }
+    function getFavicon(url) {
+      const domain = getDomain(url);
+      return domain ? `https://www.google.com/s2/favicons?sz=128&domain=${domain}` : "";
+    }
+    function getCatName(id) {
+      if (id === "all") return "Tất cả link";
+      if (id === "archived") return "Đã lưu trữ";
+      const c = categories.find(x => x.id === id);
+      return c ? c.name : "—";
+    }
+
+    // --- RENDER FUNCTIONS ---
+    function renderStats() {
+      const active = links.filter(l => !l.archived);
+      const now = Date.now();
+      document.getElementById("statTotal").innerText = active.length;
+      document.getElementById("statStarred").innerText = active.filter(l => l.starred).length;
+      document.getElementById("statRecent").innerText = active.filter(l => l.lastVisited && (now - l.lastVisited < RECENT_WINDOW)).length;
+    }
+
+    function renderCategories() {
+      let html = `
+        <li class="cat-item ${currentFilter === 'all' ? 'active' : ''}" data-id="all" title="Tất cả link">
+          <span class="cat-icon"><i data-lucide="layers"></i></span>
+          <span class="cat-label">Tất cả link</span>
+        </li>
+      `;
+      categories.forEach(c => {
+        const firstLetter = c.name.trim().charAt(0).toUpperCase() || "#";
+        html += `
+          <li class="cat-item ${currentFilter === c.id ? 'active' : ''}" data-id="${c.id}" title="${c.name}">
+            <span class="cat-icon">${firstLetter}</span>
+            <span class="cat-label">${c.name}</span>
+            <button class="delete-cat-btn" data-id="${c.id}"><i data-lucide="x"></i></button>
+          </li>
+        `;
+      });
+      html += `
+        <li class="cat-item ${currentFilter === 'archived' ? 'active' : ''}" data-id="archived" title="Đã lưu trữ">
+          <span class="cat-icon"><i data-lucide="archive"></i></span>
+          <span class="cat-label">Đã lưu trữ</span>
+        </li>
+      `;
+      catList.innerHTML = html;
+      lucide.createIcons();
+
+      // Binding events cho category
+      document.querySelectorAll('.cat-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (e.target.closest('.delete-cat-btn')) return;
+          currentFilter = item.getAttribute('data-id');
+          mainTitle.innerText = getCatName(currentFilter);
+          renderCategories();
+          renderLinks();
+        });
+        
+        // Double click để sửa danh mục
+        item.addEventListener('dblclick', () => {
+          const id = item.getAttribute('data-id');
+          if (id !== 'all' && id !== 'archived') editCategory(id);
+        });
+      });
+
+      document.querySelectorAll('.delete-cat-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteCategory(btn.getAttribute('data-id'));
+        });
+      });
+    }
+
+    function renderLinks() {
+      const filtered = links.filter(l => {
+        const inArchive = currentFilter === "archived";
+        if (inArchive ? !l.archived : l.archived) return false;
+        const matchCat = currentFilter === "all" || currentFilter === "archived" || l.cat === currentFilter;
+        const q = searchQuery.toLowerCase();
+        const matchSearch = l.name.toLowerCase().includes(q) || (l.tags || []).some(t => t.toLowerCase().includes(q));
+        return matchCat && matchSearch;
+      }).sort((a, b) => Number(b.starred || false) - Number(a.starred || false));
+
+      if (filtered.length === 0) {
+        linksGrid.innerHTML = `
+          <div class="empty-state">
+            ${currentFilter === "archived" ? "Chưa có link nào được lưu trữ." : 'Chưa có link nào. Nhấn "+ Thêm link".'}
+          </div>`;
+        return;
+      }
+
+      let html = "";
+      filtered.forEach(l => {
+        const fav = getFavicon(l.url);
+        let iconHtml = `<div class="link-icon-fallback">${l.name.trim().charAt(0).toUpperCase() || "?"}</div>`;
+        if (fav) {
+          iconHtml = `<img src="${fav}" class="link-icon-img" onerror="this.onerror=null; this.outerHTML='<div class=link-icon-fallback>${l.name.trim().charAt(0).toUpperCase()}</div>';" alt="${l.name}">`;
         }
-        card.style.opacity = 1;
-      }, 200);
+
+        const starBadge = l.starred ? `<span class="card-badge-left" title="Đã đánh dấu"><i data-lucide="star" style="fill: #f59e0b; width:13px; height:13px;"></i></span>` : "";
+        const archiveBadge = l.archived ? `<span class="card-badge-right" title="Đã lưu trữ"><i data-lucide="archive" style="width:12px; height:12px;"></i></span>` : "";
+        
+        let tagsHtml = "";
+        if (l.tags && l.tags.length > 0) {
+          tagsHtml = `<div class="tags-container">` + l.tags.map(t => `<span class="tag-badge">#${t}</span>`).join("") + `</div>`;
+        }
+
+        const catBadge = l.cat ? `<span class="link-cat-badge">${getCatName(l.cat)}</span>` : "";
+
+        html += `
+          <div class="link-card" data-id="${l.id}" title="${l.notes ? 'Ghi chú: ' + l.notes : 'Nhấn đúp để mở tuỳ chọn'}">
+            ${starBadge}
+            ${archiveBadge}
+            ${iconHtml}
+            <p class="link-name">${l.name}</p>
+            ${catBadge}
+            ${tagsHtml}
+          </div>
+        `;
+      });
+
+      linksGrid.innerHTML = html;
+      lucide.createIcons();
+
+      // Click Actions
+      document.querySelectorAll('.link-card').forEach(card => {
+        const id = card.getAttribute('data-id');
+        const item = links.find(x => x.id === id);
+
+        // Nhấn đúp kích hoạt Context Menu giống như code React gốc
+        card.addEventListener('dblclick', (e) => {
+          e.preventDefault();
+          openContextMenu(e, id);
+        });
+      });
+    }
+
+    // --- CONTEXT MENU CONTROL ---
+    function openContextMenu(e, id) {
+      selectedMenuLinkId = id;
+      const item = links.find(x => x.id === id);
+      
+      // Cập nhật text trạng thái dựa trên dữ liệu hiện tại
+      document.getElementById("menuStarText").innerText = item.starred ? "Bỏ đánh dấu" : "Đánh dấu";
+      document.getElementById("menuArchiveText").innerText = item.archived ? "Bỏ lưu trữ" : "Lưu trữ";
+
+      contextMenu.style.display = "flex";
+      
+      const mw = 200, mh = 300;
+      let x = e.pageX, y = e.pageY;
+      if (x + mw > window.innerWidth) x = window.innerWidth - mw - 10;
+      if (y + mh > window.innerHeight) y = window.innerHeight - mh - 10;
+
+      contextMenu.style.left = `${x}px`;
+      contextMenu.style.top = `${y}px`;
+    }
+
+    function closeContextMenu() {
+      contextMenu.style.display = "none";
+    }
+
+    // --- CATEGORY ACTIONS ---
+    function editCategory(id) {
+      const c = categories.find(x => x.id === id);
+      if (!c) return;
+      const name = prompt("Sửa tên danh mục:", c.name);
+      if (!name || !name.trim()) return;
+      c.name = name.trim();
+      saveData();
+      renderCategories();
+      renderLinks();
+    }
+
+    function deleteCategory(id) {
+      const c = categories.find(x => x.id === id);
+      if (!c) return;
+      if (!confirm(`Xoá danh mục "${c.name}"? Các link trong danh mục này sẽ thành "chưa phân loại".`)) return;
+      categories = categories.filter(x => x.id !== id);
+      links = links.map(l => l.cat === id ? { ...l, cat: "" } : l);
+      if (currentFilter === id) currentFilter = "all";
+      mainTitle.innerText = getCatName(currentFilter);
+      saveData();
+      renderCategories();
+      renderLinks();
+    }
+
+    // --- MODAL ACTIONS ---
+    function openModal(id = null) {
+      editingId = id;
+      
+      // Cập nhật danh sách select category
+      let selectHtml = `<option value="">— Chưa phân loại —</option>`;
+      categories.forEach(c => {
+        selectHtml += `<option value="${c.id}">${c.name}</option>`;
+      });
+      fCat.innerHTML = selectHtml;
+
+      if (id) {
+        modalTitle.innerText = "Sửa link";
+        const l = links.find(x => x.id === id);
+        fUrl.value = l.url;
+        fName.value = l.name;
+        fCat.value = l.cat || "";
+        fTags.value = (l.tags || []).join(", ");
+        fNotes.value = l.notes || "";
+      } else {
+        modalTitle.innerText = "Thêm link mới";
+        fUrl.value = "";
+        fName.value = "";
+        fCat.value = (currentFilter === "all" || currentFilter === "archived") ? "" : currentFilter;
+        fTags.value = "";
+        fNotes.value = "";
+      }
+      modalOverlay.style.display = "flex";
+    }
+
+    function visitLink(id) {
+      const l = links.find(x => x.id === id);
+      if (!l) return;
+      l.clicks = (l.clicks || 0) + 1;
+      l.lastVisited = Date.now();
+      saveData();
+      window.open(l.url, "_blank");
+    }
+
+    // --- BACKUP & RESTORE ---
+    function exportData() {
+      const dataStr = JSON.stringify({ links, categories, settings }, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `linkvault-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast("Đã xuất bản sao lưu");
+    }
+
+    function importData(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (Array.isArray(data.links)) links = data.links;
+          if (Array.isArray(data.categories)) categories = data.categories;
+          if (data.settings) settings = { ...settings, ...data.settings };
+          saveData();
+          applySettings();
+          renderCategories();
+          renderLinks();
+          showToast("Đã nhập dữ liệu thành công");
+        } catch {
+          showToast("File không hợp lệ");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // --- EVENT BINDINGS (GLOBAL & ELEMENTS) ---
+    
+    // Thu gọn Sidebar
+    collapseBtn.addEventListener('click', () => {
+      isCollapsed = !isCollapsed;
+      sidebar.classList.toggle('collapsed', isCollapsed);
+      collapseBtn.querySelector('i').setAttribute('data-lucide', isCollapsed ? 'chevron-right' : 'chevron-left');
+      lucide.createIcons();
     });
-  });
-});
 
-// Search filter
-document.getElementById('searchInput').addEventListener('input', (e) => {
-  const query = e.target.value.toLowerCase();
-  document.querySelectorAll('.link-card').forEach(card => {
-    const name = card.querySelector('p').textContent.toLowerCase();
-    card.style.display = name.includes(query) ? 'block' : 'none';
-  });
-});
+    // Thêm danh mục mới
+    addCatBtn.addEventListener('click', () => {
+      const name = prompt("Tên danh mục mới:");
+      if (!name || !name.trim()) return;
+      categories.push({ id: uid(), name: name.trim() });
+      saveData();
+      renderCategories();
+    });
 
-// Add new link
-document.getElementById('addLinkBtn').addEventListener('click', () => {
-  const url = prompt('Enter link URL:');
-  if (!url) return;
-  const name = prompt('Enter link name:') || url;
-  const domain = new URL(url).hostname;
-  const card = document.createElement('div');
-  card.className = 'link-card';
-  card.dataset.url = url;
-  card.dataset.category = 'all';
-  card.innerHTML = `
-    <img src="https://www.google.com/s2/favicons?sz=128&domain=${domain}" alt="favicon">
-    <p>${name}</p>
-  `;
-  linkGrid.appendChild(card);
-});
-</script>
+    // Ô tìm kiếm
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderLinks();
+    });
+
+    // Nút mở modal thêm link
+    addLinkBtn.addEventListener('click', () => openModal());
+    closeModalBtn.addEventListener('click', () => { modalOverlay.style.display = "none"; });
+
+    // Lưu Modal (Thêm / Sửa)
+    saveModalBtn.addEventListener('click', () => {
+      const url = fUrl.value.trim();
+      if (!url) { alert("Vui lòng nhập URL"); return; }
+      
+      let name = fName.value.trim();
+      if (!name) {
+        try { name = new URL(url).hostname; } catch { name = url; }
+      }
+      
+      const tags = fTags.value.split(",").map(t => t.trim()).filter(Boolean);
+      const notes = fNotes.value.trim();
+
+      if (editingId) {
+        links = links.map(l => l.id === editingId ? { ...l, url, name, cat: fCat.value, tags, notes } : l);
+        showToast("Đã cập nhật link");
+      } else {
+        links.push({ id: uid(), url, name, cat: fCat.value, tags, notes, clicks: 0 });
+        showToast("Đã thêm link");
+      }
+      
+      saveData();
+      modalOverlay.style.display = "none";
+      renderLinks();
+    });
+
+    // Cài đặt panel
+    openSettingsBtn.addEventListener('click', () => settingsPanel.classList.add('open'));
+    closeSettingsBtn.addEventListener('click', () => settingsPanel.classList.remove('open'));
+    
+    accentColor.addEventListener('input', (e) => {
+      settings.accent = e.target.value;
+      saveData();
+      applySettings();
+    });
+
+    gridSizeSelect.addEventListener('change', (e) => {
+      settings.gridSize = e.target.value;
+      saveData();
+      applySettings();
+    });
+
+    // Xuất/Nhập/Xoá Hệ thống
+    document.getElementById("exportBtn").addEventListener('click', exportData);
+    document.getElementById("importBtn").addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const f = e.target.files[0];
+      if (f) importData(f);
+      e.target.value = "";
+    });
+    document.getElementById("clearBtn").addEventListener('click', () => {
+      if (!confirm("Xoá TOÀN BỘ link và danh mục? Không thể hoàn tác.")) return;
+      links = []; categories = []; currentFilter = "all";
+      mainTitle.innerText = getCatName(currentFilter);
+      saveData();
+      renderCategories();
+      renderLinks();
+      showToast("Đã xoá toàn bộ dữ liệu");
+    });
+
+    // --- CONTEXT MENU EVENT BINDINGS ---
+    window.addEventListener('click', (e) => {
+      if (!contextMenu.contains(e.target)) closeContextMenu();
+    });
+
+    document.getElementById("menuStarBtn").addEventListener('click', () => {
+      links = links.map(l => l.id === selectedMenuLinkId ? { ...l, starred: !l.starred } : l);
+      saveData(); renderLinks(); closeContextMenu();
+    });
+
+    document.getElementById("menuVisitBtn").addEventListener('click', () => {
+      visitLink(selectedMenuLinkId); closeContextMenu();
+    });
+
+    document.getElementById("menuCopyBtn").addEventListener('click', () => {
+      const item = links.find(x => x.id === selectedMenuLinkId);
+      if (item) {
+        navigator.clipboard.writeText(item.url);
+        showToast("Đã sao chép liên kết");
+      }
+      closeContextMenu();
+    });
+
+    document.getElementById("menuEditBtn").addEventListener('click', () => {
+      const id = selectedMenuLinkId;
+      closeContextMenu(); openModal(id);
+    });
+
+    document.getElementById("menuArchiveBtn").addEventListener('click', () => {
+      const item = links.find(x => x.id === selectedMenuLinkId);
+      links = links.map(l => l.id === selectedMenuLinkId ? { ...l, archived: !l.archived } : l);
+      showToast(item.archived ? "Đã bỏ lưu trữ" : "Đã lưu trữ");
+      saveData(); renderLinks(); closeContextMenu();
+    });
+
+    document.getElementById("menuDeleteBtn").addEventListener('click', () => {
+      const item = links.find(x => x.id === selectedMenuLinkId);
+      if (item && confirm(`Xoá link "${item.name}"?`)) {
+        links = links.filter(x => x.id !== selectedMenuLinkId);
+        showToast("Đã xoá link");
+        saveData(); renderLinks();
+      }
+      closeContextMenu();
+    });
+
+    // --- SHORTCUTS (Ctrl+K & Ctrl+N) ---
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInput.focus();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        openModal();
+      }
+      if (e.key === "Escape") {
+        closeContextMenu();
+        settingsPanel.classList.remove('open');
+        modalOverlay.style.display = "none";
+      }
+    });
+
+    // --- CHẠY LẦN ĐẦU KHI TẢI TRANG ---
+    applySettings();
+    renderStats();
+    renderCategories();
+    renderLinks();
+  </script>
 </body>
 </html>
