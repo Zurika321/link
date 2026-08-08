@@ -439,6 +439,12 @@
     return "h" + h.toString(36);
   }
 
+  // đọc thẳng dữ liệu định dạng CŨ (script.js gốc) trên trình duyệt hiện tại và trả về
+  // schema MỚI mà KHÔNG ghi gì vào localStorage — dùng cho trang trích xuất độc lập (index2.html)
+  function peekOldFormat() {
+    return migrateFromOldFormat(); // null nếu trình duyệt này không có dữ liệu cũ (key "data")
+  }
+
   global.ZDB = {
     KEY: DB_KEY,
     PALETTE: PALETTE,
@@ -471,6 +477,7 @@
     importJSON: importJSON,
     validateImport: validateImport,
     resetAll: resetAll,
-    hashPass: hashPass
+    hashPass: hashPass,
+    peekOldFormat: peekOldFormat
   };
 })(window);
