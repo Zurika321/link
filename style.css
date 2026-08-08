@@ -452,6 +452,7 @@ main.app-main { max-width: 1180px; margin: 0 auto; padding: 8px 18px 60px; }
   position: fixed; inset: 0; z-index: 999; background: var(--bg); display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 20px;
 }
+.lock-screen[hidden] { display: none; }
 .lock-screen .lock-icon { width: 60px; height: 60px; border-radius: 50%; background: var(--surface-2); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--accent); }
 .lock-screen .field { width: min(260px, 80vw); }
 
