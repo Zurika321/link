@@ -1,311 +1,596 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Quản trị — Zurika</title>
-<link rel="icon" href="zurika.jpg" type="image/jpeg" />
-<meta name="theme-color" content="#E8952F" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Quản trị — Zurika</title>
+    <link rel="icon" href="zurika.jpg" type="image/jpeg" />
+    <meta name="theme-color" content="#E8952F" />
 
-<script>
-(function () {
-  try {
-    var raw = localStorage.getItem('zurika_db_v2');
-    var theme = 'light';
-    if (raw) {
-      var db = JSON.parse(raw);
-      if (db && db.settings && db.settings.theme) theme = db.settings.theme;
-    }
-    document.documentElement.setAttribute('data-theme', theme);
-  } catch (e) {}
-})();
-</script>
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem("zurika_db_v2");
+          var theme = "light";
+          if (raw) {
+            var db = JSON.parse(raw);
+            if (db && db.settings && db.settings.theme)
+              theme = db.settings.theme;
+          }
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {}
+      })();
+    </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
-<link rel="stylesheet" href="style.css" />
-<link rel="stylesheet" href="admin.css" />
-</head>
-<body>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div id="toast-region" aria-live="polite"></div>
 
-<div id="toast-region" aria-live="polite"></div>
-
-<div class="admin-shell">
-  <aside class="admin-sidebar" id="sidebar">
-    <div class="sidebar-head">
-      <div class="brand-mark">
-        <img src="zurika.png" alt="" onerror="this.replaceWith(Object.assign(document.createElement('i'),{className:'fa-solid fa-diagram-project'}))" />
-      </div>
-      <h1>Quản trị</h1>
-      <button class="sidebar-collapse-btn" id="btnCollapseSidebar" title="Thu gọn"><i class="fa-solid fa-chevron-left"></i></button>
-    </div>
-    <nav class="sidebar-nav">
-      <button class="nav-item active" data-route="dashboard"><i class="fa-solid fa-gauge-high"></i><span>Tổng quan</span></button>
-      <button class="nav-item" data-route="links"><i class="fa-solid fa-link"></i><span>Liên kết</span><span class="nav-badge" id="navBadgeLinks">0</span></button>
-      <button class="nav-item" data-route="categories"><i class="fa-solid fa-folder-tree"></i><span>Danh mục</span></button>
-      <button class="nav-item" data-route="tags"><i class="fa-solid fa-tags"></i><span>Thẻ</span></button>
-      <button class="nav-item" data-route="data"><i class="fa-solid fa-database"></i><span>Dữ liệu</span></button>
-      <button class="nav-item" data-route="settings"><i class="fa-solid fa-sliders"></i><span>Cài đặt</span></button>
-    </nav>
-    <div class="sidebar-foot">
-      <a class="nav-item" href="index.html"><i class="fa-solid fa-arrow-left"></i><span>Về trang chính</span></a>
-    </div>
-  </aside>
-
-  <button class="sidebar-reopen-fab" id="sidebarReopenBtn" title="Mở menu"><i class="fa-solid fa-chevron-right"></i></button>
-  <div class="admin-scrim" id="adminScrim"></div>
-
-  <main class="admin-main" id="adminMain">
-    <header class="admin-topbar">
-      <button class="btn btn-icon btn-ghost only-mobile" id="btnMobileSidebar"><i class="fa-solid fa-bars"></i></button>
-      <h2 id="routeTitle">Tổng quan</h2>
-      <button class="btn btn-icon btn-ghost" id="btnTheme" title="Sáng / Tối"><i class="fa-solid fa-moon"></i></button>
-      <a class="btn btn-icon btn-ghost" href="index.html" title="Xem trang chính"><i class="fa-solid fa-house"></i></a>
-    </header>
-
-    <!-- ===== DASHBOARD ===== -->
-    <div class="admin-content" id="routeDashboard">
-      <div class="stat-cards" id="statCards"></div>
-      <div class="dash-grid">
-        <div class="panel">
-          <h3><i class="fa-solid fa-chart-simple"></i> Liên kết theo danh mục</h3>
-          <div id="catBars"></div>
-        </div>
-        <div class="panel">
-          <h3><i class="fa-solid fa-clock-rotate-left"></i> Xem gần đây</h3>
-          <div id="recentList"></div>
-        </div>
-      </div>
-      <div class="panel" style="margin-top:16px">
-        <h3><i class="fa-solid fa-bell"></i> Lịch nhắc sắp tới</h3>
-        <div id="dashReminders"></div>
-      </div>
-    </div>
-
-    <!-- ===== LINKS ===== -->
-    <div class="admin-content" id="routeLinks" hidden>
-      <div class="admin-toolbar">
-        <div class="search-box"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="linkSearch" placeholder="Tìm liên kết..." /></div>
-        <select class="select-plain" id="filterCategory"><option value="all">Tất cả danh mục</option></select>
-        <select class="select-plain" id="filterTag"><option value="all">Tất cả thẻ</option></select>
-        <select class="select-plain" id="linkSort">
-          <option value="newest">Mới thêm</option>
-          <option value="name">Tên A-Z</option>
-          <option value="viewed">Xem nhiều</option>
-        </select>
-        <button class="btn btn-primary" id="btnAddLinkAdmin" style="margin-left:auto"><i class="fa-solid fa-plus"></i> Thêm link</button>
-      </div>
-      <div class="bulk-bar" id="bulkBar" hidden>
-        <span id="bulkCount">0 đã chọn</span>
-        <select class="select-plain" id="bulkCategorySelect"></select>
-        <button class="btn btn-sm" id="btnBulkMove">Chuyển danh mục</button>
-        <button class="btn btn-sm btn-danger" id="btnBulkDelete">Xoá đã chọn</button>
-        <button class="btn btn-sm btn-ghost" id="btnBulkClear">Bỏ chọn</button>
-      </div>
-      <div class="data-table-wrap">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th style="width:30px"><input type="checkbox" id="checkAll" /></th>
-              <th>Liên kết</th>
-              <th>Danh mục</th>
-              <th>Thẻ</th>
-              <th style="width:40px">Sao</th>
-              <th style="width:60px">Xem</th>
-              <th style="width:90px">Cập nhật</th>
-              <th style="width:80px"></th>
-            </tr>
-          </thead>
-          <tbody id="linksTableBody"></tbody>
-        </table>
-      </div>
-      <div class="pager" id="linksPager"></div>
-    </div>
-
-    <!-- ===== CATEGORIES ===== -->
-    <div class="admin-content" id="routeCategories" hidden>
-      <div id="categoryList"></div>
-      <div class="add-cat-form">
-        <div class="field"><input type="text" id="newCatName" placeholder=" " /><label>Tên danh mục mới</label></div>
-        <div class="field" style="max-width:150px">
-          <input type="text" id="newCatIcon" placeholder=" " value="fa-solid fa-tag" />
-          <label>Icon (class Font Awesome)</label>
-        </div>
-        <div class="field" style="max-width:60px; flex:0 0 60px">
-          <input type="color" id="newCatColor" value="#5B5FEF" style="width:100%; height:44px; padding:4px; cursor:pointer" />
-        </div>
-        <button class="btn btn-primary" id="btnAddCategory">Thêm danh mục</button>
-      </div>
-    </div>
-
-    <!-- ===== TAGS ===== -->
-    <div class="admin-content" id="routeTags" hidden>
-      <div class="data-table-wrap" id="tagListWrap"></div>
-    </div>
-
-    <!-- ===== DATA ===== -->
-    <div class="admin-content" id="routeData" hidden>
-      <div class="dash-grid">
-        <div class="panel">
-          <h3><i class="fa-solid fa-download"></i> Xuất dữ liệu</h3>
-          <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Tải toàn bộ danh mục, liên kết và cài đặt thành 1 file .json duy nhất để sao lưu hoặc chuyển máy.</p>
-          <button class="btn btn-primary" id="btnExportJson"><i class="fa-solid fa-download"></i> Tải file JSON</button>
-          <p class="field-hint" id="storageSizeInfo" style="margin-top:10px"></p>
-        </div>
-        <div class="panel">
-          <h3><i class="fa-solid fa-upload"></i> Nhập dữ liệu</h3>
-          <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Chọn file .json đã xuất trước đó để gộp hoặc thay thế dữ liệu hiện tại.</p>
-          <button class="btn" id="btnImportJson"><i class="fa-solid fa-upload"></i> Chọn file...</button>
-          <input type="file" id="importFileInput" accept="application/json" hidden />
-        </div>
-      </div>
-      <div class="danger-zone">
-        <h3><i class="fa-solid fa-triangle-exclamation"></i> Vùng nguy hiểm</h3>
-        <p style="font-size:12.5px; color:var(--muted); margin:8px 0 12px">Xoá toàn bộ danh mục, liên kết và cài đặt trên trình duyệt này. Nên xuất file JSON sao lưu trước.</p>
-        <button class="btn btn-danger-solid" id="btnResetAll">Xoá toàn bộ dữ liệu</button>
-      </div>
-    </div>
-
-    <!-- ===== SETTINGS ===== -->
-    <div class="admin-content" id="routeSettings">
-      <div class="panel" style="max-width:480px; margin-bottom:16px">
-        <h3><i class="fa-solid fa-palette"></i> Giao diện</h3>
-        <div class="settings-row">
-          <div class="settings-row-label">Chế độ tối</div>
-          <button class="toggle" id="toggleDark"></button>
-        </div>
-        <div class="settings-row-sub" style="margin:8px 0">Màu nhấn</div>
-        <div class="swatches" id="accentSwatches"></div>
-      </div>
-      <div class="panel" style="max-width:480px; margin-bottom:16px">
-        <h3><i class="fa-solid fa-sliders"></i> Hiển thị</h3>
-        <div class="settings-row">
-          <div>
-            <div class="settings-row-label">Chuột ảo</div>
-            <div class="settings-row-sub">Vòng tròn kéo được ở trang chính</div>
+    <div class="admin-shell">
+      <aside class="admin-sidebar" id="sidebar">
+        <div class="sidebar-head">
+          <div class="brand-mark">
+            <img
+              src="zurika.png"
+              alt=""
+              onerror="
+                this.replaceWith(
+                  Object.assign(document.createElement('i'), {
+                    className: 'fa-solid fa-diagram-project',
+                  }),
+                )
+              "
+            />
           </div>
-          <button class="toggle" id="toggleMouse"></button>
+          <h1>Quản trị</h1>
+          <button
+            class="sidebar-collapse-btn"
+            id="btnCollapseSidebar"
+            title="Thu gọn"
+          >
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
         </div>
-        <div class="settings-row">
-          <div>
-            <div class="settings-row-label">Hiện link ẩn (ZZ)</div>
-          </div>
-          <button class="toggle" id="toggleHidden"></button>
+        <nav class="sidebar-nav">
+          <button
+            class="nav-item active"
+            data-route="dashboard"
+            title="Tổng quan"
+          >
+            <i class="fa-solid fa-gauge-high"></i><span>Tổng quan</span>
+          </button>
+          <button class="nav-item" data-route="links" title="Liên kết">
+            <i class="fa-solid fa-link"></i><span>Liên kết</span
+            ><span class="nav-badge" id="navBadgeLinks">0</span>
+          </button>
+          <button class="nav-item" data-route="categories" title="Danh mục">
+            <i class="fa-solid fa-folder-tree"></i><span>Danh mục</span>
+          </button>
+          <button class="nav-item" data-route="tags" title="Thẻ">
+            <i class="fa-solid fa-tags"></i><span>Thẻ</span>
+          </button>
+          <button class="nav-item" data-route="data" title="Dữ liệu">
+            <i class="fa-solid fa-database"></i><span>Dữ liệu</span>
+          </button>
+          <button class="nav-item" data-route="settings" title="Cài đặt">
+            <i class="fa-solid fa-sliders"></i><span>Cài đặt</span>
+          </button>
+        </nav>
+        <div class="sidebar-foot">
+          <a class="nav-item" href="index.html" title="Về trang chính"
+            ><i class="fa-solid fa-arrow-left"></i
+            ><span>Về trang chính</span></a
+          >
         </div>
-        <div class="field" style="margin-top:14px">
-          <input type="text" id="bgInput" placeholder=" " />
-          <label>URL ảnh nền trang chính</label>
-        </div>
-        <button class="btn btn-sm" id="btnBgApply">Áp dụng nền</button>
-        <button class="btn btn-sm btn-ghost" id="btnBgClear">Xoá nền</button>
-      </div>
-      <div class="panel" style="max-width:480px">
-        <h3><i class="fa-solid fa-lock"></i> Bảo mật</h3>
-        <div class="settings-row">
-          <div>
-            <div class="settings-row-label">Khoá màn hình bằng mật khẩu</div>
-            <div class="settings-row-sub" id="lockStatusText">Chưa đặt mật khẩu</div>
-          </div>
-          <button class="toggle" id="toggleLock"></button>
-        </div>
-      </div>
-    </div>
-  </main>
-</div>
+      </aside>
 
-<!-- ============ MODAL: THÊM / SỬA LIÊN KẾT ============ -->
-<div class="modal-backdrop" id="linkModalBackdrop">
-  <div class="modal-panel" role="dialog" aria-modal="true">
-    <div class="modal-head">
-      <h3 id="linkModalTitle">Thêm liên kết</h3>
-      <button class="modal-close" data-close="linkModalBackdrop" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+      <div class="admin-scrim" id="adminScrim"></div>
+
+      <main class="admin-main" id="adminMain">
+        <header class="admin-topbar">
+          <button
+            class="btn btn-icon btn-ghost only-mobile"
+            id="btnMobileSidebar"
+          >
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <h2 id="routeTitle">Tổng quan</h2>
+          <button
+            class="btn btn-icon btn-ghost"
+            id="btnTheme"
+            title="Sáng / Tối"
+          >
+            <i class="fa-solid fa-moon"></i>
+          </button>
+          <a
+            class="btn btn-icon btn-ghost"
+            href="index.html"
+            title="Xem trang chính"
+            ><i class="fa-solid fa-house"></i
+          ></a>
+        </header>
+
+        <!-- ===== DASHBOARD ===== -->
+        <div class="admin-content" id="routeDashboard">
+          <div class="stat-cards" id="statCards"></div>
+          <div class="dash-grid">
+            <div class="panel">
+              <h3>
+                <i class="fa-solid fa-chart-simple"></i> Liên kết theo danh mục
+              </h3>
+              <div id="catBars"></div>
+            </div>
+            <div class="panel">
+              <h3><i class="fa-solid fa-clock-rotate-left"></i> Xem gần đây</h3>
+              <div id="recentList"></div>
+            </div>
+          </div>
+          <div class="panel" style="margin-top: 16px">
+            <h3><i class="fa-solid fa-bell"></i> Lịch nhắc sắp tới</h3>
+            <div id="dashReminders"></div>
+          </div>
+        </div>
+
+        <!-- ===== LINKS ===== -->
+        <div class="admin-content" id="routeLinks" hidden>
+          <div class="admin-toolbar">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i
+              ><input
+                type="search"
+                id="linkSearch"
+                placeholder="Tìm liên kết..."
+              />
+            </div>
+            <select class="select-plain" id="filterCategory">
+              <option value="all">Tất cả danh mục</option>
+            </select>
+            <select class="select-plain" id="filterTag">
+              <option value="all">Tất cả thẻ</option>
+            </select>
+            <select class="select-plain" id="linkSort">
+              <option value="newest">Mới thêm</option>
+              <option value="name">Tên A-Z</option>
+              <option value="viewed">Xem nhiều</option>
+            </select>
+            <button
+              class="btn btn-primary"
+              id="btnAddLinkAdmin"
+              style="margin-left: auto"
+            >
+              <i class="fa-solid fa-plus"></i> Thêm link
+            </button>
+          </div>
+          <div class="bulk-bar" id="bulkBar" hidden>
+            <span id="bulkCount">0 đã chọn</span>
+            <select class="select-plain" id="bulkCategorySelect"></select>
+            <button class="btn btn-sm" id="btnBulkMove">Chuyển danh mục</button>
+            <button class="btn btn-sm btn-danger" id="btnBulkDelete">
+              Xoá đã chọn
+            </button>
+            <button class="btn btn-sm btn-ghost" id="btnBulkClear">
+              Bỏ chọn
+            </button>
+          </div>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 30px">
+                    <input type="checkbox" id="checkAll" />
+                  </th>
+                  <th>Liên kết</th>
+                  <th>Danh mục</th>
+                  <th>Thẻ</th>
+                  <th style="width: 40px">Sao</th>
+                  <th style="width: 60px">Xem</th>
+                  <th style="width: 90px">Cập nhật</th>
+                  <th style="width: 80px"></th>
+                </tr>
+              </thead>
+              <tbody id="linksTableBody"></tbody>
+            </table>
+          </div>
+          <div class="pager" id="linksPager"></div>
+        </div>
+
+        <!-- ===== CATEGORIES ===== -->
+        <div class="admin-content" id="routeCategories" hidden>
+          <div id="categoryList"></div>
+          <div class="add-cat-form">
+            <div class="field">
+              <input type="text" id="newCatName" placeholder=" " /><label
+                >Tên danh mục mới</label
+              >
+            </div>
+            <div class="field" style="max-width: 150px">
+              <input
+                type="text"
+                id="newCatIcon"
+                placeholder=" "
+                value="fa-solid fa-tag"
+              />
+              <label>Icon (class Font Awesome)</label>
+            </div>
+            <div class="field" style="max-width: 60px; flex: 0 0 60px">
+              <input
+                type="color"
+                id="newCatColor"
+                value="#5B5FEF"
+                style="width: 100%; height: 44px; padding: 4px; cursor: pointer"
+              />
+            </div>
+            <button class="btn btn-primary" id="btnAddCategory">
+              Thêm danh mục
+            </button>
+          </div>
+        </div>
+
+        <!-- ===== TAGS ===== -->
+        <div class="admin-content" id="routeTags" hidden>
+          <div class="data-table-wrap" id="tagListWrap"></div>
+        </div>
+
+        <!-- ===== DATA ===== -->
+        <div class="admin-content" id="routeData" hidden>
+          <div class="dash-grid">
+            <div class="panel">
+              <h3><i class="fa-solid fa-download"></i> Xuất dữ liệu</h3>
+              <p
+                style="
+                  font-size: 12.5px;
+                  color: var(--muted);
+                  margin-bottom: 12px;
+                "
+              >
+                Tải toàn bộ danh mục, liên kết và cài đặt thành 1 file .json duy
+                nhất để sao lưu hoặc chuyển máy.
+              </p>
+              <button class="btn btn-primary" id="btnExportJson">
+                <i class="fa-solid fa-download"></i> Tải file JSON
+              </button>
+              <p
+                class="field-hint"
+                id="storageSizeInfo"
+                style="margin-top: 10px"
+              ></p>
+            </div>
+            <div class="panel">
+              <h3><i class="fa-solid fa-upload"></i> Nhập dữ liệu</h3>
+              <p
+                style="
+                  font-size: 12.5px;
+                  color: var(--muted);
+                  margin-bottom: 12px;
+                "
+              >
+                Chọn file .json đã xuất trước đó để gộp hoặc thay thế dữ liệu
+                hiện tại.
+              </p>
+              <button class="btn" id="btnImportJson">
+                <i class="fa-solid fa-upload"></i> Chọn file...
+              </button>
+              <input
+                type="file"
+                id="importFileInput"
+                accept="application/json"
+                hidden
+              />
+            </div>
+          </div>
+          <div class="danger-zone">
+            <h3>
+              <i class="fa-solid fa-triangle-exclamation"></i> Vùng nguy hiểm
+            </h3>
+            <p
+              style="font-size: 12.5px; color: var(--muted); margin: 8px 0 12px"
+            >
+              Xoá toàn bộ danh mục, liên kết và cài đặt trên trình duyệt này.
+              Nên xuất file JSON sao lưu trước.
+            </p>
+            <button class="btn btn-danger-solid" id="btnResetAll">
+              Xoá toàn bộ dữ liệu
+            </button>
+          </div>
+        </div>
+
+        <!-- ===== SETTINGS ===== -->
+        <div class="admin-content" id="routeSettings">
+          <div class="panel" style="max-width: 480px; margin-bottom: 16px">
+            <h3><i class="fa-solid fa-palette"></i> Giao diện</h3>
+            <div class="settings-row">
+              <div class="settings-row-label">Chế độ tối</div>
+              <button class="toggle" id="toggleDark"></button>
+            </div>
+            <div class="settings-row-sub" style="margin: 8px 0">Màu nhấn</div>
+            <div class="swatches" id="accentSwatches"></div>
+          </div>
+          <div class="panel" style="max-width: 480px; margin-bottom: 16px">
+            <h3><i class="fa-solid fa-sliders"></i> Hiển thị</h3>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Chuột ảo</div>
+                <div class="settings-row-sub">
+                  Vòng tròn kéo được ở trang chính
+                </div>
+              </div>
+              <button class="toggle" id="toggleMouse"></button>
+            </div>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">Hiện link ẩn (ZZ)</div>
+              </div>
+              <button class="toggle" id="toggleHidden"></button>
+            </div>
+            <div class="field" style="margin-top: 14px">
+              <input type="text" id="bgInput" placeholder=" " />
+              <label>URL ảnh nền trang chính</label>
+            </div>
+            <button class="btn btn-sm" id="btnBgApply">Áp dụng nền</button>
+            <button class="btn btn-sm btn-ghost" id="btnBgClear">
+              Xoá nền
+            </button>
+          </div>
+          <div class="panel" style="max-width: 480px">
+            <h3><i class="fa-solid fa-lock"></i> Bảo mật</h3>
+            <div class="settings-row">
+              <div>
+                <div class="settings-row-label">
+                  Khoá màn hình bằng mật khẩu
+                </div>
+                <div class="settings-row-sub" id="lockStatusText">
+                  Chưa đặt mật khẩu
+                </div>
+              </div>
+              <button class="toggle" id="toggleLock"></button>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
-    <form id="linkForm">
-      <div class="field"><input type="text" id="fUrl" placeholder=" " autocomplete="off" /><label>Đường dẫn (URL)</label></div>
-      <div class="field-row">
-        <div class="field"><input type="text" id="fTitle" placeholder=" " autocomplete="off" /><label>Tiêu đề</label></div>
-        <div class="field" style="max-width:150px"><select id="fCategory"></select><label>Danh mục</label></div>
-      </div>
-      <div class="field"><textarea id="fDesc" placeholder=" " rows="2"></textarea><label>Mô tả / ghi chú</label></div>
-      <div class="field">
-        <label style="position:static; transform:none; display:block; margin-bottom:6px; font-size:12px; color:var(--muted)">Thẻ (tag)</label>
-        <div class="tag-input-wrap" id="tagWrap"><input type="text" id="fTagInput" placeholder="gõ rồi nhấn Enter..." autocomplete="off" /></div>
-      </div>
-      <div class="field"><input type="text" id="fIcon" placeholder=" " autocomplete="off" /><label>Icon tuỳ chỉnh (URL ảnh, để trống = tự động)</label></div>
-      <label class="checkbox-row"><input type="checkbox" id="fStarred" /> Đánh dấu ngay</label>
-      <div class="settings-section" style="border-top:1px dashed var(--border); padding-top:12px">
-        <label class="checkbox-row" style="margin-bottom:10px"><input type="checkbox" id="fReminderOn" /> Có lịch ra tập / cập nhật mới</label>
-        <div id="reminderFields" hidden>
+
+    <!-- ============ MODAL: THÊM / SỬA LIÊN KẾT ============ -->
+    <div class="modal-backdrop" id="linkModalBackdrop">
+      <div class="modal-panel" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <h3 id="linkModalTitle">Thêm liên kết</h3>
+          <button
+            class="modal-close"
+            data-close="linkModalBackdrop"
+            aria-label="Đóng"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <form id="linkForm">
+          <div class="field">
+            <input
+              type="text"
+              id="fUrl"
+              placeholder=" "
+              autocomplete="off"
+            /><label>Đường dẫn (URL)</label>
+          </div>
           <div class="field-row">
-            <div class="field" style="flex:1.3"><select id="fReminderDay"></select><label>Thứ</label></div>
-            <div class="field"><select id="fReminderHour"></select><label>Giờ</label></div>
-            <div class="field"><select id="fReminderMinute"></select><label>Phút</label></div>
+            <div class="field">
+              <input
+                type="text"
+                id="fTitle"
+                placeholder=" "
+                autocomplete="off"
+              /><label>Tiêu đề</label>
+            </div>
+            <div class="field" style="max-width: 150px">
+              <select id="fCategory"></select
+              ><label>Danh mục</label>
+            </div>
           </div>
+          <div class="field">
+            <textarea id="fDesc" placeholder=" " rows="2"></textarea
+            ><label>Mô tả / ghi chú</label>
+          </div>
+          <div class="field">
+            <label
+              style="
+                position: static;
+                transform: none;
+                display: block;
+                margin-bottom: 6px;
+                font-size: 12px;
+                color: var(--muted);
+              "
+              >Thẻ (tag)</label
+            >
+            <div class="tag-input-wrap" id="tagWrap">
+              <input
+                type="text"
+                id="fTagInput"
+                placeholder="gõ rồi nhấn Enter..."
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <div class="field">
+            <input
+              type="text"
+              id="fIcon"
+              placeholder=" "
+              autocomplete="off"
+            /><label
+              >Icon tuỳ chỉnh (URL ảnh hoặc class Font Awesome, để trống = tự
+              động)</label
+            >
+          </div>
+          <label class="checkbox-row"
+            ><input type="checkbox" id="fStarred" /> Đánh dấu ngay</label
+          >
+          <div
+            class="settings-section"
+            style="border-top: 1px dashed var(--border); padding-top: 12px"
+          >
+            <label class="checkbox-row" style="margin-bottom: 10px"
+              ><input type="checkbox" id="fReminderOn" /> Có lịch ra tập / cập
+              nhật mới</label
+            >
+            <div id="reminderFields" hidden>
+              <div class="field-row">
+                <div class="field" style="flex: 1.3">
+                  <select id="fReminderDay"></select
+                  ><label>Thứ</label>
+                </div>
+                <div class="field">
+                  <select id="fReminderHour"></select
+                  ><label>Giờ</label>
+                </div>
+                <div class="field">
+                  <select id="fReminderMinute"></select
+                  ><label>Phút</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+        <div class="modal-foot">
+          <button class="btn" data-close="linkModalBackdrop">Huỷ</button>
+          <button class="btn btn-primary" id="btnSaveLink">Lưu liên kết</button>
         </div>
       </div>
-    </form>
-    <div class="modal-foot">
-      <button class="btn" data-close="linkModalBackdrop">Huỷ</button>
-      <button class="btn btn-primary" id="btnSaveLink">Lưu liên kết</button>
     </div>
-  </div>
-</div>
 
-<!-- ============ MODAL: XÁC NHẬN ============ -->
-<div class="modal-backdrop" id="confirmModalBackdrop">
-  <div class="modal-panel" role="dialog" aria-modal="true" style="max-width:360px">
-    <div class="modal-head">
-      <h3 id="confirmTitle">Bạn có chắc?</h3>
-      <button class="modal-close" data-close="confirmModalBackdrop" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+    <!-- ============ MODAL: XÁC NHẬN ============ -->
+    <div class="modal-backdrop" id="confirmModalBackdrop">
+      <div
+        class="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        style="max-width: 360px"
+      >
+        <div class="modal-head">
+          <h3 id="confirmTitle">Bạn có chắc?</h3>
+          <button
+            class="modal-close"
+            data-close="confirmModalBackdrop"
+            aria-label="Đóng"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <p id="confirmBody" style="font-size: 13.5px; color: var(--muted)"></p>
+        <div class="modal-foot">
+          <button class="btn" data-close="confirmModalBackdrop">Huỷ</button>
+          <button class="btn btn-danger-solid" id="btnConfirmOk">Đồng ý</button>
+        </div>
+      </div>
     </div>
-    <p id="confirmBody" style="font-size:13.5px; color:var(--muted)"></p>
-    <div class="modal-foot">
-      <button class="btn" data-close="confirmModalBackdrop">Huỷ</button>
-      <button class="btn btn-danger-solid" id="btnConfirmOk">Đồng ý</button>
-    </div>
-  </div>
-</div>
 
-<!-- ============ MODAL: NHẬP JSON ============ -->
-<div class="modal-backdrop" id="importModalBackdrop">
-  <div class="modal-panel" role="dialog" aria-modal="true">
-    <div class="modal-head">
-      <h3>Nhập dữ liệu JSON</h3>
-      <button class="modal-close" data-close="importModalBackdrop" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+    <!-- ============ MODAL: NHẬP JSON ============ -->
+    <div class="modal-backdrop" id="importModalBackdrop">
+      <div class="modal-panel" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <h3>Nhập dữ liệu JSON</h3>
+          <button
+            class="modal-close"
+            data-close="importModalBackdrop"
+            aria-label="Đóng"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <p
+          id="importSummary"
+          style="font-size: 13px; color: var(--muted); margin-bottom: 14px"
+        ></p>
+        <label
+          class="btn btn-block"
+          style="justify-content: flex-start; gap: 10px; margin-bottom: 6px"
+        >
+          <input
+            type="radio"
+            name="importMode"
+            value="merge"
+            checked
+            style="accent-color: var(--accent)"
+          />
+          Gộp vào dữ liệu hiện có (khuyên dùng)
+        </label>
+        <label
+          class="btn btn-block"
+          style="justify-content: flex-start; gap: 10px"
+        >
+          <input
+            type="radio"
+            name="importMode"
+            value="replace"
+            style="accent-color: var(--accent)"
+          />
+          Thay thế toàn bộ dữ liệu hiện có
+        </label>
+        <div class="modal-foot">
+          <button class="btn" data-close="importModalBackdrop">Huỷ</button>
+          <button class="btn btn-primary" id="btnImportConfirm">
+            Nhập dữ liệu
+          </button>
+        </div>
+      </div>
     </div>
-    <p id="importSummary" style="font-size:13px; color:var(--muted); margin-bottom:14px"></p>
-    <label class="btn btn-block" style="justify-content:flex-start; gap:10px; margin-bottom:6px">
-      <input type="radio" name="importMode" value="merge" checked style="accent-color:var(--accent)" /> Gộp vào dữ liệu hiện có (khuyên dùng)
-    </label>
-    <label class="btn btn-block" style="justify-content:flex-start; gap:10px">
-      <input type="radio" name="importMode" value="replace" style="accent-color:var(--accent)" /> Thay thế toàn bộ dữ liệu hiện có
-    </label>
-    <div class="modal-foot">
-      <button class="btn" data-close="importModalBackdrop">Huỷ</button>
-      <button class="btn btn-primary" id="btnImportConfirm">Nhập dữ liệu</button>
-    </div>
-  </div>
-</div>
 
-<!-- ============ MODAL: MẬT KHẨU ============ -->
-<div class="modal-backdrop" id="passModalBackdrop">
-  <div class="modal-panel" role="dialog" aria-modal="true" style="max-width:340px">
-    <div class="modal-head">
-      <h3>Đặt mật khẩu khoá màn hình</h3>
-      <button class="modal-close" data-close="passModalBackdrop" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+    <!-- ============ MODAL: MẬT KHẨU ============ -->
+    <div class="modal-backdrop" id="passModalBackdrop">
+      <div
+        class="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        style="max-width: 340px"
+      >
+        <div class="modal-head">
+          <h3>Đặt mật khẩu khoá màn hình</h3>
+          <button
+            class="modal-close"
+            data-close="passModalBackdrop"
+            aria-label="Đóng"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="field">
+          <input
+            type="password"
+            id="fPass1"
+            placeholder=" "
+            autocomplete="new-password"
+          /><label>Mật khẩu mới</label>
+        </div>
+        <div class="field">
+          <input
+            type="password"
+            id="fPass2"
+            placeholder=" "
+            autocomplete="new-password"
+          /><label>Nhập lại mật khẩu</label>
+        </div>
+        <div class="field-hint">
+          Mật khẩu chỉ lưu trên trình duyệt này — dùng để che màn hình, không
+          phải mã hoá bảo mật cấp cao.
+        </div>
+        <div class="modal-foot">
+          <button class="btn" data-close="passModalBackdrop">Huỷ</button>
+          <button class="btn btn-primary" id="btnSavePass">Lưu mật khẩu</button>
+        </div>
+      </div>
     </div>
-    <div class="field"><input type="password" id="fPass1" placeholder=" " autocomplete="new-password" /><label>Mật khẩu mới</label></div>
-    <div class="field"><input type="password" id="fPass2" placeholder=" " autocomplete="new-password" /><label>Nhập lại mật khẩu</label></div>
-    <div class="field-hint">Mật khẩu chỉ lưu trên trình duyệt này — dùng để che màn hình, không phải mã hoá bảo mật cấp cao.</div>
-    <div class="modal-foot">
-      <button class="btn" data-close="passModalBackdrop">Huỷ</button>
-      <button class="btn btn-primary" id="btnSavePass">Lưu mật khẩu</button>
-    </div>
-  </div>
-</div>
 
-<script src="storage.js"></script>
-<script src="admin.js"></script>
-</body>
+    <script src="storage.js"></script>
+    <script src="admin.js"></script>
+  </body>
 </html>

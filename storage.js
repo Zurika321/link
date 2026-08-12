@@ -159,15 +159,32 @@
       // gỡ hậu tố đánh dấu trùng lặp do bản cũ sinh ra, ví dụ "(note bị trùng)*1"
       note1 = note1.replace(/\s*\(note bị trùng\)\*\d+\s*$/i, "").trim();
 
+      // BẢN CŨ có kiểu link đặt icon riêng bằng cách gõ thẳng mã <i class='...' style='color:...'>
+      // vào dòng note1 (thay vì gõ tên link) — dòng dưới đây phát hiện & tách nó ra,
+      // để tên link không bị hiện ra dạng chữ "<i class=...>" như trước.
+      var iconClass = "", iconColor = "";
+      var iconTagMatch = note1.match(/^<i\b[^>]*class=(['"])([^'"]+)\1[^>]*>/i);
+      var titleFinal, descFinal;
+      if (iconTagMatch) {
+        iconClass = iconTagMatch[2];
+        var colorMatch = note1.match(/color\s*:\s*([^;'"]+)/i);
+        if (colorMatch) iconColor = colorMatch[1].trim();
+        titleFinal = note2 || url;
+        descFinal = "";
+      } else {
+        titleFinal = note1 || url;
+        descFinal = note2;
+      }
+
       var catId = idByRawTitle[catRaw] || fallbackCatId;
       var reminder = null;
 
       if (catRaw === "Anime") {
-        var m = note2.match(/\(new\s+([0-9]+)-([0-9]+)-([0-9]+)\)/);
+        var m = descFinal.match(/\(new\s+([0-9]+)-([0-9]+)-([0-9]+)\)/);
         if (m) {
           reminder = { weekday: oldDayToWeekday(m[1]), hour: parseInt(m[2], 10), minute: parseInt(m[3], 10) };
         }
-        note2 = "";
+        descFinal = "";
       }
 
       var cleanForStar = normalizeSearch(removeTags(noteRaw).replace(/\s+/g, ""));
@@ -176,11 +193,13 @@
       db.links.push({
         id: uid("l"),
         url: url,
-        title: note1 || url,
-        desc: note2 || "",
+        title: titleFinal,
+        desc: descFinal || "",
         categoryId: catId,
         tags: [],
         icon: "",
+        iconClass: iconClass,
+        iconColor: iconColor,
         starred: !!starred,
         createdAt: nowTs(),
         updatedAt: nowTs(),
@@ -279,6 +298,8 @@
       categoryId: data.categoryId,
       tags: Array.isArray(data.tags) ? data.tags.slice() : [],
       icon: data.icon || "",
+      iconClass: data.iconClass || "",
+      iconColor: data.iconColor || "",
       starred: !!data.starred,
       createdAt: nowTs(),
       updatedAt: nowTs(),
