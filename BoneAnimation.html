@@ -44,18 +44,64 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 .asset-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px;max-height:42vh;overflow:auto;padding:4px}.asset-item{position:relative;display:grid;justify-items:center;gap:3px;min-width:0;padding:4px;border:1px solid transparent;border-radius:5px;cursor:pointer}.asset-item.active{border-color:var(--a);background:#263b40}.asset-item span{font-size:10px;color:var(--m);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .preview{display:flex;align-items:center;justify-content:center;min-height:180px;max-height:38vh;background-color:#343b46;background-image:linear-gradient(45deg,#414955 25%,transparent 25%),linear-gradient(-45deg,#414955 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#414955 75%),linear-gradient(-45deg,transparent 75%,#414955 75%);background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0;overflow:auto;border:1px solid var(--l)}
 .preview img{max-width:100%;max-height:36vh;object-fit:contain;image-rendering:pixelated}.opts{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:8px 0}.opts label{display:inline-flex;align-items:center;gap:5px;color:#c5ccd5;font-size:12px}.opts input[type=number]{width:58px}.status{font-size:12px;color:#aab4c2;min-height:18px;margin-top:5px}
-@media(max-width:900px){body{grid-template:"L C" minmax(0,1fr) "L C" minmax(0,1fr) "T T" 190px/170px minmax(0,1fr)}#L{grid-area:L}#R{grid-area:R}#C{grid-area:C}#T{grid-area:T}.pn{padding:6px}.toolbar{gap:3px}.toolbar button{font-size:11px}}
-/* Mobile: giữ canvas rộng, properties mở thành drawer cố định bên phải */
-#propsToggle{position:absolute;right:9px;top:42px;z-index:5;padding:8px 11px;background:#303642eF;box-shadow:0 2px 10px #0006}
-#closeProps{display:none}
-@media(max-width:560px){
- body{grid-template:"C C" minmax(200px,1fr) "L L" minmax(110px,24vh) "T T" 170px/1fr 1fr}
- #C{grid-area:C}#L{grid-area:L;grid-column:1/3;min-height:0}#R{display:none;position:fixed;z-index:40;right:0;top:0;bottom:170px;width:min(88vw,370px);max-width:calc(100vw - 24px);box-shadow:-12px 0 35px #0009;border-left:2px solid var(--a);padding:12px;overflow:auto}
- body.show-properties #R{display:block}#T{grid-area:T;min-width:0}.pn{font-size:13px}.row label{width:95px}.toolbar button{padding:6px 3px;font-size:11px}.dbody{grid-template-columns:1fr}.asset-list{max-height:19vh}.preview{min-height:130px}
- #propsToggle{top:42px;right:8px}#closeProps{display:block;width:100%;margin-bottom:10px;padding:9px}
- #props .row{gap:8px;margin:8px 0}#props .row label{width:112px;font-size:13px}#props .row input:not([type=checkbox]),#props .row select{min-height:36px;font-size:14px}#props button{min-height:36px}
+/* Tablet + mobile responsive layout: canvas above, two side panels side-by-side, timeline anchored below. */
+@media (max-width:900px) and (orientation:portrait){
+ :root{--side-height:clamp(150px,23dvh,300px);--timeline-height:clamp(230px,30dvh,430px)}
+ html,body{height:100%;height:100dvh;overflow:hidden}
+ body{grid-template:"C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}
+ #C{grid-area:C;min-height:0}
+ #L{grid-area:L;min-width:0;min-height:0;overflow:auto;border-right:1px solid var(--l)}
+ #R{grid-area:R;display:block;position:relative;inset:auto;width:auto;max-width:none;min-width:0;min-height:0;overflow:auto;box-shadow:none;border-left:0;padding:8px}
+ #T{grid-area:T;min-width:0;min-height:0;height:auto;overflow:auto;padding:8px}
+ #propsToggle,#closeProps{display:none!important}
+ #timelineControls{display:flex;flex:1;flex-direction:column;min-height:0;gap:5px}
+ #timelineControls .row{display:flex;flex:0 0 auto;flex-wrap:wrap;align-items:center;gap:5px;margin:3px 0}
+ #tw{flex:1 1 90px;min-height:90px}
+ .pn{padding:7px;font-size:12px}
+ .toolbar{gap:3px}.toolbar button{font-size:11px;padding:6px 3px}
+ .touch-actions button{font-size:11px;min-width:54px}
+ .row label{width:76px}
+ #props .row{gap:5px;margin:6px 0;flex-wrap:wrap}
+ #props .row label{width:72px;font-size:11px}
+ #props .row input:not([type=checkbox]),#props .row select{min-height:32px;font-size:12px}
+ #props button{min-height:32px}
+ .animation-setup{gap:5px 7px;align-items:center;flex-wrap:wrap}
+ .animation-setup label{display:flex;align-items:center;gap:4px;font-size:11px}
+ .animation-setup select,.animation-setup input{max-width:125px;min-height:32px;font-size:12px}
+ .animation-setup button,#T button{min-height:32px}
+ #fr,#fps,#nf{width:48px!important}
 }
-@media(max-height:520px) and (max-width:900px){body{grid-template:"L C" minmax(0,1fr) "L C" minmax(0,1fr) "T T" 135px/150px minmax(0,1fr)}#T{padding:4px}#timelineControls .row{gap:3px;margin:2px 0}#propsToggle{top:6px}#R{bottom:135px}}
+/* Landscape phone: keep skeleton and properties visible in side columns; timeline stays at bottom. */
+@media (max-width:900px) and (orientation:landscape){
+ html,body{height:100%;height:100dvh;overflow:hidden}
+ body{grid-template:"L C R" minmax(0,1fr) "T T T" clamp(118px,32dvh,190px)/minmax(125px,19vw) minmax(0,1fr) minmax(175px,25vw)}
+ #L{grid-area:L;display:block;min-width:0;min-height:0;overflow:auto;padding:5px}
+ #C{grid-area:C;min-width:0;min-height:0}
+ #R{grid-area:R;display:block;position:relative;inset:auto;width:auto;max-width:none;min-width:0;min-height:0;overflow:auto;box-shadow:none;padding:5px;border-left:1px solid var(--l)}
+ #T{grid-area:T;min-width:0;min-height:0;height:auto;overflow:auto;padding:5px}
+ #propsToggle,#closeProps{display:none!important}
+ #timelineControls{display:flex;flex:1;flex-direction:column;min-height:0;gap:3px}
+ #timelineControls .row{display:flex;flex-wrap:wrap;gap:3px;margin:2px 0}
+ #tw{flex:1;min-height:45px}
+ .pn{padding:5px;font-size:11px}.toolbar{gap:2px}.toolbar button{font-size:10px;padding:4px 2px}
+ .row label{width:62px;font-size:10px}
+ #props .row{gap:3px;margin:4px 0;flex-wrap:wrap}
+ #props .row label{width:58px;font-size:10px}
+ #props .row input:not([type=checkbox]),#props .row select{min-height:27px;font-size:11px}
+ #props button{min-height:27px;font-size:10px}
+ .animation-setup{gap:3px;flex-wrap:wrap}.animation-setup label{font-size:10px}
+ .animation-setup select,.animation-setup input{max-width:105px;min-height:27px;font-size:10px}
+ #T button{min-height:27px;font-size:10px;padding:3px 5px}
+ #fr,#fps,#nf{width:42px!important}
+ #mode{min-width:90px}
+}
+/* Narrow portrait fallback: both side panels remain present and independently scrollable. */
+@media (max-width:380px) and (orientation:portrait){
+ :root{--side-height:25dvh;--timeline-height:32dvh}
+ #props .row label{width:62px}
+ .animation-setup select,.animation-setup input{max-width:105px}
+ #T{padding:5px}
+}
 </style>
 </head>
 <body>
@@ -80,13 +126,13 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
   <div id="imageAssets" class="image-assets"></div>
  </section>
 </div>
-<div id="C"><canvas id="cvs"></canvas><button id="propsToggle" onclick="toggleProperties()">⚙ Properties</button><div id="hint">Di chuyển: kéo khớp / block · Xoay: kéo xương · Co giãn: kéo đầu xương hoặc 4 góc block · 2 ngón: zoom/pan</div></div>
-<div id="R" class="pn"><button id="closeProps" onclick="toggleProperties(false)">← Đóng Properties</button><div id="props"></div></div>
+<div id="C"><canvas id="cvs"></canvas><div id="hint">Di chuyển: kéo khớp / block · Xoay: kéo xương · Co giãn: kéo đầu xương hoặc 4 góc block · 2 ngón: zoom/pan</div></div>
+<div id="R" class="pn"><div id="props"></div></div>
 <div id="T" class="pn">
  <div class="row"><button id="mode" onclick="setMode(mode==='rig'?'anim':'rig')"></button></div>
  <div class="animation-setup">
   <label>Hướng <select id="directionSelect" onchange="setDir(this.value)"><option value="down">⬇ Down</option><option value="up">⬆ Up</option><option value="left">⬅ Left</option><option value="right">➡ Right</option></select></label>
-  <label>Animation <select id="animationSelect" onchange="selectAnimation(this.value)"><option value="">— Chọn animation —</option></select></label>
+  <label>Animation <select id="animationSelect" onchange="selectAnimation(this.value)"></select></label>
   <input id="animationName" placeholder="Tên animation mới">
   <button onclick="createAnimation()">＋ Tạo</button><button onclick="deleteAnimation()" id="deleteAnimationBtn" disabled>🗑 Xoá</button>
  </div>
@@ -138,17 +184,36 @@ function normalizeModel(m){
  if(!sets.length){
   const oldDirs=m.anims?normalizeDirs(m.anims):emptyDirections();
   if(m.anim&&!m.anims)oldDirs.down={fps:+m.anim.fps||12,frames:+m.anim.frames||24,keys:m.anim.keys||{}};
-  const hasKeys=Object.values(oldDirs).some(a=>Object.keys(a.keys||{}).length);
-  if(hasKeys)sets=[{name:'Default',dirs:oldDirs}];
+  // Luôn có ít nhất một animation, kể cả model mới chưa có keyframe.
+  sets=[{name:'Default',dirs:oldDirs}];
  }
  m.animationSets=sets.map((set,i)=>({name:String(set.name||('Animation '+(i+1))),dirs:normalizeDirs(set.dirs||set.anims||{})}));
- m.activeAnimation=m.animationSets.some(a=>a.name===m.activeAnimation)?m.activeAnimation:(m.animationSets[0]?.name||'');
- const active=m.animationSets.find(a=>a.name===m.activeAnimation);m.anims=active?active.dirs:emptyDirections();m.anim=m.anims[m.dir];
+ if(!m.animationSets.length)m.animationSets=[{name:'Default',dirs:emptyDirections()}];
+ m.activeAnimation=m.animationSets.some(a=>a.name===m.activeAnimation)?m.activeAnimation:m.animationSets[0].name;
+ const active=m.animationSets.find(a=>a.name===m.activeAnimation);m.anims=active.dirs;m.anim=m.anims[m.dir];
  m.blocks.forEach(k=>{k.b=Number.isFinite(+k.b)?+k.b:0;k.demo=k.demo!==false;k.ox=+k.ox||0;k.sx=+k.sx||1;k.sy=+k.sy||1;k.ix=+k.ix||0;k.iy=+k.iy||0;k.ir=+k.ir||0;k.is=+k.is||1;k.z=+k.z||0;k.vis=['all','front','back'].includes(k.vis)?k.vis:'all';k.imgUp=k.imgUp||'';k.fx=+k.fx||0;});
  return m;
 }
-function activeSet(){return M.animationSets.find(a=>a.name===M.activeAnimation)||null;}
-function refreshAnimationState(){const set=activeSet();M.anims=set?set.dirs:emptyDirections();M.anim=M.anims[M.dir];$('timelineControls').hidden=!set;$('noAnimationHint').hidden=!!set;$('deleteAnimationBtn').disabled=!set;$('animationSelect').innerHTML='<option value="">— Chọn animation —</option>'+M.animationSets.map(a=>`<option value="${esc(a.name)}" ${a.name===M.activeAnimation?'selected':''}>${esc(a.name)}</option>`).join('');$('animationSelect').value=M.activeAnimation;$('directionSelect').value=M.dir;syncAnim();}
+function activeSet(){return M.animationSets.find(a=>a.name===M.activeAnimation)||M.animationSets[0]||null;}
+function seedAnimationSet(set,bones=M.bones){
+ if(!set)return;
+ for(const dir of ['down','up','left','right']){
+  const anim=set.dirs[dir]||(set.dirs[dir]=emptyAnim());
+  for(const b of bones){
+   const keys=anim.keys[b.id]||(anim.keys[b.id]={});
+   if(!Object.keys(keys).length)keys[0]={x:b.x,y:b.y,a:b.a,l:b.l};
+  }
+ }
+}
+function refreshAnimationState(){
+ if(!M.animationSets.length)M.animationSets=[{name:'Default',dirs:emptyDirections()}];
+ if(!M.animationSets.some(a=>a.name===M.activeAnimation))M.activeAnimation=M.animationSets[0].name;
+ const set=activeSet();M.anims=set.dirs;M.anim=M.anims[M.dir];
+ $('timelineControls').hidden=false;$('noAnimationHint').hidden=true;
+ $('deleteAnimationBtn').disabled=M.animationSets.length<=1;
+ $('animationSelect').innerHTML=M.animationSets.map(a=>`<option value="${esc(a.name)}" ${a.name===M.activeAnimation?'selected':''}>${esc(a.name)}</option>`).join('');
+ $('animationSelect').value=M.activeAnimation;$('directionSelect').value=M.dir;syncAnim();
+}
 const A=()=>{const set=activeSet();return set?set.dirs[M.dir]:(emptyAnim());};
 const byId=id=>M.bones.find(b=>b.id==id),kids=id=>M.bones.filter(b=>b.p==id);
 const desc=id=>kids(id).flatMap(b=>[b.id,...desc(b.id)]);
@@ -212,7 +277,7 @@ function pointSegmentDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,len=dx*dx+dy*dy
 function addBone(){
  const parent=sel&&(sel.t==='b'?byId(sel.id):byId(cur()?.b));
  const b={id:M.nid++,name:'bone'+M.nid,p:parent?parent.id:0,x:0,y:0,a:parent?0:-90,l:100};
- M.bones.push(b);sel={t:'b',id:b.id};renderAll();
+ M.bones.push(b);if(activeSet())seedAnimationSet(activeSet(),[b]);sel={t:'b',id:b.id};renderAll();
 }
 function addBlock(){
  // Block mới được tạo độc lập. Khi gắn vào xương, nó trở thành component của xương đó.
@@ -307,11 +372,6 @@ function hideContextMenu(){$('treeContext').style.display='none';}
 window.addEventListener('pointerdown',e=>{if(!$('treeContext').contains(e.target))hideContextMenu();});
 window.addEventListener('keydown',e=>{if(e.key==='Escape')hideContextMenu();});
 
-function toggleProperties(force){
- const open=typeof force==='boolean'?force:!document.body.classList.contains('show-properties');
- document.body.classList.toggle('show-properties',open);
-}
-
 /* Inspector */
 function renderProps(){
  const o=cur(),P=$('props');if(!o){P.innerHTML='<i>Chọn xương/block ở danh sách hoặc trên canvas</i>';return}
@@ -384,13 +444,20 @@ function setDir(direction){
 function createAnimation(){
  const name=$('animationName').value.trim();if(!name)return alert('Nhập tên animation trước khi tạo.');
  if(M.animationSets.some(a=>a.name.toLowerCase()===name.toLowerCase()))return alert('Tên animation đã tồn tại.');
- const dirs=emptyDirections();M.animationSets.push({name,dirs});M.activeAnimation=name;M.anims=dirs;M.anim=dirs[M.dir];$('animationName').value='';frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();setMode('anim');renderAll();draw();
+ const set={name,dirs:emptyDirections()};seedAnimationSet(set);M.animationSets.push(set);M.activeAnimation=name;M.anims=set.dirs;M.anim=set.dirs[M.dir];$('animationName').value='';frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();setMode('anim');renderAll();draw();
 }
 function selectAnimation(name){
- if(!name){M.activeAnimation='';M.anims=emptyDirections();M.anim=M.anims[M.dir];frame=0;playing=false;refreshAnimationState();draw();return;}
- if(!M.animationSets.some(a=>a.name===name))return;M.activeAnimation=name;M.anims=activeSet().dirs;M.anim=M.anims[M.dir];frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();renderAll();draw();
+ // Không cho trạng thái bỏ chọn; luôn giữ animation hiện tại hoặc Default.
+ if(!name||!M.animationSets.some(a=>a.name===name))name=M.activeAnimation||M.animationSets[0]?.name||'Default';
+ if(!M.animationSets.some(a=>a.name===name)){M.animationSets.push({name:'Default',dirs:emptyDirections()});name='Default';}
+ M.activeAnimation=name;M.anims=activeSet().dirs;M.anim=M.anims[M.dir];seedAnimationSet(activeSet());frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();setMode('anim');renderAll();draw();
 }
-function deleteAnimation(){const set=activeSet();if(!set)return;if(!confirm('Xoá animation "'+set.name+'"?'))return;M.animationSets=M.animationSets.filter(a=>a!==set);M.activeAnimation=M.animationSets[0]?.name||'';M.anims=activeSet()?.dirs||emptyDirections();M.anim=M.anims[M.dir];frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();renderAll();draw();}
+function deleteAnimation(){
+ const set=activeSet();if(!set)return;
+ if(M.animationSets.length<=1)return alert('Phải giữ lại ít nhất một animation.');
+ if(!confirm('Xoá animation "'+set.name+'"?'))return;
+ M.animationSets=M.animationSets.filter(a=>a!==set);M.activeAnimation=M.animationSets[0].name;M.anims=activeSet().dirs;M.anim=M.anims[M.dir];frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();renderAll();draw();
+}
 function copyDownToUp(){
  if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');
  const source=activeSet().dirs.down,target=activeSet().dirs.up;target.fps=source.fps;target.frames=source.frames;target.keys={};
@@ -649,7 +716,7 @@ function exportM(){const name=($('mn').value.trim()||'BoneAnimatorModel').replac
 function saveM(){const name=$('mn').value.trim();if(!name)return alert('Nhập tên model trước khi xuất JSON.');const pack=modelPackage();sessionModels=sessionModels.filter(item=>item.name!==name);sessionModels.push({name,package:pack});renderSessionModels();downloadJSON(name.replace(/[^a-z0-9_-]+/gi,'_')+'.json',pack);}
 function renderSessionModels(){$('ml').innerHTML=sessionModels.map(item=>`<div class="it"><span data-name="${esc(item.name)}" onclick="loadM(this.dataset.name)">📦 ${esc(item.name)}</span><span style="float:right" data-name="${esc(item.name)}" onclick="rmM(this.dataset.name)">✕</span></div>`).join('')||'<span class="status">Chưa có model trong phiên này.</span>';}
 function loadM(name){const item=sessionModels.find(x=>x.name===name);if(!item)return;loadPackage(item.package);}
-function loadPackage(pack){const model=pack.model||pack;const assets=pack.assets||{};Object.entries(assets).forEach(([name,data])=>{if(!imageData[name]){LIB.push(name);imageData[name]=data;imageCache[name]=new Image();imageCache[name].src=data;}});M=normalizeModel(JSON.parse(JSON.stringify(model)));sel=ksel=null;frame=0;playing=false;$('pb').textContent='▶';$('mn').value='';refreshAnimationState();setDir(M.dir||'down');renderAll();loadLib();draw();}
+function loadPackage(pack){const model=pack.model||pack;const assets=pack.assets||{};Object.entries(assets).forEach(([name,data])=>{if(!imageData[name]){LIB.push(name);imageData[name]=data;imageCache[name]=new Image();imageCache[name].src=data;}});M=normalizeModel(JSON.parse(JSON.stringify(model)));sel=ksel=null;frame=0;playing=false;$('pb').textContent='▶';$('mn').value='';seedAnimationSet(activeSet());refreshAnimationState();setDir(M.dir||'down');renderAll();loadLib();draw();}
 $('modelImport').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const pack=JSON.parse(await file.text());if(pack.model){loadPackage(pack);const name=file.name.replace(/\.json$/i,'');sessionModels.push({name,package:pack});renderSessionModels();}else{loadPackage({model:pack,assets:{}});}}catch(error){alert('JSON không hợp lệ: '+error.message)}e.target.value='';});
 function rmM(name){if(confirm('Xoá model '+name+' khỏi phiên hiện tại?')){sessionModels=sessionModels.filter(item=>item.name!==name);renderSessionModels();}}
 /* Phím tắt / vòng lặp */
@@ -661,6 +728,6 @@ window.addEventListener('keydown',e=>{
 $('imgModal').addEventListener('pointerdown',e=>{if(e.target===$('imgModal'))closeLibrary()});
 function fit(canvas){if(canvas.width!==canvas.clientWidth||canvas.height!==canvas.clientHeight){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight}}
 function loop(time){const dt=Math.min(.1,(time-last)/1000);last=time;if(playing&&activeSet()){frame+=dt*A().fps;if(frame>A().frames)frame=0}fit(cv);fit(tl);draw();if(document.activeElement!==$('fr'))$('fr').value=Math.round(frame);requestAnimationFrame(loop)}
-M=normalizeModel(M);setTool('move');setMode('rig');refreshAnimationState();setDir('down');showSideTab('skeleton');renderImageAssets();renderSessionModels();addBone();addBlock();attachBlockToBone(cur(),M.bones[0].id);requestAnimationFrame(loop);
+M=normalizeModel(M);setTool('move');setMode('rig');refreshAnimationState();setDir('down');showSideTab('skeleton');renderImageAssets();renderSessionModels();addBone();addBlock();attachBlockToBone(cur(),M.bones[0].id);seedAnimationSet(activeSet());refreshAnimationState();requestAnimationFrame(loop);
 </script>
 </body></html>
