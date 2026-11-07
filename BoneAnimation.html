@@ -599,11 +599,12 @@ function loadR15Preset(){
  setMode('anim');
 }
 function makePresetHumanoid(){
- if(!confirm('Nạp mẫu R6? Model hiện tại sẽ được thay thế.'))return;
+ if(!confirm('Nạp mẫu R6 từ Character_Model_MR6.json? Model hiện tại sẽ được thay thế.'))return;
  loadPackage(JSON.parse(JSON.stringify(R6_PRESET_PACKAGE)));
  $('mn').value='Character_Model_MR6';
  setMode('anim');
 }
+
 
 function clearCurrentDirection(){
  const dir=M.dir;
