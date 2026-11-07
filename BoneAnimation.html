@@ -33,6 +33,23 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 .crop-box{position:absolute;border:2px solid #3fb8af;background:#3fb8af16;box-shadow:0 0 0 9999px #0008;touch-action:none;cursor:move}
 .crop-handle{position:absolute;width:16px;height:16px;border:2px solid #fff;background:#3fb8af;border-radius:3px;z-index:2}
 .crop-handle.nw{left:-8px;top:-8px;cursor:nwse-resize}.crop-handle.ne{right:-8px;top:-8px;cursor:nesw-resize}.crop-handle.sw{left:-8px;bottom:-8px;cursor:nesw-resize}.crop-handle.se{right:-8px;bottom:-8px;cursor:nwse-resize}
+
+.crop-modal{position:fixed;inset:0;z-index:1200;background:#080a0def;display:flex;align-items:center;justify-content:center;padding:12px;}
+.crop-modal[hidden]{display:none!important}
+.crop-dialog{width:min(1120px,100%);height:min(94dvh,920px);background:#222832;border:1px solid #586273;border-radius:12px;box-shadow:0 18px 70px #000c;display:flex;flex-direction:column;overflow:hidden;}
+.crop-head,.crop-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--l);flex:0 0 auto}
+.crop-footer{border-top:1px solid var(--l);border-bottom:0;justify-content:flex-end}
+.crop-subtitle{font-size:12px;color:var(--m);margin-top:3px;overflow-wrap:anywhere}
+.crop-content{padding:12px 16px;display:flex;flex-direction:column;gap:10px;overflow:auto;min-height:0;flex:1}
+.crop-help{margin:0;color:#b7c0cc;font-size:13px}
+.crop-stage-wrap{display:flex;align-items:center;justify-content:center;flex:1 1 auto;min-height:180px;overflow:auto;background:#171b22;border:1px solid var(--l);border-radius:7px;padding:8px}
+.crop-stage{flex:none;max-width:100%;max-height:100%;}
+.crop-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,150px) minmax(100px,150px);gap:10px;align-items:end}
+.crop-fields label{display:flex;flex-direction:column;gap:5px;color:#c5ccd5;font-size:12px;min-width:0}
+.crop-fields input{width:100%;min-height:40px;font-size:15px;padding:8px 10px}
+.crop-footer button{min-width:100px;min-height:42px}
+@media(max-width:600px){.crop-modal{padding:6px}.crop-dialog{width:100%;height:96dvh;max-height:96dvh;border-radius:9px}.crop-head,.crop-footer{padding:10px}.crop-content{padding:9px;gap:8px}.crop-stage-wrap{min-height:180px;max-height:58dvh;padding:4px}.crop-fields{grid-template-columns:1fr 1fr;gap:7px}.crop-fields label:first-child{grid-column:1/-1}.crop-fields input{min-height:42px}.crop-help{font-size:12px}}
+
 .asset-actions{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}.asset-actions button{flex:1;min-width:85px}
 .animation-setup{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.animation-setup input{width:130px}.animation-setup select{max-width:160px}
 #timelineControls[hidden]{display:none!important}
@@ -153,14 +170,26 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
     <div id="assetPreview" class="preview"><span>Chọn ảnh trong kho</span></div>
     <div id="selectedAssetName" class="status"></div>
     <div class="asset-actions"><button onclick="startCrop()">✂ Cắt ảnh</button><button onclick="removeBgSelected()">Xoá nền</button><button onclick="renameSelectedAsset()">Rename</button></div>
-    <div id="cropPanel" hidden><p class="status">Kéo khung để di chuyển; kéo 4 góc để thay đổi kích thước vùng cắt.</p>
-     <div id="cropStage" class="crop-stage"><img id="cropImage" alt="Ảnh cắt"><div id="cropBox" class="crop-box"><i class="crop-handle nw" data-handle="nw"></i><i class="crop-handle ne" data-handle="ne"></i><i class="crop-handle sw" data-handle="sw"></i><i class="crop-handle se" data-handle="se"></i></div></div>
-     <div class="asset-actions"><button onclick="saveCrop()">Cắt & lưu ảnh mới</button><button onclick="cancelCrop()">Huỷ cắt</button></div>
-    </div>
     <div id="imageActionStatus" class="status"></div>
    </div>
   </div>
   <footer class="dfoot"><button id="deleteAssetBtn" onclick="deleteSelectedAsset()">Xoá ảnh</button><button onclick="closeLibrary()">Đóng</button><button class="active" onclick="applySelectedAsset()">Dùng ảnh cho block đang chọn</button></footer>
+ </section>
+</div>
+<div id="cropModal" class="crop-modal" hidden>
+ <section class="crop-dialog" role="dialog" aria-modal="true" aria-labelledby="cropTitle">
+  <header class="crop-head"><div><strong id="cropTitle">Cắt ảnh</strong><div id="cropSourceName" class="crop-subtitle"></div></div><button type="button" onclick="cancelCrop()">Đóng ✕</button></header>
+  <div class="crop-content">
+   <p class="crop-help">Kéo khung để di chuyển, kéo 4 góc để thay đổi vùng cắt. Có thể nhập kích thước chính xác bên dưới.</p>
+   <div class="crop-stage-wrap"><div id="cropStage" class="crop-stage"><img id="cropImage" alt="Ảnh đang cắt"><div id="cropBox" class="crop-box"><i class="crop-handle nw" data-handle="nw"></i><i class="crop-handle ne" data-handle="ne"></i><i class="crop-handle sw" data-handle="sw"></i><i class="crop-handle se" data-handle="se"></i></div></div></div>
+   <div class="crop-fields">
+    <label>Tên ảnh mới<input id="cropOutputName" type="text" autocomplete="off" placeholder="ten_anh_crop.png"></label>
+    <label>Rộng (px)<input id="cropWidth" type="number" min="1" step="1"></label>
+    <label>Cao (px)<input id="cropHeight" type="number" min="1" step="1"></label>
+   </div>
+   <div id="cropStatus" class="status" aria-live="polite"></div>
+  </div>
+  <footer class="crop-footer"><button type="button" onclick="cancelCrop()">Huỷ</button><button type="button" class="active" onclick="saveCrop()">✂ Cắt ảnh</button></footer>
  </section>
 </div>
 <div id="treeContext" class="ctx-menu" role="menu"></div>
@@ -684,9 +713,9 @@ function useImg(name){const block=cur();if(block&&sel.t==='k'){if(M.dir==='up'&&
 function rmImg(event,name){event?.preventDefault?.();deleteImageByName(name);return false;}
 $('up').onchange=async e=>{const files=[...e.target.files];await addFiles(files,true);e.target.value='';};
 $('upModal').onchange=async e=>{const files=[...e.target.files];await addFiles(files,false);e.target.value='';if(files.length)selectAsset(LIB[LIB.length-files.length]);};
-function openLibrary(name=''){modalImage=LIB.includes(name)?name:(LIB[0]||'');$('imgModal').hidden=false;$('cropPanel').hidden=true;$('imageActionStatus').textContent='';renderAssetList();renderAssetPreview();}
-function closeLibrary(){$('imgModal').hidden=true;$('cropPanel').hidden=true;hideImageContext();}
-function selectAsset(name){modalImage=name;$('cropPanel').hidden=true;$('imageActionStatus').textContent='';renderAssetList();renderAssetPreview();}
+function openLibrary(name=''){modalImage=LIB.includes(name)?name:(LIB[0]||'');$('imgModal').hidden=false;$('cropModal').hidden=true;$('imageActionStatus').textContent='';renderAssetList();renderAssetPreview();}
+function closeLibrary(){$('imgModal').hidden=true;$('cropModal').hidden=true;hideImageContext();}
+function selectAsset(name){modalImage=name;$('cropModal').hidden=true;$('imageActionStatus').textContent='';renderAssetList();renderAssetPreview();}
 function renderAssetList(){$('assetList').innerHTML=LIB.map(name=>`<div class="asset-item ${name===modalImage?'active':''}" onclick="selectAsset(this.dataset.name)" oncontextmenu="return imageContextMenu(event,this.dataset.name)" data-name="${esc(name)}"><img class="asset-thumb" src="${imageSrc(name)}"><span>${esc(name)}</span></div>`).join('')||'<span>Kho ảnh đang trống</span>';}
 function renderAssetPreview(){const box=$('assetPreview');if(!modalImage){box.innerHTML='<span>Chọn ảnh trong kho</span>';$('selectedAssetName').textContent='';return}box.innerHTML=`<img src="${imageSrc(modalImage)}" alt="${esc(modalImage)}">`;$('selectedAssetName').textContent=modalImage;}
 function applySelectedAsset(){if(!modalImage)return alert('Chọn ảnh trước');useImg(modalImage);closeLibrary();}
@@ -697,18 +726,87 @@ window.addEventListener('pointerdown',e=>{if(!$('imageContext').contains(e.targe
 function deleteImageByName(name){hideImageContext();if(!confirm('Xoá ảnh '+name+' khỏi bộ nhớ phiên?'))return;LIB=LIB.filter(n=>n!==name);delete imageData[name];delete imageCache[name];M.blocks.forEach(k=>{if(k.img===name)k.img='';if(k.imgUp===name)k.imgUp='';});if(modalImage===name)modalImage='';if(pendingImage===name)pendingImage='';loadLib();renderAssetList();renderAssetPreview();}
 function renameImageByName(oldName){hideImageContext();const proposed=prompt('Tên ảnh mới:',oldName);if(!proposed||proposed.trim()===oldName)return;let name=proposed.trim();if(!/\.[a-z0-9]+$/i.test(name))name+=oldName.slice(oldName.lastIndexOf('.'));if(LIB.some(n=>n.toLowerCase()===name.toLowerCase()))return alert('Tên ảnh đã tồn tại.');const idx=LIB.indexOf(oldName);if(idx<0)return;LIB[idx]=name;imageData[name]=imageData[oldName];imageCache[name]=imageCache[oldName];delete imageData[oldName];delete imageCache[oldName];M.blocks.forEach(k=>{if(k.img===oldName)k.img=name;if(k.imgUp===oldName)k.imgUp=name;});if(modalImage===oldName)modalImage=name;if(pendingImage===oldName)pendingImage=name;loadLib();renderAssetList();renderAssetPreview();$('imageActionStatus').textContent='Đã đổi tên thành '+name;}
 function renameSelectedAsset(){if(modalImage)renameImageByName(modalImage);}
-/* Crop: khung chọn di chuyển/resize; kết quả là ảnh PNG tạm trong RAM. */
-let cropRect={x:0,y:0,w:100,h:100},cropNatural={w:1,h:1};
-function updateCropBox(){$('cropBox').style.left=cropRect.x+'px';$('cropBox').style.top=cropRect.y+'px';$('cropBox').style.width=cropRect.w+'px';$('cropBox').style.height=cropRect.h+'px';}
-function startCrop(){if(!modalImage)return alert('Chọn ảnh trước.');const im=imageCache[modalImage]||(imageCache[modalImage]=new Image());if(!im.src)im.src=imageSrc(modalImage);const init=()=>{const maxW=Math.min(760,window.innerWidth-70,$('assetPreview').clientWidth||760),maxH=Math.min(420,window.innerHeight*.42),scale=Math.min(maxW/im.naturalWidth,maxH/im.naturalHeight,1);const w=Math.max(1,Math.round(im.naturalWidth*scale)),h=Math.max(1,Math.round(im.naturalHeight*scale));cropNatural={w:im.naturalWidth,h:im.naturalHeight};$('cropStage').style.width=w+'px';$('cropStage').style.height=h+'px';$('cropImage').src=imageSrc(modalImage);cropRect={x:w*.1,y:h*.1,w:w*.8,h:h*.8};updateCropBox();$('cropPanel').hidden=false;$('imageActionStatus').textContent='Kéo khung để di chuyển hoặc kéo các góc để chọn vùng.';};if(im.complete)init();else im.onload=init;}
-function cancelCrop(){$('cropPanel').hidden=true;cropDrag=null;}
+/* Crop editor: popup lớn, xem ảnh rõ, nhập tên và kích thước đầu ra. */
+let cropRect={x:0,y:0,w:100,h:100},cropNatural={w:1,h:1},cropScale=1,cropSourceName='';
+function updateCropBox(){$('cropBox').style.left=cropRect.x+'px';$('cropBox').style.top=cropRect.y+'px';$('cropBox').style.width=cropRect.w+'px';$('cropBox').style.height=cropRect.h+'px';syncCropDimensions();}
+function syncCropDimensions(){if(!$('cropStage').clientWidth)return;$('cropWidth').value=Math.max(1,Math.round(cropRect.w*cropNatural.w/$('cropStage').clientWidth));$('cropHeight').value=Math.max(1,Math.round(cropRect.h*cropNatural.h/$('cropStage').clientHeight));}
+function resizeCropFromInputs(axis){const stage=$('cropStage'),maxW=stage.clientWidth,maxH=stage.clientHeight;if(!maxW||!maxH)return;let w=clamp((+$('cropWidth').value||1)*maxW/cropNatural.w,8,maxW),h=clamp((+$('cropHeight').value||1)*maxH/cropNatural.h,8,maxH);if(axis==='w')cropRect.w=w;else if(axis==='h')cropRect.h=h;else{cropRect.w=w;cropRect.h=h;}cropRect.x=clamp(cropRect.x,0,maxW-cropRect.w);cropRect.y=clamp(cropRect.y,0,maxH-cropRect.h);$('cropBox').style.left=cropRect.x+'px';$('cropBox').style.top=cropRect.y+'px';$('cropBox').style.width=cropRect.w+'px';$('cropBox').style.height=cropRect.h+'px';}
+function startCrop(){
+ if(!modalImage)return alert('Chọn ảnh trước.');
+ const sourceName=modalImage,im=imageCache[sourceName]||(imageCache[sourceName]=new Image());if(!im.src)im.src=imageSrc(sourceName);
+ const init=()=>{
+  cropNatural={w:im.naturalWidth,h:im.naturalHeight};cropSourceName=sourceName;
+  const mobile=window.matchMedia('(max-width: 600px)').matches;
+  const maxW=Math.max(180,Math.min(window.innerWidth-(mobile?42:100),1100));
+  const maxH=Math.max(180,Math.min(window.innerHeight*(mobile?.53:.62),650));
+  cropScale=Math.min(maxW/im.naturalWidth,maxH/im.naturalHeight,1);
+  const w=Math.max(1,Math.round(im.naturalWidth*cropScale)),h=Math.max(1,Math.round(im.naturalHeight*cropScale));
+  $('cropStage').style.width=w+'px';$('cropStage').style.height=h+'px';$('cropImage').src=imageSrc(sourceName);
+  cropRect={x:w*.1,y:h*.1,w:w*.8,h:h*.8};
+  const base=sourceName.replace(/\.[^.]+$/,'');$('cropOutputName').value=base+'_crop.png';
+  $('cropSourceName').textContent=sourceName;$('cropStatus').textContent=`Ảnh gốc: ${im.naturalWidth} × ${im.naturalHeight} px`;
+  $('cropModal').hidden=false;updateCropBox();
+ };
+ if(im.complete&&im.naturalWidth)init();else im.onload=init;
+}
+function cancelCrop(){$('cropModal').hidden=true;cropDrag=null;}
+$('cropWidth').addEventListener('input',()=>resizeCropFromInputs('w'));
+$('cropHeight').addEventListener('input',()=>resizeCropFromInputs('h'));
 $('cropBox').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();const handle=e.target.dataset.handle;cropDrag={mode:handle?'resize':'move',handle,startX:e.clientX,startY:e.clientY,rect:{...cropRect}};$('cropBox').setPointerCapture(e.pointerId)});
 $('cropBox').addEventListener('pointermove',e=>{if(!cropDrag)return;const dx=e.clientX-cropDrag.startX,dy=e.clientY-cropDrag.startY,stage=$('cropStage'),maxW=stage.clientWidth,maxH=stage.clientHeight,r=cropDrag.rect;if(cropDrag.mode==='move'){cropRect.x=clamp(r.x+dx,0,maxW-r.w);cropRect.y=clamp(r.y+dy,0,maxH-r.h);}else{let left=r.x,top=r.y,right=r.x+r.w,bottom=r.y+r.h;const h=cropDrag.handle;if(h.includes('w'))left=clamp(r.x+dx,0,right-8);if(h.includes('e'))right=clamp(r.x+r.w+dx,left+8,maxW);if(h.includes('n'))top=clamp(r.y+dy,0,bottom-8);if(h.includes('s'))bottom=clamp(r.y+r.h+dy,top+8,maxH);cropRect={x:left,y:top,w:right-left,h:bottom-top};}updateCropBox();});
 function endCropDrag(){cropDrag=null;}$('cropBox').addEventListener('pointerup',endCropDrag);$('cropBox').addEventListener('pointercancel',endCropDrag);
-async function saveCrop(){if(!modalImage)return;try{const src=new Image();src.src=imageSrc(modalImage);await src.decode();const stage=$('cropStage'),sx=src.naturalWidth/stage.clientWidth,sy=src.naturalHeight/stage.clientHeight,x=Math.round(cropRect.x*sx),y=Math.round(cropRect.y*sy),w=Math.max(1,Math.round(cropRect.w*sx)),h=Math.max(1,Math.round(cropRect.h*sy));const canvas=document.createElement('canvas');canvas.width=Math.min(w,src.naturalWidth-x);canvas.height=Math.min(h,src.naturalHeight-y);canvas.getContext('2d').drawImage(src,x,y,canvas.width,canvas.height,0,0,canvas.width,canvas.height);const name=registerImage(modalImage.replace(/\.[^.]+$/,'')+'_crop.png',canvas.toDataURL('image/png'));modalImage=name;$('cropPanel').hidden=true;renderAssetList();renderAssetPreview();$('imageActionStatus').textContent='Đã cắt và tạo ảnh mới tạm thời: '+name;}catch(error){$('imageActionStatus').textContent='Lỗi cắt ảnh: '+error.message;}}
-async function removeBgSelected(){if(!modalImage)return;const color=prompt('Màu nền cần xoá (HEX), ví dụ #bfbeba:', '#bfbeba');if(!color)return;const tolerance=clamp(+(prompt('Dung sai màu (0–255):','28')||0),0,255);try{const source=new Image();source.src=imageSrc(modalImage);await source.decode();const canvas=document.createElement('canvas');canvas.width=source.naturalWidth;canvas.height=source.naturalHeight;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0);const image=ctx.getImageData(0,0,canvas.width,canvas.height),d=image.data,w=canvas.width,h=canvas.height,n=w*h,seen=new Uint8Array(n),queue=new Int32Array(n),hex=color.replace('#',''),rgb=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16));let head=0,tail=0;const seed=(x,y)=>{const id=y*w+x;if(!seen[id]){seen[id]=1;queue[tail++]=id;}};seed(0,0);seed(w-1,0);seed(0,h-1);seed(w-1,h-1);while(head<tail){const id=queue[head++],x=id%w,y=(id/w)|0,ix=id*4;const close=Math.abs(d[ix]-rgb[0])<=tolerance&&Math.abs(d[ix+1]-rgb[1])<=tolerance&&Math.abs(d[ix+2]-rgb[2])<=tolerance;if(!close)continue;d[ix+3]=0;if(x>0&&!seen[id-1]){seen[id-1]=1;queue[tail++]=id-1;}if(x+1<w&&!seen[id+1]){seen[id+1]=1;queue[tail++]=id+1;}if(y>0&&!seen[id-w]){seen[id-w]=1;queue[tail++]=id-w;}if(y+1<h&&!seen[id+w]){seen[id+w]=1;queue[tail++]=id+w;}}
- ctx.putImageData(image,0,0);const name=registerImage(modalImage.replace(/\.[^.]+$/,'')+'_nobg.png',canvas.toDataURL('image/png'));modalImage=name;renderAssetList();renderAssetPreview();$('imageActionStatus').textContent='Đã tạo ảnh mới xoá nền tạm thời: '+name;
- }catch(error){$('imageActionStatus').textContent='Lỗi xoá nền: '+error.message;}}
+async function saveCrop(){
+ if(!cropSourceName)return;
+ try{
+  const src=new Image();src.src=imageSrc(cropSourceName);await src.decode();
+  const stage=$('cropStage'),sx=src.naturalWidth/stage.clientWidth,sy=src.naturalHeight/stage.clientHeight;
+  const x=clamp(Math.round(cropRect.x*sx),0,src.naturalWidth-1),y=clamp(Math.round(cropRect.y*sy),0,src.naturalHeight-1);
+  const w=clamp(Math.round(cropRect.w*sx),1,src.naturalWidth-x),h=clamp(Math.round(cropRect.h*sy),1,src.naturalHeight-y);
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(src,x,y,w,h,0,0,w,h);
+  let name=$('cropOutputName').value.trim();if(!name)name=cropSourceName.replace(/\.[^.]+$/,'')+'_crop.png';if(!/\.[a-z0-9]+$/i.test(name))name+='.png';
+  const existing=LIB.find(n=>n.toLowerCase()===name.toLowerCase());if(existing&&!confirm(`Ảnh "${name}" đã tồn tại. Ghi đè trong phiên này?`))return;
+  if(existing){LIB=LIB.filter(n=>n!==existing);delete imageData[existing];delete imageCache[existing];}
+  const created=registerImage(name,canvas.toDataURL('image/png'));modalImage=created;cancelCrop();renderAssetList();renderAssetPreview();$('imageActionStatus').textContent=`Đã cắt ảnh: ${created} (${w} × ${h} px)`;
+ }catch(error){$('cropStatus').textContent='Lỗi cắt ảnh: '+error.message;}
+}
+async function removeBgSelected(){
+ if(!modalImage)return;
+ const sourceName=modalImage;
+ try{
+  const source=new Image();source.src=imageSrc(sourceName);await source.decode();
+  const w=source.naturalWidth,h=source.naturalHeight;
+  if(!w||!h)throw new Error('Ảnh không hợp lệ.');
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(source,0,0);
+  const image=ctx.getImageData(0,0,w,h),d=image.data,n=w*h;
+  // Tự lấy màu nền từ 4 góc ảnh; phù hợp cả nền trắng và nền xám.
+  const sample=(x,y)=>{const i=(y*w+x)*4;return[d[i],d[i+1],d[i+2]]};
+  const corners=[sample(0,0),sample(w-1,0),sample(0,h-1),sample(w-1,h-1)];
+  const sorted=axis=>corners.map(c=>c[axis]).sort((a,b)=>a-b);
+  const bg=[0,1,2].map(axis=>{const a=sorted(axis);return(a[1]+a[2])/2});
+  const tolerance=58; // Ngưỡng màu tự động; không cần nhập HEX thủ công.
+  const distance=(i)=>Math.sqrt((d[i]-bg[0])**2+(d[i+1]-bg[1])**2+(d[i+2]-bg[2])**2);
+  const seen=new Uint8Array(n),queue=new Int32Array(n);let head=0,tail=0;
+  const seed=(id)=>{if(id>=0&&id<n&&!seen[id]){seen[id]=1;queue[tail++]=id;}};
+  // Quét toàn bộ viền để không bỏ sót vùng nền chạm cạnh ảnh.
+  for(let x=0;x<w;x++){seed(x);seed((h-1)*w+x)}
+  for(let y=1;y<h-1;y++){seed(y*w);seed(y*w+w-1)}
+  let removed=0;
+  while(head<tail){const id=queue[head++],i=id*4;if(distance(i)>tolerance)continue;
+   if(d[i+3]){d[i+3]=0;removed++;}
+   const x=id%w,y=(id/w)|0;
+   if(x>0)seed(id-1);if(x+1<w)seed(id+1);if(y>0)seed(id-w);if(y+1<h)seed(id+w);
+  }
+  if(!removed)throw new Error('Không nhận diện được nền. Hãy kiểm tra ảnh có nền đồng màu và chạm mép ảnh.');
+  ctx.putImageData(image,0,0);
+  const base=sourceName.replace(/\.[^.]+$/,'').replace(/_nobg$/i,'');
+  let name=base+'_nobg.png',suffix=2;
+  while(LIB.some(n=>n.toLowerCase()===name.toLowerCase()))name=base+'_nobg_'+suffix+++ '.png';
+  const created=registerImage(name,canvas.toDataURL('image/png'));
+  modalImage=created;renderAssetList();renderAssetPreview();
+  $('imageActionStatus').textContent=`Đã xoá nền tự động (${Math.round(bg[0])}, ${Math.round(bg[1])}, ${Math.round(bg[2])}); xử lý ${removed.toLocaleString('vi-VN')} pixel. Ảnh mới: ${created}`;
+ }catch(error){$('imageActionStatus').textContent='Lỗi xoá nền: '+error.message;}
+}
 /* Model: chỉ lưu trong RAM của tab; JSON export chứa ảnh để mang sang phiên khác. */
 function modelPackage(){return{format:'BoneAnimatorStudioWeb',version:1,model:JSON.parse(JSON.stringify(M)),assets:Object.fromEntries(LIB.map(name=>[name,imageData[name]]).filter(([,data])=>!!data))};}
 function downloadJSON(filename,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
