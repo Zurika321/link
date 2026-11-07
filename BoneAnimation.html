@@ -135,6 +135,15 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 @media(max-width:900px) and (orientation:portrait){.quick-tools{right:10px;top:8px}}
 @media(max-width:600px){.quick-tools>button{width:40px;height:40px}.quick-tools-panel{top:45px;padding:10px}.sprite-dialog{padding:12px}.sprite-grid{gap:7px}.crop-grid-controls{gap:6px}}
 
+
+.rig-direction-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:6px 0}
+.rig-direction-tabs button{min-width:0;padding:6px 3px;font-size:11px}
+.rig-direction-tabs button.active{background:#246d68;border-color:var(--a);color:#fff}
+.rig-direction-tabs .sync-rig-btn{grid-column:1/-1;background:#303a46}
+.nudge-pad{display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,28px);gap:2px;margin:6px 0;align-items:center;width:max-content}
+.nudge-pad button{min-width:30px;min-height:26px;padding:1px;font-size:12px}
+.nudge-pad .n-up{grid-area:1/2}.nudge-pad .n-left{grid-area:2/1}.nudge-pad .n-right{grid-area:2/3}.nudge-pad .n-down{grid-area:3/2}
+@media(max-width:600px){.rig-direction-tabs{gap:3px}.rig-direction-tabs button{font-size:10px;padding:5px 1px}.nudge-pad{grid-template-columns:repeat(3,28px);grid-template-rows:repeat(3,26px)}.nudge-pad button{min-width:26px;min-height:24px}}
 </style>
 </head>
 <body>
@@ -142,8 +151,14 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
  <div class="side-tabs"><button id="tabSkeleton" class="active" onclick="showSideTab('skeleton')">Skeleton</button><button id="tabImage" onclick="showSideTab('image')">Image</button></div>
  <section id="skeletonPane" class="side-pane">
   <div class="touch-actions touch-only" id="mobileActions"><button onclick="addBone()">＋ Xương</button><button onclick="addBlock()">＋ Block</button><button onclick="copyObject(false)">Copy</button><button onclick="copyObject(true)">Cut</button><button onclick="renameObject()">Rename</button><button onclick="pasteObject()" id="mobilePaste">Paste</button><button onclick="del()">Xoá</button></div>
+  <div class="rig-direction-tabs" aria-label="Hướng bộ xương">
+   <button data-rig-dir="up" onclick="setDir('up')">⬆ Top</button><button data-rig-dir="down" onclick="setDir('down')">⬇ Down</button><button data-rig-dir="left" onclick="setDir('left')">⬅ Left</button><button data-rig-dir="right" onclick="setDir('right')">➡ Right</button>
+   <button class="sync-rig-btn" onclick="syncRigToAllDirections()">⟳ Đồng bộ 4 hướng</button>
+  </div>
+
   <div class="row"><button onclick="makePresetHumanoid()" title="Tạo mẫu nhân vật Top-Down">🧍 Mẫu Player</button></div>
   <div class="toolbar" aria-label="Công cụ biến đổi"><button id="toolMove" class="active" onclick="setTool('move')">↔ Di chuyển</button><button id="toolRotate" onclick="setTool('rotate')">⟳ Xoay</button><button id="toolScale" onclick="setTool('scale')">⤢ Co giãn</button></div>
+  <div class="nudge-pad" aria-label="Di chuyển bằng mũi tên"><button class="n-up" onclick="nudgeSelection(0,-4)">▲</button><button class="n-left" onclick="nudgeSelection(-4,0)">◀</button><button class="n-down" onclick="nudgeSelection(0,4)">▼</button><button class="n-right" onclick="nudgeSelection(4,0)">▶</button></div>
   <div id="list"></div>
   <div id="ml"></div>
   <p class="status">Nhập/xuất model và xuất sprite sheet bằng nút công cụ nổi ở góc trên.</p>
@@ -195,7 +210,7 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
   <h3 id="spriteExportTitle">Xuất Sprite Sheet</h3>
   <p class="status">Xuất toàn bộ frame của animation đang chọn thành một PNG nền trong suốt. Unity có thể cắt bằng kích thước ô đã chọn.</p>
   <div class="sprite-grid">
-   <label>Hướng xuất<select id="spriteDirection"><option value="down">Down</option><option value="up">Up</option><option value="left">Left</option><option value="right">Right</option></select></label>
+   <label>Hướng xuất<select id="spriteDirection"><option value="all">All directions (4 hướng)</option><option value="down">Down</option><option value="up">Up</option><option value="left">Left</option><option value="right">Right</option></select></label>
    <label>Kích thước mỗi ô (px)<select id="spriteCellSize"><option>16</option><option>32</option><option>48</option><option selected>64</option><option>128</option><option>256</option><option>512</option></select></label>
    <label>Số cột tối đa<input id="spriteColumns" type="number" min="1" max="100" value="8"></label>
    <label>Thông tin sheet<input id="spriteSheetInfo" type="text" readonly value=""></label>
@@ -259,22 +274,23 @@ let cam={x:0,y:0,z:1},drag=null,LIB=[],last=0,keyClipboard=null;
 const imageCache=Object.create(null),imageData=Object.create(null),activePointers=new Map();let pinchState=null,modalImage='',cropDrag=null,objectClipboard=null,treeDragPayload=null,pendingImage='';
 let sessionModels=[];
 function normalizeDirs(source){const dirs=emptyDirections();if(source&&typeof source==='object')['down','up','left','right'].forEach(d=>{const a=source[d];if(a&&typeof a==='object')dirs[d]={fps:+a.fps||12,frames:+a.frames||24,keys:a.keys||{}};});return dirs;}
+function cloneData(value){return JSON.parse(JSON.stringify(value??null));}
 function normalizeModel(m){
  m.nid=+m.nid||1;m.bones=Array.isArray(m.bones)?m.bones:[];m.blocks=Array.isArray(m.blocks)?m.blocks:[];m.dir=['down','up','left','right'].includes(m.dir)?m.dir:'down';
  let sets=Array.isArray(m.animationSets)?m.animationSets:[];
- if(!sets.length){
-  const oldDirs=m.anims?normalizeDirs(m.anims):emptyDirections();
-  if(m.anim&&!m.anims)oldDirs.down={fps:+m.anim.fps||12,frames:+m.anim.frames||24,keys:m.anim.keys||{}};
-  // Luôn có ít nhất một animation, kể cả model mới chưa có keyframe.
-  sets=[{name:'Default',dirs:oldDirs}];
- }
+ if(!sets.length){const oldDirs=m.anims?normalizeDirs(m.anims):emptyDirections();if(m.anim&&!m.anims)oldDirs.down={fps:+m.anim.fps||12,frames:+m.anim.frames||24,keys:m.anim.keys||{}};sets=[{name:'Default',dirs:oldDirs}];}
  m.animationSets=sets.map((set,i)=>({name:String(set.name||('Animation '+(i+1))),dirs:normalizeDirs(set.dirs||set.anims||{})}));
  if(!m.animationSets.length)m.animationSets=[{name:'Default',dirs:emptyDirections()}];
  m.activeAnimation=m.animationSets.some(a=>a.name===m.activeAnimation)?m.activeAnimation:m.animationSets[0].name;
+ const baseRig={bones:cloneData(m.bones),blocks:cloneData(m.blocks)},saved=m.rigsByDir&&typeof m.rigsByDir==='object'?m.rigsByDir:{};
+ m.rigsByDir={};
+ for(const dir of ['down','up','left','right']){const rig=saved[dir]&&Array.isArray(saved[dir].bones)&&Array.isArray(saved[dir].blocks)?saved[dir]:baseRig;m.rigsByDir[dir]={bones:cloneData(rig.bones),blocks:cloneData(rig.blocks)};}
+ const current=m.rigsByDir[m.dir];m.bones=cloneData(current.bones);m.blocks=cloneData(current.blocks);
  const active=m.animationSets.find(a=>a.name===m.activeAnimation);m.anims=active.dirs;m.anim=m.anims[m.dir];
- m.blocks.forEach(k=>{k.b=Number.isFinite(+k.b)?+k.b:0;k.demo=k.demo!==false;k.ox=+k.ox||0;k.sx=+k.sx||1;k.sy=+k.sy||1;k.ix=+k.ix||0;k.iy=+k.iy||0;k.ir=+k.ir||0;k.is=+k.is||1;k.z=+k.z||0;k.vis=['all','front','back'].includes(k.vis)?k.vis:'all';k.imgUp=k.imgUp||'';k.imgLeft=k.imgLeft||'';k.imgRight=k.imgRight||'';k.fx=+k.fx||0;k.x=Number.isFinite(+k.x)?+k.x:0;k.y=Number.isFinite(+k.y)?+k.y:0;k.a=+k.a||0;k.freeW=Math.max(4,+k.freeW||80);});
- return m;
+ const normalizeBlocks=blocks=>blocks.forEach(k=>{k.b=Number.isFinite(+k.b)?+k.b:0;k.demo=k.demo!==false;k.ox=+k.ox||0;k.sx=+k.sx||1;k.sy=+k.sy||1;k.ix=+k.ix||0;k.iy=+k.iy||0;k.ir=+k.ir||0;k.is=+k.is||1;k.z=+k.z||0;k.vis=['all','front','back'].includes(k.vis)?k.vis:'all';k.imgUp=k.imgUp||'';k.imgLeft=k.imgLeft||'';k.imgRight=k.imgRight||'';k.fx=+k.fx||0;k.x=Number.isFinite(+k.x)?+k.x:0;k.y=Number.isFinite(+k.y)?+k.y:0;k.a=+k.a||0;k.freeW=Math.max(4,+k.freeW||80);});
+ Object.values(m.rigsByDir).forEach(r=>normalizeBlocks(r.blocks));return m;
 }
+
 function activeSet(){return M.animationSets.find(a=>a.name===M.activeAnimation)||M.animationSets[0]||null;}
 function seedAnimationSet(set,bones=M.bones){
  if(!set)return;
@@ -520,10 +536,27 @@ function nearestCorner(p,k,info,radius){
 }
 
 /* Animation có tên, mỗi animation có bốn hướng */
+function saveActiveRig(){if(!M.rigsByDir)M.rigsByDir={};M.rigsByDir[M.dir]={bones:cloneData(M.bones),blocks:cloneData(M.blocks)};}
+function syncRigDirectionTabs(){document.querySelectorAll('[data-rig-dir]').forEach(b=>b.classList.toggle('active',b.dataset.rigDir===M.dir));}
 function setDir(direction){
  if(!['down','up','left','right'].includes(direction))return;
- M.dir=direction;M.anims=activeSet()?.dirs||emptyDirections();M.anim=M.anims[direction];frame=clamp(frame,0,A().frames);ksel=null;syncAnim();$('directionSelect').value=direction;renderAll();draw();
+ if(direction!==M.dir){saveActiveRig();const rig=M.rigsByDir?.[direction];if(rig){M.bones=cloneData(rig.bones);M.blocks=cloneData(rig.blocks);}else M.rigsByDir[direction]={bones:cloneData(M.bones),blocks:cloneData(M.blocks)};}
+ M.dir=direction;M.anims=activeSet()?.dirs||emptyDirections();M.anim=M.anims[direction];seedAnimationSet(activeSet(),M.bones);frame=clamp(frame,0,A().frames);ksel=null;syncAnim();$('directionSelect').value=direction;syncRigDirectionTabs();renderAll();draw();
 }
+function syncRigToAllDirections(){
+ saveActiveRig();const source={bones:cloneData(M.bones),blocks:cloneData(M.blocks)};
+ for(const dir of ['down','up','left','right'])M.rigsByDir[dir]={bones:cloneData(source.bones),blocks:cloneData(source.blocks)};
+ for(const set of M.animationSets)seedAnimationSet(set,source.bones);
+ syncRigDirectionTabs();renderAll();draw();
+ alert('Đã đồng bộ cấu trúc xương và block từ hướng '+M.dir.toUpperCase()+' sang cả 4 hướng. Bạn có thể thay ảnh và chỉnh khớp riêng từng hướng.');
+}
+function nudgeSelection(dx,dy){
+ if(!sel)return;
+ if(sel.t==='b'){const w=solve()[sel.id];if(!w)return;setHead(byId(sel.id),w.hx+dx,w.hy+dy);}
+ else{const k=cur();if(!k)return;if(!k.b){k.x=(+k.x||0)+dx;k.y=(+k.y||0)+dy;}else{k.ox=(+k.ox||0)+dx;k.oy=(+k.oy||0)+dy;}}
+ renderProps();draw();
+}
+
 function createAnimation(){
  const name=$('animationName').value.trim();if(!name)return alert('Nhập tên animation trước khi tạo.');
  if(M.animationSets.some(a=>a.name.toLowerCase()===name.toLowerCase()))return alert('Tên animation đã tồn tại.');
@@ -759,7 +792,7 @@ function createBlockFromImage(name,world){
  const bone=sel&&sel.t==='b'?byId(sel.id):null;
  const attached=!!bone;
  const id=M.nid++;
- const block={id,name:name.replace(/\.[^.]+$/,'')+'_component',b:attached?bone.id:0,x:world.x,y:world.y,a:0,freeW:cellSize,s:0,e:1,h:cellSize,oy:0,ox:0,rank:1,z:0,vis:'all',col:'#64b5f6',img:'',imgUp:'',imgLeft:'',imgRight:'',demo:true,ir:0,is:1,ix:0,iy:0,fx:0,sx:1,sy:1};
+ const block={id,name:name.replace(/\.[^.]+$/,'')+'_component',b:attached?bone.id:0,x:world.x,y:world.y,a:0,freeW:cellSize,s:0,e:1,h:cellSize,oy:0,ox:0,rank:1,z:0,vis:'all',col:'#64b5f6',img:'',imgUp:'',imgLeft:'',imgRight:'',demo:true,ir:attached?90:0,is:1,ix:0,iy:0,fx:0,sx:1,sy:1};
  block[imageFieldForDir(M.dir)]=name;
  const preview=new Image();imageCache[name]=preview;preview.onload=()=>{const width=attached?Math.max(4,bone.l||cellSize):cellSize;block.is=Math.min(width/preview.naturalWidth,cellSize/preview.naturalHeight);draw();renderProps()};preview.src=imageSrc(name);
  if(attached)M.blocks=M.blocks.filter(k=>k.b!==bone.id);
@@ -769,7 +802,7 @@ cv.addEventListener('dragover',e=>{if([...e.dataTransfer.types].includes('applic
 cv.addEventListener('drop',e=>{const name=e.dataTransfer.getData('application/x-bone-image')||e.dataTransfer.getData('text/plain').replace(/^image:/,'');if(!name||!LIB.includes(name))return;e.preventDefault();const p=canvasPoint(e),world=toW(p.x,p.y);createBlockFromImage(name,world)});
 cv.addEventListener('pointerdown',e=>{if(pendingImage&&LIB.includes(pendingImage)&&e.pointerType!=='mouse'){const p=canvasPoint(e),world=toW(p.x,p.y);createBlockFromImage(pendingImage,world);pendingImage='';renderImageAssets();e.preventDefault();}},true);
 let imageTargetDir=null;
-function useImg(name){const block=cur();if(block&&sel.t==='k'){block[imageFieldForDir(imageTargetDir||M.dir)]=name;block.demo=true;imageTargetDir=null;renderProps();draw()}else{imageTargetDir=null;alert('Chọn một block trước');}}
+function useImg(name){const block=cur();if(block&&sel.t==='k'){const key=imageFieldForDir(imageTargetDir||M.dir),hadAny=!!(block.img||block.imgUp||block.imgLeft||block.imgRight);block[key]=name;if(!hadAny)block.ir=block.b?90:0;block.demo=true;imageTargetDir=null;renderProps();draw()}else{imageTargetDir=null;alert('Chọn một block trước');}}
 function openLibraryForDirection(dir,name=''){imageTargetDir=dir;openLibrary(name,dir);}
 function rmImg(event,name){event?.preventDefault?.();deleteImageByName(name);return false;}
 $('up').onchange=async e=>{const files=[...e.target.files];await addFiles(files,true);e.target.value='';};
@@ -873,7 +906,7 @@ async function removeBgSelected(){
  }catch(error){$('imageActionStatus').textContent='Lỗi xoá nền: '+error.message;}
 }
 /* Model: chỉ lưu trong RAM của tab; JSON export chứa ảnh để mang sang phiên khác. */
-function modelPackage(){return{format:'BoneAnimatorStudioWeb',version:1,model:JSON.parse(JSON.stringify(M)),assets:Object.fromEntries(LIB.map(name=>[name,imageData[name]]).filter(([,data])=>!!data))};}
+function modelPackage(){saveActiveRig();return{format:'BoneAnimatorStudioWeb',version:2,model:JSON.parse(JSON.stringify(M)),assets:Object.fromEntries(LIB.map(name=>[name,imageData[name]]).filter(([,data])=>!!data))};}
 function downloadJSON(filename,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function exportM(){const name=($('mn').value.trim()||'BoneAnimatorModel').replace(/[^a-z0-9_-]+/gi,'_');downloadJSON(name+'.json',modelPackage());}
 function saveM(){const name=$('mn').value.trim();if(!name)return alert('Nhập tên model trước khi xuất JSON.');const pack=modelPackage();sessionModels=sessionModels.filter(item=>item.name!==name);sessionModels.push({name,package:pack});renderSessionModels();downloadJSON(name.replace(/[^a-z0-9_-]+/gi,'_')+'.json',pack);}
@@ -906,9 +939,10 @@ function closeSpriteExport(){$('spriteExportModal').hidden=true;}
 ['spriteColumns','spriteCellSize'].forEach(id=>$(id).addEventListener('input',syncSpriteExportInfo));
 $('spriteDirection').addEventListener('change',()=>{ $('spriteAnimationList').querySelectorAll('label small').forEach((node,i)=>node.textContent=spriteFrameCount(M.animationSets[i],$('spriteDirection').value)+'f');syncSpriteExportInfo();});
 function withSpriteSet(set,dir,frameIndex,callback){
- const old={active:M.activeAnimation,anims:M.anims,anim:M.anim,dir:M.dir,frame,mode};
+ const old={active:M.activeAnimation,anims:M.anims,anim:M.anim,dir:M.dir,frame,mode,bones:M.bones,blocks:M.blocks};
+ const rig=M.rigsByDir?.[dir];if(rig){M.bones=rig.bones;M.blocks=rig.blocks;}
  M.activeAnimation=set.name;M.anims=set.dirs;M.dir=dir;M.anim=set.dirs[dir]||emptyAnim();frame=frameIndex;mode='anim';
- try{return callback();}finally{M.activeAnimation=old.active;M.anims=old.anims;M.anim=old.anim;M.dir=old.dir;frame=old.frame;mode=old.mode;}
+ try{return callback();}finally{M.activeAnimation=old.active;M.anims=old.anims;M.anim=old.anim;M.dir=old.dir;M.bones=old.bones;M.blocks=old.blocks;frame=old.frame;mode=old.mode;}
 }
 function calculateSpriteBoundsForSets(sets,dir){
  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
@@ -940,38 +974,38 @@ function renderSpriteFrame(ctx,size,frameIndex,dir,bounds,set){
 function downloadBlob(blob,name){return new Promise((resolve,reject)=>{if(!blob)return reject(new Error('Không thể tạo file.'));const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);resolve();});}
 async function exportSpriteSheet(){
  try{
+  saveActiveRig();
   const sets=selectedSpriteAnimations();if(!sets.length)throw new Error('Chọn ít nhất một animation.');
-  const dir=$('spriteDirection').value,cols=Math.max(1,Math.min(100,Math.round(+$('spriteColumns').value||1))),size=Math.max(16,Math.min(512,Math.round(+$('spriteCellSize').value||64)));
-  const entries=sets.map(set=>({set,count:spriteFrameCount(set,dir),startRow:0,rows:0}));let row=0;
+  const selectedDir=$('spriteDirection').value,dirs=selectedDir==='all'?['down','up','left','right']:[selectedDir];
+  const cols=Math.max(1,Math.min(100,Math.round(+$('spriteColumns').value||1))),size=Math.max(16,Math.min(512,Math.round(+$('spriteCellSize').value||64)));
+  const boundsByDir={};dirs.forEach(dir=>boundsByDir[dir]=calculateSpriteBoundsForSets(sets,dir));
+  const entries=dirs.flatMap(dir=>sets.map(set=>({set,dir,count:spriteFrameCount(set,dir),startRow:0,rows:0})));let row=0;
   entries.forEach(entry=>{entry.startRow=row;entry.rows=Math.ceil(entry.count/cols);row+=entry.rows;});
   const width=cols*size,height=row*size;if(width*height>100_000_000)throw new Error('Ảnh xuất quá lớn. Hãy giảm số cột hoặc kích thước ô.');
   await Promise.all(LIB.map(name=>{let image=imageCache[name];if(!image){image=new Image();imageCache[name]=image;}if(image.complete&&image.naturalWidth)return Promise.resolve();return new Promise(resolve=>{image.onload=resolve;image.onerror=resolve;if(!image.src)image.src=imageData[name];});}));
-  const bounds=calculateSpriteBoundsForSets(sets,dir),canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d',{alpha:true});
-  // Render từng frame trên canvas riêng rồi ghép vào sheet. Cách này tránh lỗi
-  // transform/clip bị lưu chéo giữa các frame trên Safari iOS.
+  const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d',{alpha:true});
   let renderedFrames=0,emptyFrames=[];
   for(const entry of entries){
    for(let i=0;i<entry.count;i++){
     const frameCanvas=document.createElement('canvas');frameCanvas.width=size;frameCanvas.height=size;
     const frameCtx=frameCanvas.getContext('2d',{alpha:true});
-    renderSpriteFrame(frameCtx,size,i,dir,bounds,entry.set);
+    renderSpriteFrame(frameCtx,size,i,entry.dir,boundsByDir[entry.dir],entry.set);
     const pixels=frameCtx.getImageData(0,0,size,size).data;let hasPixels=false;
     for(let a=3;a<pixels.length;a+=4){if(pixels[a]>0){hasPixels=true;break;}}
-    if(!hasPixels)emptyFrames.push(`${entry.set.name}:${i}`);
+    if(!hasPixels)emptyFrames.push(`${entry.dir}/${entry.set.name}:${i}`);
     const x=(i%cols)*size,y=(entry.startRow+Math.floor(i/cols))*size;
-    ctx.drawImage(frameCanvas,x,y);renderedFrames++;
-    frameCanvas.width=0;frameCanvas.height=0;
+    ctx.drawImage(frameCanvas,x,y);renderedFrames++;frameCanvas.width=0;frameCanvas.height=0;
    }
   }
   if(!renderedFrames)throw new Error('Không render được frame nào.');
-  if(emptyFrames.length)throw new Error(`Có ${emptyFrames.length} frame rỗng: ${emptyFrames.slice(0,8).join(', ')}. Kiểm tra ảnh của block và keyframe ở hướng ${dir}.`);
-  const base=($('mn').value.trim()||'BoneAnimatorModel').replace(/[^a-z0-9_-]+/gi,'_'),safeDir=dir.toLowerCase();
+  if(emptyFrames.length)throw new Error(`Có ${emptyFrames.length} frame rỗng: ${emptyFrames.slice(0,8).join(', ')}. Kiểm tra rig/ảnh/keyframe tương ứng.`);
+  const base=($('mn').value.trim()||'BoneAnimatorModel').replace(/[^a-z0-9_-]+/gi,'_'),safeDir=selectedDir==='all'?'4directions':selectedDir.toLowerCase();
   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));await downloadBlob(png,`${base}_${safeDir}_${size}px_spritesheet.png`);
   if($('spriteExportManifest').checked){
-   const manifest={model:base,direction:dir,cellSize:{width:size,height:size},columns:cols,imageSize:{width,height},animations:entries.map(e=>({name:e.set.name,frameCount:e.count,startRow:e.startRow,rowCount:e.rows,frames:Array.from({length:e.count},(_,i)=>({frame:i,x:(i%cols)*size,y:(e.startRow+Math.floor(i/cols))*size}))}))};
+   const manifest={model:base,directions:dirs,cellSize:{width:size,height:size},columns:cols,imageSize:{width,height},animations:entries.map(e=>({direction:e.dir,name:e.set.name,frameCount:e.count,startRow:e.startRow,rowCount:e.rows,frames:Array.from({length:e.count},(_,i)=>({frame:i,x:(i%cols)*size,y:(e.startRow+Math.floor(i/cols))*size}))}))};
    await downloadBlob(new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'}),`${base}_${safeDir}_${size}px_spritesheet.json`);
   }
-  $('spriteExportStatus').textContent=`Đã xuất PNG ${width}×${height}px gồm ${renderedFrames} frame từ ${sets.length} animation.${$('spriteExportManifest').checked?' Đã tải thêm JSON Manifest.':' Chỉ tải PNG, không tải JSON.'}`;
+  $('spriteExportStatus').textContent=`Đã xuất PNG ${width}×${height}px gồm ${renderedFrames} frame từ ${sets.length} animation × ${dirs.length} hướng.${$('spriteExportManifest').checked?' Đã tải thêm JSON Manifest.':' Chỉ tải PNG, không tải JSON.'}`;
  }catch(error){$('spriteExportStatus').textContent='Lỗi xuất sprite sheet: '+error.message;}
 }
 
@@ -984,6 +1018,6 @@ window.addEventListener('keydown',e=>{
 $('imgModal').addEventListener('pointerdown',e=>{if(e.target===$('imgModal'))closeLibrary()});
 function fit(canvas){if(canvas.width!==canvas.clientWidth||canvas.height!==canvas.clientHeight){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight}}
 function loop(time){const dt=Math.min(.1,(time-last)/1000);last=time;if(playing&&activeSet()){frame+=dt*A().fps;if(frame>A().frames)frame=0}fit(cv);fit(tl);draw();if(document.activeElement!==$('fr'))$('fr').value=Math.round(frame);requestAnimationFrame(loop)}
-M=normalizeModel(M);setTool('move');setMode('rig');refreshAnimationState();setDir('down');showSideTab('skeleton');renderImageAssets();renderSessionModels();addBone();addBlock();attachBlockToBone(cur(),M.bones[0].id);seedAnimationSet(activeSet());refreshAnimationState();requestAnimationFrame(loop);
+M=normalizeModel(M);setTool('move');setMode('rig');refreshAnimationState();setDir('down');showSideTab('skeleton');renderImageAssets();renderSessionModels();addBone();addBlock();attachBlockToBone(cur(),M.bones[0].id);seedAnimationSet(activeSet());saveActiveRig();for(const d of ['down','up','left','right'])if(!M.rigsByDir[d]||(!M.rigsByDir[d].bones.length&&!M.rigsByDir[d].blocks.length))M.rigsByDir[d]={bones:cloneData(M.bones),blocks:cloneData(M.blocks)};syncRigDirectionTabs();refreshAnimationState();requestAnimationFrame(loop);
 </script>
 </body></html>
