@@ -945,13 +945,30 @@ async function exportSpriteSheet(){
   entries.forEach(entry=>{entry.startRow=row;entry.rows=Math.ceil(entry.count/cols);row+=entry.rows;});
   const width=cols*size,height=row*size;if(width*height>100_000_000)throw new Error('Ảnh xuất quá lớn. Hãy giảm số cột hoặc kích thước ô.');
   await Promise.all(LIB.map(name=>{let image=imageCache[name];if(!image){image=new Image();imageCache[name]=image;}if(image.complete&&image.naturalWidth)return Promise.resolve();return new Promise(resolve=>{image.onload=resolve;image.onerror=resolve;if(!image.src)image.src=imageData[name];});}));
-  const bounds=calculateSpriteBoundsForSets(sets,dir),canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');
-  entries.forEach(entry=>{for(let i=0;i<entry.count;i++){const x=(i%cols)*size,y=(entry.startRow+Math.floor(i/cols))*size;ctx.save();ctx.translate(x,y);renderSpriteFrame(ctx,size,i,dir,bounds,entry.set);ctx.restore();}});
+  const bounds=calculateSpriteBoundsForSets(sets,dir),canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d',{alpha:true});
+  // Render từng frame trên canvas riêng rồi ghép vào sheet. Cách này tránh lỗi
+  // transform/clip bị lưu chéo giữa các frame trên Safari iOS.
+  let renderedFrames=0,emptyFrames=[];
+  for(const entry of entries){
+   for(let i=0;i<entry.count;i++){
+    const frameCanvas=document.createElement('canvas');frameCanvas.width=size;frameCanvas.height=size;
+    const frameCtx=frameCanvas.getContext('2d',{alpha:true});
+    renderSpriteFrame(frameCtx,size,i,dir,bounds,entry.set);
+    const pixels=frameCtx.getImageData(0,0,size,size).data;let hasPixels=false;
+    for(let a=3;a<pixels.length;a+=4){if(pixels[a]>0){hasPixels=true;break;}}
+    if(!hasPixels)emptyFrames.push(`${entry.set.name}:${i}`);
+    const x=(i%cols)*size,y=(entry.startRow+Math.floor(i/cols))*size;
+    ctx.drawImage(frameCanvas,x,y);renderedFrames++;
+    frameCanvas.width=0;frameCanvas.height=0;
+   }
+  }
+  if(!renderedFrames)throw new Error('Không render được frame nào.');
+  if(emptyFrames.length)throw new Error(`Có ${emptyFrames.length} frame rỗng: ${emptyFrames.slice(0,8).join(', ')}. Kiểm tra ảnh của block và keyframe ở hướng ${dir}.`);
   const base=($('mn').value.trim()||'BoneAnimatorModel').replace(/[^a-z0-9_-]+/gi,'_'),safeDir=dir.toLowerCase();
   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));await downloadBlob(png,`${base}_${safeDir}_${size}px_spritesheet.png`);
   const manifest={model:base,direction:dir,cellSize:{width:size,height:size},columns:cols,imageSize:{width,height},animations:entries.map(e=>({name:e.set.name,frameCount:e.count,startRow:e.startRow,rowCount:e.rows,frames:Array.from({length:e.count},(_,i)=>({frame:i,x:(i%cols)*size,y:(e.startRow+Math.floor(i/cols))*size}))}))};
   await downloadBlob(new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'}),`${base}_${safeDir}_${size}px_spritesheet.json`);
-  $('spriteExportStatus').textContent=`Đã xuất ${sets.length} animation, tổng ${entries.reduce((n,e)=>n+e.count,0)} frame trong PNG ${width}×${height}px. Đã tải kèm JSON manifest ghi vị trí từng animation/frame.`;
+  $('spriteExportStatus').textContent=`Đã render và xuất đủ ${renderedFrames} frame thuộc ${sets.length} animation trong PNG ${width}×${height}px. Đã tải kèm JSON manifest ghi vị trí từng animation/frame.`;
  }catch(error){$('spriteExportStatus').textContent='Lỗi xuất sprite sheet: '+error.message;}
 }
 
