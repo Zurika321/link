@@ -129,7 +129,7 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 .quick-tools-panel[hidden]{display:none!important}.quick-tools-panel h3{font-size:14px;margin:2px 0 10px}.quick-tools-panel .row{margin:7px 0}.quick-tools-panel .row label{width:120px}.quick-tools-panel button{min-height:36px}.quick-tools-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.quick-tools-actions button{width:100%}
 .sprite-modal{position:fixed;inset:0;z-index:1300;background:#080a0def;display:flex;align-items:center;justify-content:center;padding:12px}
 .sprite-modal[hidden]{display:none!important}.sprite-dialog{width:min(560px,100%);max-height:94dvh;overflow:auto;background:#222832;border:1px solid #586273;border-radius:12px;box-shadow:0 18px 70px #000c;padding:16px}
-.sprite-dialog h3{margin:0 0 12px}.sprite-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sprite-grid label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#c5ccd5}.sprite-grid input,.sprite-grid select{width:100%;min-height:40px;font-size:15px}.sprite-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
+.sprite-dialog h3{margin:0 0 12px}.sprite-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sprite-animation-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.sprite-animation-list label{display:flex;align-items:center;gap:8px;background:#303642;border:1px solid #414a58;border-radius:6px;padding:8px;min-width:0}.sprite-animation-list input{width:18px;min-height:18px;flex:none}.sprite-animation-list span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sprite-animation-list small{color:#9da8b7;margin-left:auto;white-space:nowrap}.sprite-grid label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#c5ccd5}.sprite-grid input,.sprite-grid select{width:100%;min-height:40px;font-size:15px}.sprite-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
 .crop-grid-controls{display:flex;align-items:end;gap:8px;flex-wrap:wrap}.crop-grid-controls label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#c5ccd5}.crop-grid-controls input{width:76px;min-height:36px}
 @media(max-width:900px) and (orientation:landscape){.quick-tools{right:calc(25vw + 10px);top:8px}}
 @media(max-width:900px) and (orientation:portrait){.quick-tools{right:10px;top:8px}}
@@ -195,13 +195,13 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
   <h3 id="spriteExportTitle">Xuất Sprite Sheet</h3>
   <p class="status">Xuất toàn bộ frame của animation đang chọn thành một PNG nền trong suốt. Unity có thể cắt bằng kích thước ô đã chọn.</p>
   <div class="sprite-grid">
-   <label>Animation<select id="spriteAnimation"></select></label>
-   <label>Hướng<select id="spriteDirection"><option value="down">Down</option><option value="up">Up</option><option value="left">Left</option><option value="right">Right</option></select></label>
-   <label>Kích thước ô (px)<select id="spriteCellSize"><option>16</option><option>32</option><option>48</option><option selected>64</option><option>128</option><option>256</option><option>512</option></select></label>
-   <label>Số frame xuất<input id="spriteFrameCount" type="number" min="1" max="1000" value="25"></label>
-   <label>Số cột trên ảnh<input id="spriteColumns" type="number" min="1" max="100" value="5"></label>
-   <label>Thông tin sheet<input id="spriteSheetInfo" type="text" readonly value="5 cột × 5 hàng"></label>
+   <label>Hướng xuất<select id="spriteDirection"><option value="down">Down</option><option value="up">Up</option><option value="left">Left</option><option value="right">Right</option></select></label>
+   <label>Kích thước mỗi ô (px)<select id="spriteCellSize"><option>16</option><option>32</option><option>48</option><option selected>64</option><option>128</option><option>256</option><option>512</option></select></label>
+   <label>Số cột tối đa<input id="spriteColumns" type="number" min="1" max="100" value="8"></label>
+   <label>Thông tin sheet<input id="spriteSheetInfo" type="text" readonly value=""></label>
   </div>
+  <div class="status" style="margin:10px 0 5px">Chọn nhiều animation cùng hướng. Mỗi animation nằm ở một dải riêng; các frame xếp từ trái sang phải rồi xuống dòng.</div>
+  <div id="spriteAnimationList" class="sprite-animation-list"></div>
   <div id="spriteExportStatus" class="status"></div>
   <div class="sprite-actions"><button type="button" onclick="closeSpriteExport()">Huỷ</button><button type="button" class="active" onclick="exportSpriteSheet()">Xuất PNG</button></div>
  </section>
@@ -885,65 +885,74 @@ function toggleQuickTools(){const panel=$('quickToolsPanel');panel.hidden=!panel
 window.addEventListener('pointerdown',e=>{if(!$('quickTools').contains(e.target))$('quickToolsPanel').hidden=true;});
 $('modelImport').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{const pack=JSON.parse(await file.text());if(pack.model){loadPackage(pack);const name=file.name.replace(/\.json$/i,'');sessionModels.push({name,package:pack});renderSessionModels();}else{loadPackage({model:pack,assets:{}});}}catch(error){alert('JSON không hợp lệ: '+error.message)}e.target.value='';$('quickToolsPanel').hidden=true;});
 
-function syncSpriteExportInfo(){const count=Math.max(1,Math.min(1000,Math.round(+$('spriteFrameCount').value||1))),cols=Math.max(1,Math.min(100,count,Math.round(+$('spriteColumns').value||1))),rows=Math.ceil(count/cols),size=+$('spriteCellSize').value||64;$('spriteSheetInfo').value=`${cols} cột × ${rows} hàng · ${cols*size} × ${rows*size}px`;}
+function selectedSpriteAnimations(){
+ return [...$('spriteAnimationList').querySelectorAll('input[type="checkbox"]:checked')]
+  .map(input=>M.animationSets.find(set=>set.name===input.value)).filter(Boolean);
+}
+function spriteFrameCount(set,dir){return Math.max(1,Math.min(1000,Math.round((+set.dirs[dir]?.frames||0)+1)));}
+function syncSpriteExportInfo(){
+ const sets=selectedSpriteAnimations(),cols=Math.max(1,Math.min(100,Math.round(+$('spriteColumns').value||1))),size=+$('spriteCellSize').value||64;
+ const total=sets.reduce((n,set)=>n+spriteFrameCount(set,$('spriteDirection').value),0);
+ const rows=sets.reduce((n,set)=>n+Math.ceil(spriteFrameCount(set,$('spriteDirection').value)/cols),0);
+ $('spriteSheetInfo').value=`${total} frame · ${cols} cột · ${rows} hàng · ${cols*size} × ${rows*size}px`;
+}
 function openSpriteExport(){
- const select=$('spriteAnimation');select.innerHTML=M.animationSets.map(a=>`<option value="${esc(a.name)}">${esc(a.name)}</option>`).join('');select.value=M.activeAnimation||M.animationSets[0]?.name||'';$('spriteDirection').value=M.dir;
- const anim=activeSet()?.dirs[M.dir]||emptyAnim();$('spriteFrameCount').value=Math.max(1,(+anim.frames||0)+1);$('spriteColumns').value=Math.min(5,Math.max(1,(+anim.frames||0)+1));$('spriteCellSize').value=['16','32','48','64','128','256','512'].includes(String($('importCellSize').value))?String($('importCellSize').value):'64';syncSpriteExportInfo();$('spriteExportStatus').textContent='Mỗi frame được đặt vào một ô vuông trong suốt; Frame 0 xuất đầu tiên.';$('spriteExportModal').hidden=false;$('quickToolsPanel').hidden=true;
+ $('spriteAnimationList').innerHTML=M.animationSets.map((set,i)=>`<label><input type="checkbox" value="${esc(set.name)}" ${set.name===M.activeAnimation?'checked':''} onchange="syncSpriteExportInfo()"><span>${esc(set.name)}</span><small>${spriteFrameCount(set,M.dir)}f</small></label>`).join('');
+ $('spriteDirection').value=M.dir;$('spriteColumns').value='8';$('spriteCellSize').value=['16','32','48','64','128','256','512'].includes(String($('importCellSize').value))?String($('importCellSize').value):'64';
+ syncSpriteExportInfo();$('spriteExportStatus').textContent='Mỗi animation được xuất đủ frame (Frame 0 đến Frame Tổng), xếp thành từng dải riêng trong cùng một PNG. Mỗi ô giữ đúng kích thước pixel đã chọn.';$('spriteExportModal').hidden=false;$('quickToolsPanel').hidden=true;
 }
 function closeSpriteExport(){$('spriteExportModal').hidden=true;}
-['spriteFrameCount','spriteColumns','spriteCellSize'].forEach(id=>$(id).addEventListener('input',syncSpriteExportInfo));
-$('spriteAnimation').addEventListener('change',()=>{const set=M.animationSets.find(a=>a.name===$('spriteAnimation').value);const anim=set?.dirs[$('spriteDirection').value]||emptyAnim();$('spriteFrameCount').value=Math.max(1,(+anim.frames||0)+1);syncSpriteExportInfo();});
-$('spriteDirection').addEventListener('change',()=>{const set=M.animationSets.find(a=>a.name===$('spriteAnimation').value)||activeSet();const anim=set?.dirs[$('spriteDirection').value]||emptyAnim();$('spriteFrameCount').value=Math.max(1,(+anim.frames||0)+1);syncSpriteExportInfo();});
-function calculateSpriteBounds(anim,dir,count){
- const oldMode=mode,oldDir=M.dir,oldFrame=frame;mode='anim';M.dir=dir;
+['spriteColumns','spriteCellSize'].forEach(id=>$(id).addEventListener('input',syncSpriteExportInfo));
+$('spriteDirection').addEventListener('change',()=>{ $('spriteAnimationList').querySelectorAll('label small').forEach((node,i)=>node.textContent=spriteFrameCount(M.animationSets[i],$('spriteDirection').value)+'f');syncSpriteExportInfo();});
+function withSpriteSet(set,dir,frameIndex,callback){
+ const old={active:M.activeAnimation,anims:M.anims,anim:M.anim,dir:M.dir,frame,mode};
+ M.activeAnimation=set.name;M.anims=set.dirs;M.dir=dir;M.anim=set.dirs[dir]||emptyAnim();frame=frameIndex;mode='anim';
+ try{return callback();}finally{M.activeAnimation=old.active;M.anims=old.anims;M.anim=old.anim;M.dir=old.dir;frame=old.frame;mode=old.mode;}
+}
+function calculateSpriteBoundsForSets(sets,dir){
  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
  const add=p=>{if(!Number.isFinite(p.x)||!Number.isFinite(p.y))return;minX=Math.min(minX,p.x);minY=Math.min(minY,p.y);maxX=Math.max(maxX,p.x);maxY=Math.max(maxY,p.y);};
- try{
-  for(let f=0;f<count;f++){
-   frame=f;const W=solve(),S=segs(W);
-   M.bones.forEach(b=>{const w=W[b.id];add({x:w.hx,y:w.hy});add({x:w.tx,y:w.ty});});
-   M.blocks.filter(k=>blockVis(k)).forEach(k=>{
-    const info=blockInfo(k,W,S);if(!info)return;
-    cornerPoints(k,info).forEach(c=>add(c.world));
-    const name=imageForDirection(k,dir),im=img(name);if(im&&k.demo!==false){
-     const cx=info.s.r0/2+(+k.ix||0),cy=+k.iy||0,iw=im.naturalWidth*(+k.is||1),ih=im.naturalHeight*(+k.is||1),ang=(+k.ir||0)*D,ca=Math.cos(ang),sa=Math.sin(ang);
-     for(const sx of [-1,1])for(const sy of [-1,1]){const lx=cx+sx*iw/2*ca-sy*ih/2*sa,ly=cy+sx*iw/2*sa+sy*ih/2*ca;add(localToWorld(info.x0+lx*info.xScale,info.cy+ly*info.yScale,info.w));}
-    }
-   });
-  }
- }finally{mode=oldMode;M.dir=oldDir;frame=oldFrame;}
+ sets.forEach(set=>{const count=spriteFrameCount(set,dir);for(let f=0;f<count;f++)withSpriteSet(set,dir,f,()=>{
+  const W=solve(),S=segs(W);
+  M.bones.forEach(b=>{const w=W[b.id];add({x:w.hx,y:w.hy});add({x:w.tx,y:w.ty});});
+  M.blocks.filter(k=>blockVis(k)).forEach(k=>{const info=blockInfo(k,W,S);if(!info)return;cornerPoints(k,info).forEach(c=>add(c.world));
+   const name=imageForDirection(k,dir),im=img(name);if(im&&k.demo!==false){const cx=info.s.r0/2+(+k.ix||0),cy=+k.iy||0,iw=im.naturalWidth*(+k.is||1),ih=im.naturalHeight*(+k.is||1),ang=(+k.ir||0)*D,ca=Math.cos(ang),sa=Math.sin(ang);for(const sx of [-1,1])for(const sy of [-1,1])add(localToWorld(info.x0+cx+sx*iw/2*ca-sy*ih/2*sa,info.cy+cy+sx*iw/2*sa+sy*ih/2*ca,info.w));}
+  });
+ });});
  if(!Number.isFinite(minX))return{minX:-32,minY:-32,maxX:32,maxY:32,width:64,height:64};
  const pad=Math.max(2,(Math.max(maxX-minX,maxY-minY)||64)*.04);return{minX:minX-pad,minY:minY-pad,maxX:maxX+pad,maxY:maxY+pad,width:Math.max(1,maxX-minX+pad*2),height:Math.max(1,maxY-minY+pad*2)};
 }
-function renderSpriteFrame(ctx,size,frameIndex,dir,bounds){
- const oldMode=mode,oldDir=M.dir,oldFrame=frame;mode='anim';M.dir=dir;frame=frameIndex;
- try{
+function renderSpriteFrame(ctx,size,frameIndex,dir,bounds,set){
+ return withSpriteSet(set,dir,frameIndex,()=>{
   const W=solve(),S=segs(W),margin=Math.max(1,size*.04),scale=Math.min((size-margin*2)/bounds.width,(size-margin*2)/bounds.height),ox=(size-bounds.width*scale)/2-bounds.minX*scale,oy=(size-bounds.height*scale)/2-bounds.minY*scale;
   ctx.save();ctx.translate(ox,oy);ctx.scale(scale,scale);
   [...M.blocks].filter(k=>(!k.b||byId(k.b))&&blockVis(k)).sort((a,b)=>blockZ(a)-blockZ(b)).forEach(k=>{
    const info=blockInfo(k,W,S);if(!info)return;
    ctx.save();ctx.translate(info.w.hx,info.w.hy);ctx.rotate(info.w.wa*D);ctx.translate(info.x0,info.cy);ctx.scale(info.xScale,info.yScale);
    const imageName=imageForDirection(k,dir),image=k.demo!==false?img(imageName):null;
-   if(image){ctx.save();ctx.translate(info.s.r0/2+(+k.ix||0),+k.iy||0);ctx.rotate((+k.ir||0)*D);if(k.fx)ctx.scale(-1,1);const drawW=image.naturalWidth*(+k.is||1),drawH=image.naturalHeight*(+k.is||1);ctx.drawImage(image,-drawW/2,-drawH/2,drawW,drawH);ctx.restore();}
+   if(image){ctx.save();ctx.translate(info.independent?info.s.r0/2+(+k.ix||0):info.s.r0/2+(+k.ix||0),+k.iy||0);ctx.rotate((+k.ir||0)*D);if(k.fx)ctx.scale(-1,1);const drawW=image.naturalWidth*(+k.is||1),drawH=image.naturalHeight*(+k.is||1);ctx.drawImage(image,-drawW/2,-drawH/2,drawW,drawH);ctx.restore();}
    else{ctx.fillStyle=k.col||'#888';ctx.fillRect(0,-k.h/2,info.s.r0,k.h);}
    ctx.restore();
-  });
-  ctx.restore();
- }finally{mode=oldMode;M.dir=oldDir;frame=oldFrame;}
+  });ctx.restore();
+ });
 }
+function downloadBlob(blob,name){return new Promise((resolve,reject)=>{if(!blob)return reject(new Error('Không thể tạo file.'));const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);resolve();});}
 async function exportSpriteSheet(){
- const oldActive=M.activeAnimation,oldAnim=M.anims,oldCurrentAnim=M.anim;
  try{
-  const set=M.animationSets.find(a=>a.name===$('spriteAnimation').value)||activeSet();if(!set)throw new Error('Tạo hoặc chọn animation trước.');
-  M.activeAnimation=set.name;M.anims=set.dirs;M.anim=set.dirs[M.dir];
-  const dir=$('spriteDirection').value,anim=set.dirs[dir]||emptyAnim(),count=Math.max(1,Math.min(1000,Math.round(+$('spriteFrameCount').value||(+anim.frames+1)))),cols=Math.max(1,Math.min(count,100,Math.round(+$('spriteColumns').value||1))),rows=Math.ceil(count/cols),size=Math.max(16,Math.min(512,Math.round(+$('spriteCellSize').value||64)));
-  const width=cols*size,height=rows*size;if(width*height>100_000_000)throw new Error('Ảnh xuất quá lớn. Hãy giảm số cột hoặc kích thước ô.');
+  const sets=selectedSpriteAnimations();if(!sets.length)throw new Error('Chọn ít nhất một animation.');
+  const dir=$('spriteDirection').value,cols=Math.max(1,Math.min(100,Math.round(+$('spriteColumns').value||1))),size=Math.max(16,Math.min(512,Math.round(+$('spriteCellSize').value||64)));
+  const entries=sets.map(set=>({set,count:spriteFrameCount(set,dir),startRow:0,rows:0}));let row=0;
+  entries.forEach(entry=>{entry.startRow=row;entry.rows=Math.ceil(entry.count/cols);row+=entry.rows;});
+  const width=cols*size,height=row*size;if(width*height>100_000_000)throw new Error('Ảnh xuất quá lớn. Hãy giảm số cột hoặc kích thước ô.');
   await Promise.all(LIB.map(name=>{let image=imageCache[name];if(!image){image=new Image();imageCache[name]=image;}if(image.complete&&image.naturalWidth)return Promise.resolve();return new Promise(resolve=>{image.onload=resolve;image.onerror=resolve;if(!image.src)image.src=imageData[name];});}));
-  const bounds=calculateSpriteBounds(anim,dir,count),canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');
-  for(let i=0;i<count;i++)renderSpriteFrame(ctx,size,i,dir,bounds);
-  const base=($('mn').value.trim()||'BoneAnimatorModel').replace(/[^a-z0-9_-]+/gi,'_'),animName=set.name.replace(/[^a-z0-9_-]+/gi,'_');
-  canvas.toBlob(blob=>{if(!blob)throw new Error('Không thể tạo PNG.');const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`${base}_${animName}_${dir}_${size}px.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);$('spriteExportStatus').textContent=`Đã xuất ${count} frame · ${cols} cột × ${rows} hàng · ô ${size}×${size}px.`;},'image/png');
- }catch(error){$('spriteExportStatus').textContent='Lỗi xuất sprite sheet: '+error.message;}finally{M.activeAnimation=oldActive;M.anims=oldAnim;M.anim=oldCurrentAnim;refreshAnimationState();draw();}
+  const bounds=calculateSpriteBoundsForSets(sets,dir),canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;const ctx=canvas.getContext('2d');
+  entries.forEach(entry=>{for(let i=0;i<entry.count;i++){const x=(i%cols)*size,y=(entry.startRow+Math.floor(i/cols))*size;ctx.save();ctx.translate(x,y);renderSpriteFrame(ctx,size,i,dir,bounds,entry.set);ctx.restore();}});
+  const base=($('mn').value.trim()||'BoneAnimatorModel').replace(/[^a-z0-9_-]+/gi,'_'),safeDir=dir.toLowerCase();
+  const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));await downloadBlob(png,`${base}_${safeDir}_${size}px_spritesheet.png`);
+  const manifest={model:base,direction:dir,cellSize:{width:size,height:size},columns:cols,imageSize:{width,height},animations:entries.map(e=>({name:e.set.name,frameCount:e.count,startRow:e.startRow,rowCount:e.rows,frames:Array.from({length:e.count},(_,i)=>({frame:i,x:(i%cols)*size,y:(e.startRow+Math.floor(i/cols))*size}))}))};
+  await downloadBlob(new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'}),`${base}_${safeDir}_${size}px_spritesheet.json`);
+  $('spriteExportStatus').textContent=`Đã xuất ${sets.length} animation, tổng ${entries.reduce((n,e)=>n+e.count,0)} frame trong PNG ${width}×${height}px. Đã tải kèm JSON manifest ghi vị trí từng animation/frame.`;
+ }catch(error){$('spriteExportStatus').textContent='Lỗi xuất sprite sheet: '+error.message;}
 }
 
 /* Phím tắt / vòng lặp */
