@@ -202,8 +202,9 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
   </div>
   <div class="status" style="margin:10px 0 5px">Chọn nhiều animation cùng hướng. Mỗi animation nằm ở một dải riêng; các frame xếp từ trái sang phải rồi xuống dòng.</div>
   <div id="spriteAnimationList" class="sprite-animation-list"></div>
+  <label style="display:flex;align-items:center;gap:8px;margin-top:10px"><input id="spriteExportManifest" type="checkbox" style="width:18px;height:18px"> Tải thêm JSON Manifest (không bắt buộc)</label>
   <div id="spriteExportStatus" class="status"></div>
-  <div class="sprite-actions"><button type="button" onclick="closeSpriteExport()">Huỷ</button><button type="button" class="active" onclick="exportSpriteSheet()">Xuất PNG</button></div>
+  <div class="sprite-actions"><button type="button" onclick="closeSpriteExport()">Huỷ</button><button type="button" class="active" onclick="exportSpriteSheet()">Chỉ xuất PNG</button></div>
  </section>
 </div>
 <div id="imgModal" class="modal" hidden>
@@ -889,7 +890,7 @@ function selectedSpriteAnimations(){
  return [...$('spriteAnimationList').querySelectorAll('input[type="checkbox"]:checked')]
   .map(input=>M.animationSets.find(set=>set.name===input.value)).filter(Boolean);
 }
-function spriteFrameCount(set,dir){return Math.max(1,Math.min(1000,Math.round((+set.dirs[dir]?.frames||0)+1)));}
+function spriteFrameCount(set,dir){return Math.max(1,Math.min(1000,Math.round(+set.dirs[dir]?.frames||1)));}
 function syncSpriteExportInfo(){
  const sets=selectedSpriteAnimations(),cols=Math.max(1,Math.min(100,Math.round(+$('spriteColumns').value||1))),size=+$('spriteCellSize').value||64;
  const total=sets.reduce((n,set)=>n+spriteFrameCount(set,$('spriteDirection').value),0);
@@ -899,7 +900,7 @@ function syncSpriteExportInfo(){
 function openSpriteExport(){
  $('spriteAnimationList').innerHTML=M.animationSets.map((set,i)=>`<label><input type="checkbox" value="${esc(set.name)}" ${set.name===M.activeAnimation?'checked':''} onchange="syncSpriteExportInfo()"><span>${esc(set.name)}</span><small>${spriteFrameCount(set,M.dir)}f</small></label>`).join('');
  $('spriteDirection').value=M.dir;$('spriteColumns').value='8';$('spriteCellSize').value=['16','32','48','64','128','256','512'].includes(String($('importCellSize').value))?String($('importCellSize').value):'64';
- syncSpriteExportInfo();$('spriteExportStatus').textContent='Mỗi animation được xuất đủ frame (Frame 0 đến Frame Tổng), xếp thành từng dải riêng trong cùng một PNG. Mỗi ô giữ đúng kích thước pixel đã chọn.';$('spriteExportModal').hidden=false;$('quickToolsPanel').hidden=true;
+ syncSpriteExportInfo();$('spriteExportManifest').checked=false;$('spriteExportStatus').textContent='Chỉ tải một file PNG. Mỗi animation được xuất đủ số frame đã thiết lập (đánh số từ Frame 0), xếp thành từng dải riêng. Có thể bật JSON Manifest nếu cần.';$('spriteExportModal').hidden=false;$('quickToolsPanel').hidden=true;
 }
 function closeSpriteExport(){$('spriteExportModal').hidden=true;}
 ['spriteColumns','spriteCellSize'].forEach(id=>$(id).addEventListener('input',syncSpriteExportInfo));
@@ -966,9 +967,11 @@ async function exportSpriteSheet(){
   if(emptyFrames.length)throw new Error(`Có ${emptyFrames.length} frame rỗng: ${emptyFrames.slice(0,8).join(', ')}. Kiểm tra ảnh của block và keyframe ở hướng ${dir}.`);
   const base=($('mn').value.trim()||'BoneAnimatorModel').replace(/[^a-z0-9_-]+/gi,'_'),safeDir=dir.toLowerCase();
   const png=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));await downloadBlob(png,`${base}_${safeDir}_${size}px_spritesheet.png`);
-  const manifest={model:base,direction:dir,cellSize:{width:size,height:size},columns:cols,imageSize:{width,height},animations:entries.map(e=>({name:e.set.name,frameCount:e.count,startRow:e.startRow,rowCount:e.rows,frames:Array.from({length:e.count},(_,i)=>({frame:i,x:(i%cols)*size,y:(e.startRow+Math.floor(i/cols))*size}))}))};
-  await downloadBlob(new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'}),`${base}_${safeDir}_${size}px_spritesheet.json`);
-  $('spriteExportStatus').textContent=`Đã render và xuất đủ ${renderedFrames} frame thuộc ${sets.length} animation trong PNG ${width}×${height}px. Đã tải kèm JSON manifest ghi vị trí từng animation/frame.`;
+  if($('spriteExportManifest').checked){
+   const manifest={model:base,direction:dir,cellSize:{width:size,height:size},columns:cols,imageSize:{width,height},animations:entries.map(e=>({name:e.set.name,frameCount:e.count,startRow:e.startRow,rowCount:e.rows,frames:Array.from({length:e.count},(_,i)=>({frame:i,x:(i%cols)*size,y:(e.startRow+Math.floor(i/cols))*size}))}))};
+   await downloadBlob(new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'}),`${base}_${safeDir}_${size}px_spritesheet.json`);
+  }
+  $('spriteExportStatus').textContent=`Đã xuất PNG ${width}×${height}px gồm ${renderedFrames} frame từ ${sets.length} animation.${$('spriteExportManifest').checked?' Đã tải thêm JSON Manifest.':' Chỉ tải PNG, không tải JSON.'}`;
  }catch(error){$('spriteExportStatus').textContent='Lỗi xuất sprite sheet: '+error.message;}
 }
 
