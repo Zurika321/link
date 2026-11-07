@@ -202,6 +202,29 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
  body{grid-template:"N N" 68px "C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}
 }
 
+
+.block-key-panel{border:1px solid var(--b,#414957);border-radius:8px;margin:10px 0;padding:8px;background:rgba(90,110,130,.08)}
+.block-key-panel>summary{cursor:pointer;font-weight:700;font-size:12px;user-select:none}
+.block-key-content{padding-top:8px}
+.block-key-item{border:1px solid var(--b,#414957);border-radius:7px;padding:7px;margin:7px 0;background:rgba(0,0,0,.12)}
+.block-key-item .row{display:flex;align-items:center;gap:7px;margin:5px 0}
+.block-key-item .row label{min-width:92px;font-size:11px}
+.block-key-item .row select{min-width:0;max-width:100%;flex:1}
+.block-key-item button{font-size:11px}
+
+.tree-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.tree-section-title button {
+    padding: 3px 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
 </style>
 </head>
 <body>
@@ -262,7 +285,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
  </section>
 </div>
 <div id="resizeLeft" class="resize-handle resize-vertical" role="separator" aria-orientation="vertical" aria-label="Resize bảng trái"></div>
-<div id="C"><canvas id="cvs"></canvas><div id="hint">Hehehe</div></div>
+<div id="C"><canvas id="cvs"></canvas><div id="hint">RIG: kéo xương hoặc block · Xoay: nắm tam giác ở đầu xương · ANIM: chỉ chọn xương · 2 ngón: zoom/pan</div></div>
 <div id="resizeRight" class="resize-handle resize-vertical" role="separator" aria-orientation="vertical" aria-label="Resize bảng phải"></div>
 <div id="R" class="pn"><div id="props"></div></div>
 <div id="resizeBottom" class="resize-handle resize-horizontal" role="separator" aria-orientation="horizontal" aria-label="Resize bảng animation"></div>
@@ -280,7 +303,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
   <div id="timelineControls" hidden>
    <div class="row">
     <button id="pb" onclick="play()">▶</button> Frame <input id="fr" type="number" value="0" min="0"> FPS <input id="fps" type="number" value="12" min="1"> Tổng <input id="nf" type="number" value="24" min="1">
-    <button onclick="setKey()">◆ Đặt key</button><button onclick="copyKey()">Copy</button><button onclick="cutKey()">Cut</button><button onclick="pasteKey()">Paste</button><button onclick="delKey()">Xoá key</button><button onclick="copyDownToUp()" title="Sao chép Down sang Up">⇄ Down → Up</button>
+    <button onclick="setKey()">◆ Đặt key</button><button onclick="createBlockKeyframe()">▣ Keyframe Block</button><button onclick="copyKey()">Copy</button><button onclick="cutKey()">Cut</button><button onclick="pasteKey()">Paste</button><button onclick="delKey()">Xoá key</button><button onclick="copyDownToUp()" title="Sao chép Down sang Up">⇄ Down → Up</button>
    </div>
   </div>
  </div>
@@ -356,14 +379,14 @@ const D=Math.PI/180,$=id=>document.getElementById(id),cv=$('cvs'),tl=$('tls');
 const alert=msg=>{const el=$('spriteExportStatus')||$('imageActionStatus')||document.querySelector('.status');if(el)el.textContent=String(msg);};
 function confirm(){return true;}function prompt(msg,def){return def||'';}
 const STR=['name','col','img','imgUp','imgLeft','imgRight','vis'];
-const emptyAnim=()=>({fps:12,frames:24,keys:{}});
+const emptyAnim=()=>({fps:12,frames:24,keys:{},blockKeys:{}});
 const emptyDirections=()=>({down:emptyAnim(),up:emptyAnim(),left:emptyAnim(),right:emptyAnim()});
 let M={nid:1,dir:'down',bones:[],blocks:[],animationSets:[],activeAnimation:''};
 let sel=null,ksel=null,mode='rig',tool='move',frame=0,playing=false;
 let cam={x:0,y:0,z:1},drag=null,LIB=[],last=0,keyClipboard=null,frameClipboard=null,showBones=true,showImages=true;
 const imageCache=Object.create(null),imageData=Object.create(null),activePointers=new Map();let pinchState=null,modalImage='',cropDrag=null,objectClipboard=null,treeDragPayload=null,pendingImage='';
 let sessionModels=[];
-function normalizeDirs(source){const dirs=emptyDirections();if(source&&typeof source==='object')['down','up','left','right'].forEach(d=>{const a=source[d];if(a&&typeof a==='object')dirs[d]={fps:+a.fps||12,frames:+a.frames||24,keys:a.keys||{}};});return dirs;}
+function normalizeDirs(source){const dirs=emptyDirections();if(source&&typeof source==='object')['down','up','left','right'].forEach(d=>{const a=source[d];if(a&&typeof a==='object')dirs[d]={fps:+a.fps||12,frames:+a.frames||24,keys:a.keys||{},blockKeys:a.blockKeys&&typeof a.blockKeys==='object'?a.blockKeys:{}};});return dirs;}
 function cloneData(value){return JSON.parse(JSON.stringify(value??null));}
 function normalizeModel(m){
  m.nid=+m.nid||1;m.bones=Array.isArray(m.bones)?m.bones:[];m.blocks=Array.isArray(m.blocks)?m.blocks:[];m.dir=['down','up','left','right'].includes(m.dir)?m.dir:'down';
@@ -440,7 +463,91 @@ function segs(world){
   });
  });return segments;
 }
-function blockVis(k){if(k.visible===false)return false;if(k.vis==='front'&&M.dir==='up')return false;if(k.vis==='back'&&M.dir!=='up')return false;return true;}
+function blockKeyMap(anim=A()){
+ if(!anim.blockKeys||typeof anim.blockKeys!=='object')anim.blockKeys={};
+ return anim.blockKeys;
+}
+function blockStateAt(k,f=frame,dir=M.dir){
+ const state={visible:k.visible!==false,image:imageForDirection(k,dir)};
+ const keys=blockKeyMap(),frames=Object.keys(keys).map(Number).filter(n=>Number.isFinite(n)&&n<=f).sort((a,b)=>a-b);
+ for(const keyFrame of frames){
+  const items=keys[keyFrame]||[];
+  const item=items.find(entry=>String(entry.blockId)===String(k.id));
+  if(!item)continue;
+  if(typeof item.visible==='boolean')state.visible=item.visible;
+  if(typeof item.image==='string')state.image=item.image||imageForDirection(k,dir);
+ }
+ return state;
+}
+function animatedBlockImage(k,dir=M.dir,f=frame){return blockStateAt(k,f,dir).image;}
+function blockVis(k){
+ const state=blockStateAt(k,frame,M.dir);
+ if(!state.visible)return false;
+ if(k.vis==='front'&&M.dir==='up')return false;
+ if(k.vis==='back'&&M.dir!=='up')return false;
+ return true;
+}
+function createBlockKeyframe(){
+ if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');
+ if(!M.blocks.length)return alert('Model chưa có Block để tạo keyframe.');
+ const f=String(clamp(Math.round(frame),0,A().frames)),map=blockKeyMap();
+ if(!Array.isArray(map[f]))map[f]=[];
+ if(!map[f].length)addBlockKeyItem(+f);
+ renderProps();draw();
+}
+function addBlockKeyItem(f=Math.round(frame)){
+ const map=blockKeyMap(),key=String(clamp(Math.round(f),0,A().frames));
+ if(!Array.isArray(map[key]))map[key]=[];
+ const used=new Set(map[key].map(item=>String(item.blockId)));
+ const block=M.blocks.find(k=>!used.has(String(k.id)));
+ if(!block)return alert('Các Block đều đã có trong keyframe này.');
+ const previous=blockStateAt(block,+key-0.001,M.dir);
+ map[key].push({blockId:block.id,visible:previous.visible,image:previous.image===imageForDirection(block,M.dir)?'':previous.image});
+ renderProps();draw();
+}
+function updateBlockKeyItem(f,index,key,value){
+ const map=blockKeyMap(),items=map[String(f)];
+ if(!items||!items[index])return;
+ const item=items[index];
+ if(key==='blockId'){
+  const block=M.blocks.find(k=>String(k.id)===String(value));if(!block)return;
+  const duplicate=items.some((entry,i)=>i!==index&&String(entry.blockId)===String(block.id));
+  if(duplicate)return alert('Block này đã có trong keyframe hiện tại.');
+  const state=blockStateAt(block,+f-0.001,M.dir);
+  item.blockId=block.id;item.visible=state.visible;
+  item.image=state.image===imageForDirection(block,M.dir)?'':state.image;
+ }else if(key==='visible')item.visible=!!value;
+ else if(key==='image')item.image=String(value||'');
+ renderProps();draw();
+}
+function removeBlockKeyItem(f,index){
+ const map=blockKeyMap(),key=String(f),items=map[key];if(!items)return;
+ items.splice(index,1);if(!items.length)delete map[key];
+ renderProps();draw();
+}
+function renderBlockKeyframeProperties(){
+ if(mode!=='anim'||!activeSet())return '';
+ const f=String(clamp(Math.round(frame),0,A().frames)),items=blockKeyMap()[f]||[];
+ const options=M.blocks.map(k=>`<option value="${k.id}">${esc(k.name)} (#${k.id})</option>`).join('');
+ const imageOptions=block=>`<option value="">Ảnh gốc theo hướng (${esc(imageForDirection(block)||'chưa gán')})</option>`+LIB.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join('');
+ const rows=items.map((item,index)=>{
+  const block=M.blocks.find(k=>String(k.id)===String(item.blockId));
+  if(!block)return `<div class="status">Block #${esc(item.blockId)} không còn tồn tại. <button onclick="removeBlockKeyItem(${f},${index})">Xóa mục</button></div>`;
+  return `<div class="block-key-item">
+   <div class="row"><label>Block cần thay đổi</label><select onchange="updateBlockKeyItem(${f},${index},'blockId',this.value)">${M.blocks.map(k=>`<option value="${k.id}" ${String(k.id)===String(item.blockId)?'selected':''}>${esc(k.name)} (#${k.id})</option>`).join('')}</select></div>
+   <div class="row"><label>Hiển thị</label><input type="checkbox" ${item.visible!==false?'checked':''} onchange="updateBlockKeyItem(${f},${index},'visible',this.checked)"></div>
+   <div class="row"><label>Ảnh thay thế</label><select onchange="updateBlockKeyItem(${f},${index},'image',this.value)">${imageOptions(block).replace(`value="${esc(item.image||'')}"`,`value="${esc(item.image||'')}" selected`)}</select></div>
+   <button class="danger" onclick="removeBlockKeyItem(${f},${index})">✕ Xóa mục</button>
+  </div>`;
+ }).join('');
+ return `<details class="block-key-panel" open>
+  <summary>▣ BLOCK KEYFRAME · Frame ${f} <span class="status">(${items.length} Block)</span></summary>
+  <div class="block-key-content">${rows||'<div class="status">Chưa có Block nào trong frame này.</div>'}
+   <button onclick="addBlockKeyItem(${f})" ${M.blocks.length<=items.length?'disabled':''}>＋ Thêm Block</button>
+   <p class="status">Chọn frame ở hàng ▣ BLOCK trên Timeline để mở/chỉnh keyframe. Icon vuông tím là Block Keyframe; hình thoi xanh là Bone Keyframe. Thay đổi ảnh và trạng thái sẽ giữ nguyên đến keyframe Block tiếp theo.</p>
+  </div>
+ </details>`;
+}
 function blockZ(k){const z=+k.z||0;return M.dir==='up'?-z:z;}
 function setB(b,patch){
  if(mode==='rig'||!activeSet()){Object.assign(b,patch);return}
@@ -491,7 +598,22 @@ function renderList(){
   const parent=byId(k.b),kind=parent?`<small>· Gắn vào ${esc(parent.name)}</small>`:'<small>· Block độc lập</small>';
   return `<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" onclick="pick('k',${k.id})" oncontextmenu="showContextMenu(event,'k',${k.id})" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn block" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label">▣ ${esc(k.name)} ${kind}</span></div>`;
  }).join('');
- $('list').innerHTML=`<section class="tree-section"><h4>XƯƠNG (${M.bones.length})</h4>${boneRows.join('')||'<div class="status">Chưa có xương.</div>'}</section><section class="tree-section block-section"><h4>BLOCK (${M.blocks.length})</h4>${blocks||'<div class="status">Chưa có block.</div>'}</section>`;
+ $('list').innerHTML=`
+<section class="tree-section">
+    <h4 class="tree-section-title">
+        <span>XƯƠNG (${M.bones.length})</span>
+        <button onclick="addBone()">＋</button>
+    </h4>
+    ${boneRows.join('')||'<div class="status">Chưa có xương.</div>'}
+</section>
+
+<section class="tree-section block-section">
+    <h4 class="tree-section-title">
+        <span>BLOCK (${M.blocks.length})</span>
+        <button onclick="addBlock()">＋</button>
+    </h4>
+    ${blocks||'<div class="status">Chưa có block.</div>'}
+</section>`;
  $('list').oncontextmenu=e=>{if(e.target===$('list')||e.target.classList.contains('it'))showContextMenu(e,null,null)};
  $('mobilePaste').disabled=!objectClipboard;
 }
@@ -568,7 +690,6 @@ function showContextMenu(event,type,id){event.preventDefault?.();if(type&&id!=nu
 function hideContextMenu(){$('treeContext').style.display='none';}
 window.addEventListener('pointerdown',e=>{if(!$('treeContext').contains(e.target))hideContextMenu();});
 window.addEventListener('keydown',e=>{if(e.key==='Escape')hideContextMenu();});
-
 function renderRigGuide(){
     return `
         <section class="guide">
@@ -615,7 +736,7 @@ function renderAnimGuide(){
 }
 /* Inspector */
 function renderProps(){
- const o = cur(), P = $('props');
+     const o = cur(), P = $('props');
 
     const guide = mode === 'rig'
         ? renderRigGuide()
@@ -623,9 +744,11 @@ function renderProps(){
 
     if(!o){
         P.innerHTML = guide +
-            '<i>Chọn xương/block ở danh sách hoặc trên canvas</i>';
+            '<i>Chọn xương/block ở danh sách hoặc trên canvas</i>' +
+            renderBlockKeyframeProperties();
         return;
     }
+
  const isBone=sel.t==='b',W=solve(),w=isBone&&W[o.id],q=isBone&&pose(o,frame);
  const field=(label,key,value,type='number',extra='')=>`<div class="row"><label>${label}</label><input type="${type}" ${extra} value="${esc(value)}" oninput="setP('${key}',this.value)"></div>`;
  let html=`<h4>${isBone?'XƯƠNG':'BLOCK'}${mode==='anim'&&isBone?' · key frame '+Math.round(frame):''}</h4>`+field('Tên','name',o.name,'text');
@@ -647,7 +770,7 @@ function renderProps(){
    +`<div class="row"><label>Lật ngang ảnh</label><input type="checkbox" ${o.fx?'checked':''} onchange="setP('fx',this.checked?1:0)"></div>`
    +'<button onclick="fitImg()">Vừa khít block</button>';
  }
- P.innerHTML=html;
+ P.innerHTML=html+renderBlockKeyframeProperties();
 }
 function setP(key,value){
  const o=cur();if(!o)return;
@@ -806,7 +929,7 @@ function draw(){
  (showImages?[...M.blocks]:[]).filter(k=>(!k.b||byId(k.b))&&blockVis(k)).sort((a,b)=>blockZ(a)-blockZ(b)).forEach(k=>{
   const info=blockInfo(k,W,S);if(!info)return;const selected=sel&&sel.t==='k'&&sel.id===k.id;
   g.save();g.translate(info.w.hx,info.w.hy);g.rotate(info.w.wa*D);g.translate(info.x0,info.cy);g.scale(info.xScale,info.yScale);
-  const imageName=imageForDirection(k),image=showImages&&k.demo!==false?img(imageName):null;
+  const imageName=animatedBlockImage(k,M.dir),image=showImages&&k.demo!==false?img(imageName):null;
   if(image){g.save();g.translate(info.s.r0/2+k.ix,k.iy);g.rotate((k.ir||0)*D);if(k.fx)g.scale(-1,1);g.drawImage(image,-image.naturalWidth*k.is/2,-image.naturalHeight*k.is/2,image.naturalWidth*k.is,image.naturalHeight*k.is);g.restore()}
   else{g.globalAlpha=.85;g.fillStyle=k.col;g.fillRect(0,-k.h/2,info.s.r0,k.h);g.globalAlpha=1}
   g.lineWidth=(selected?2:1)/(cam.z*Math.max(.05,Math.min(info.xScale,info.yScale)));g.strokeStyle=selected?'#3fb8af':'rgba(255,255,255,.25)';g.strokeRect(0,-k.h/2,info.s.r0,k.h);g.restore();
@@ -963,11 +1086,14 @@ cv.addEventListener('contextmenu',e=>e.preventDefault());
 
 /* Timeline */
 const LW=110,RH=20,HH=22;
+function blockLaneY(){return HH+M.bones.length*RH;}
 function drawTL(){
  const c=tl,g=c.getContext('2d');if(!activeSet()){g.clearRect(0,0,c.width,c.height);return;}const frames=A().frames,fw=(c.width-LW-12)/frames;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,c.width,c.height);g.font='11px system-ui';
  M.bones.forEach((b,i)=>{const y=HH+i*RH,selected=sel&&sel.t==='b'&&sel.id===b.id;g.fillStyle=selected?'#2c4a4c':(i%2?'#262b34':'#2a303a');g.fillRect(0,y,c.width,RH);g.fillStyle='#e4e8ee';g.fillText(b.name,6,y+14)});
+ const by=blockLaneY();g.fillStyle='#302b3b';g.fillRect(0,by,c.width,RH);g.fillStyle='#d8b4fe';g.fillText('▣ BLOCK',6,by+14);
  const step=Math.max(1,Math.ceil(36/fw));for(let i=0;i<=frames;i+=step){const x=LW+i*fw;g.fillStyle='#8c97a6';g.fillText(i,x-3,14);g.fillStyle='rgba(255,255,255,.08)';g.fillRect(x,HH,1,c.height)}
  M.bones.forEach((b,i)=>{const y=HH+i*RH;Object.keys(A().keys[b.id]||{}).forEach(f=>{const x=LW+f*fw,selected=ksel&&ksel.b===b.id&&ksel.f==f;g.fillStyle=selected?'#ffd166':'#3fb8af';g.beginPath();g.moveTo(x,y+3);g.lineTo(x+6,y+10);g.lineTo(x,y+17);g.lineTo(x-6,y+10);g.fill()})});
+ Object.entries(blockKeyMap()).forEach(([f,items])=>{if(!items?.length)return;const x=LW+(+f)*fw,y=by+RH/2;g.fillStyle=+f===Math.round(frame)?'#f0abfc':'#c084fc';g.fillRect(x-6,y-6,12,12);g.strokeStyle='#24172f';g.lineWidth=1;g.strokeRect(x-6,y-6,12,12);g.fillStyle='#24172f';g.fillRect(x-1,y-4,2,8);g.fillRect(x-4,y-1,8,2)});
  g.fillStyle='#ff7a59';g.fillRect(LW+frame*fw,0,2,c.height);
 }
 function timelineFrame(e){const rect=tl.getBoundingClientRect(),x=(e.clientX-rect.left)*tl.width/rect.width,frames=A().frames,fw=(tl.width-LW-12)/frames;return clamp(Math.round((x-LW)/fw),0,frames)}
@@ -977,54 +1103,52 @@ function timelineDown(e){
  // Kéo đúng vạch cam sẽ chuyển nguyên cột keyframe của tất cả xương sang frame đích.
  if(Math.abs(x-playheadX)<=Math.max(8,8*tl.width/rect.width)){ksel=null;drag={type:'frameDrag',from:Math.round(frame)};return;}
  if(y<HH){ksel=null;frame=f;drag={type:'scrub'};draw();return;}
+ const blockY=blockLaneY();
+ if(y>=blockY&&y<blockY+RH){ksel=null;frame=f;drag={type:'scrub'};renderProps();draw();return;}
  const targetFrame=f,b=M.bones[Math.floor((y-HH)/RH)];
  if(!b){ksel=null;frame=targetFrame;draw();return;}
  sel={t:'b',id:b.id};const K=A().keys[b.id],has=K&&Object.prototype.hasOwnProperty.call(K,targetFrame);
  if(has){ksel={b:b.id,f:targetFrame};drag={type:'keyDrag',b:b.id,f:targetFrame};}else{ksel=null;frame=targetFrame;drag={type:'scrub'};}renderAll();
 }
 function timelineMove(e){if(!drag||!['scrub','keyDrag','frameDrag'].includes(drag.type))return;const f=timelineFrame(e);
- if(drag.type==='scrub')frame=f;
+ if(drag.type==='scrub'){frame=f;renderProps();}
  else if(drag.type==='frameDrag'){
   const from=drag.from;if(f!==from){moveFrameKeys(from,f);drag.from=f;frame=f;}
  }else{const K=A().keys[drag.b];if(f!==drag.f&&K&&!Object.prototype.hasOwnProperty.call(K,f)){K[f]=K[drag.f];delete K[drag.f];drag.f=f;ksel.f=f}}
  draw();
 }
-function timelineUp(){drag=null;$('fr').value=Math.round(frame);draw();}
+function timelineUp(){drag=null;$('fr').value=Math.round(frame);draw();renderProps();}
 tl.addEventListener('pointerdown',timelineDown);tl.addEventListener('pointermove',timelineMove);tl.addEventListener('pointerup',timelineUp);tl.addEventListener('pointercancel',timelineUp);tl.addEventListener('contextmenu',e=>e.preventDefault());
 function setKey(){if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');setMode('anim');const targets=sel&&sel.t==='b'?[byId(sel.id)]:M.bones;targets.filter(Boolean).forEach(b=>{const q=pose(b,frame);(A().keys[b.id]??={})[Math.round(frame)]={x:q.x,y:q.y,a:q.a,l:q.l}});}
 function selectedKey(){if(!activeSet()||!ksel)return null;const key=A().keys[ksel.b]?.[ksel.f];return key?{boneId:ksel.b,frame:ksel.f,pose:{...key}}:null}
 function keysAtFrame(f){const copied={};M.bones.forEach(b=>{const key=A().keys[b.id]?.[f];if(key)copied[b.id]={...key};});return copied;}
 function copyKey(){
  if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');
- const f=clamp(Math.round(frame),0,A().frames),keys=keysAtFrame(f);
- if(!Object.keys(keys).length)return alert('Frame '+f+' không có keyframe để copy.');
- frameClipboard={sourceFrame:f,keys};keyClipboard=null;
+ const f=String(clamp(Math.round(frame),0,A().frames)),keys=keysAtFrame(+f),blockKeys=cloneData(blockKeyMap()[f]||[]);
+ if(!Object.keys(keys).length&&!blockKeys.length)return alert('Frame '+f+' không có keyframe để copy.');
+ frameClipboard={sourceFrame:+f,keys,blockKeys};keyClipboard=null;
 }
 function cutKey(){
  if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');
- const f=clamp(Math.round(frame),0,A().frames),keys=keysAtFrame(f);
- if(!Object.keys(keys).length)return alert('Frame '+f+' không có keyframe để cut.');
- frameClipboard={sourceFrame:f,keys};keyClipboard=null;
+ const f=String(clamp(Math.round(frame),0,A().frames)),keys=keysAtFrame(+f),blockKeys=cloneData(blockKeyMap()[f]||[]);
+ if(!Object.keys(keys).length&&!blockKeys.length)return alert('Frame '+f+' không có keyframe để cut.');
+ frameClipboard={sourceFrame:+f,keys,blockKeys};keyClipboard=null;
  Object.keys(keys).forEach(id=>{delete A().keys[id][f];if(!Object.keys(A().keys[id]).length)delete A().keys[id];});
- ksel=null;draw();
+ delete blockKeyMap()[f];ksel=null;draw();renderProps();
 }
 function pasteKey(){
  if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');
  if(!frameClipboard)return alert('Chưa có frame nào được copy/cut.');
- const target=clamp(Math.round(frame),0,A().frames);
- Object.entries(frameClipboard.keys).forEach(([id,pose])=>{if(byId(id))(A().keys[id]??={})[target]={...pose};});
+ const target=String(clamp(Math.round(frame),0,A().frames));
+ Object.entries(frameClipboard.keys||{}).forEach(([id,pose])=>{if(byId(id))(A().keys[id]??={})[target]={...pose};});
+ if(frameClipboard.blockKeys?.length)blockKeyMap()[target]=cloneData(frameClipboard.blockKeys).filter(item=>M.blocks.some(k=>String(k.id)===String(item.blockId)));
  setMode('anim');ksel=null;renderAll();draw();
-}
-function moveFrameKeys(from,to){
- if(!activeSet()||from===to)return;
- M.bones.forEach(b=>{const keys=A().keys[b.id];if(!keys||!Object.prototype.hasOwnProperty.call(keys,from))return;keys[to]=keys[from];delete keys[from];});
- ksel=null;
 }
 function delKey(){
  if(!activeSet())return;
  if(ksel){delete A().keys[ksel.b]?.[ksel.f];ksel=null;}
- else{const f=clamp(Math.round(frame),0,A().frames);M.bones.forEach(b=>{if(A().keys[b.id]){delete A().keys[b.id][f];if(!Object.keys(A().keys[b.id]).length)delete A().keys[b.id];}});}
- draw();
+ else{const f=String(clamp(Math.round(frame),0,A().frames));M.bones.forEach(b=>{if(A().keys[b.id]){delete A().keys[b.id][f];if(!Object.keys(A().keys[b.id]).length)delete A().keys[b.id];}});delete blockKeyMap()[f];}
+ draw();renderProps();
 }
 function setMode(next){
  mode=next==='anim'?'anim':'rig';
@@ -1033,8 +1157,8 @@ function setMode(next){
  $('mode').classList.toggle('active',mode==='anim');
  renderList();renderProps();draw();
 }
-function play(){if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');playing=!playing;if(playing)setMode('anim');else frame=Math.round(frame);$('pb').textContent=playing?'⏸':'▶';}
-$('fps').onchange=e=>{if(activeSet())A().fps=Math.max(1,+e.target.value||12)};$('nf').onchange=e=>{if(activeSet())A().frames=Math.max(1,+e.target.value||24)};$('fr').onchange=e=>{if(activeSet())frame=clamp(+e.target.value||0,0,A().frames)};
+function play(){if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');playing=!playing;if(playing)setMode('anim');else{frame=Math.round(frame);renderProps();draw();}$('pb').textContent=playing?'⏸':'▶';}
+$('fps').onchange=e=>{if(activeSet())A().fps=Math.max(1,+e.target.value||12)};$('nf').onchange=e=>{if(activeSet())A().frames=Math.max(1,+e.target.value||24)};$('fr').onchange=e=>{if(activeSet()){frame=clamp(+e.target.value||0,0,A().frames);renderProps();draw();}};
 function syncAnim(){if(!$('fps'))return;const anim=activeSet()?.dirs[M.dir]||emptyAnim();$('fps').value=anim.fps;$('nf').value=anim.frames;$('fr').value=clamp(frame,0,anim.frames);}
 
 /* Tab Skeleton / Image */
@@ -1223,7 +1347,7 @@ function calculateSpriteBoundsForSets(sets,dir){
  sets.forEach(set=>{const count=spriteFrameCount(set,dir);for(let f=0;f<count;f++)withSpriteSet(set,dir,f,()=>{
   const W=solve(),S=segs(W);
   M.blocks.filter(k=>blockVis(k)).forEach(k=>{const info=blockInfo(k,W,S);if(!info)return;
-   const name=imageForDirection(k,dir),im=img(name);
+   const name=animatedBlockImage(k,dir,frame),im=img(name);
    if(im&&k.demo!==false){const cx=info.s.r0/2+(+k.ix||0),cy=+k.iy||0,iw=im.naturalWidth*(+k.is||1)*.92,ih=im.naturalHeight*(+k.is||1)*.92,ang=(+k.ir||0)*D,ca=Math.cos(ang),sa=Math.sin(ang);for(const sx of [-1,1])for(const sy of [-1,1])add(localToWorld(info.x0+cx+sx*iw/2*ca-sy*ih/2*sa,info.cy+cy+sx*iw/2*sa+sy*ih/2*ca,info.w));}
    else{cornerPoints(k,info).forEach(c=>add(c.world));}
   });
@@ -1239,7 +1363,7 @@ function renderSpriteFrameRaw(ctx,size,frameIndex,dir,bounds,set){
   [...M.blocks].filter(k=>(!k.b||byId(k.b))&&blockVis(k)).sort((a,b)=>blockZ(a)-blockZ(b)).forEach(k=>{
    const info=blockInfo(k,W,S);if(!info)return;
    ctx.save();ctx.translate(info.w.hx,info.w.hy);ctx.rotate(info.w.wa*D);ctx.translate(info.x0,info.cy);ctx.scale(info.xScale,info.yScale);
-   const imageName=imageForDirection(k,dir),image=k.demo!==false?img(imageName):null;
+   const imageName=animatedBlockImage(k,dir,frameIndex),image=k.demo!==false?img(imageName):null;
    if(image){ctx.save();ctx.translate(info.independent?info.s.r0/2+(+k.ix||0):info.s.r0/2+(+k.ix||0),+k.iy||0);ctx.rotate((+k.ir||0)*D);if(k.fx)ctx.scale(-1,1);const drawW=image.naturalWidth*(+k.is||1),drawH=image.naturalHeight*(+k.is||1);ctx.drawImage(image,-drawW/2,-drawH/2,drawW,drawH);ctx.restore();}
    else{ctx.fillStyle=k.col||'#888';ctx.fillRect(0,-k.h/2,info.s.r0,k.h);}
    ctx.restore();
@@ -1406,7 +1530,7 @@ $('imgModal').addEventListener('pointerdown',e=>{if(e.target===$('imgModal'))clo
 function fit(canvas){if(canvas.width!==canvas.clientWidth||canvas.height!==canvas.clientHeight){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight}}
 function fitTimeline(){
  const view=$('tw');if(!view)return;
- const contentHeight=Math.max(view.clientHeight,HH+M.bones.length*RH+12);
+ const contentHeight=Math.max(view.clientHeight,HH+(M.bones.length+1)*RH+12);
  tl.style.height=contentHeight+'px';
  if(tl.width!==tl.clientWidth||tl.height!==contentHeight){tl.width=tl.clientWidth;tl.height=contentHeight;}
 }
