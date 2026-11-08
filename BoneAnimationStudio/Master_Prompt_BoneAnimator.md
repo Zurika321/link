@@ -69,13 +69,21 @@ Sau khi nhận câu trả lời, áp dụng **một trong hai chế độ**:
 
 - ID của Bone/Block phải ổn định và tương ứng trên bốn hướng `down`, `up`, `left`, `right` nếu rig dùng đủ bốn hướng. Không lấy **tên ảnh** làm định danh Block.
 - Mỗi `blockId` thuộc **tối đa một variant của một group** (độc quyền). Block cơ thể dùng chung để **ngoài** group. Giữ đủ mọi Block/ảnh kể cả biến thể đang ẩn; không gộp các Block có cùng Bone hoặc cùng ảnh.
-- Các group độc lập: thay `Weapon` không làm mất `Outfit` hay Block cơ thể nền. `defaultVariant: ""` nghĩa là không chọn biến thể nào trong group (`None`).
+- Các group độc lập: thay `Weapon` không làm mất group trang phục (tên `Skin` trong chế độ Unity) hay Block cơ thể nền. `defaultVariant: ""` nghĩa là không chọn biến thể nào trong group (`None`).
 - Nhóm và biến thể có tên duy nhất trong phạm vi tương ứng; không dùng index làm định danh runtime. GroupBlock chỉ **lọc hiển thị**, không làm hỏng visibility keyframe, bone hierarchy, transform, sorting/layer hoặc animation gốc.
 - **Nếu group có 1–2 biến thể:** tạo đầy đủ ảnh PNG, Block, và metadata cho tất cả các biến thể.
 - **Nếu group có hơn 2 biến thể:** chỉ tạo ảnh cho **tối đa hai biến thể đầu tiên** làm demo; **vẫn phải tạo đủ 100% Block và `variants[].blockIds` cho tất cả lựa chọn còn lại**. Những Block chưa có ảnh là slot chờ đã gắn đúng Bone, đã căn chỉnh vị trí/kích thước/layer; người dùng có thể mở Web và tự gán ảnh sau.
 - Với slot chờ trên **Web**, cấu hình `demo: false` hoặc để các trường ảnh trống nếu schema hỗ trợ. Với **Unity**, dùng `drawImage: false` (hoặc placeholder trong suốt có asset hợp lệ) để không bị lỗi kiểm tra asset; không bao giờ tham chiếu đến file ảnh chưa tồn tại.
 
-### 1.4. Chất lượng ảnh và animation
+### 1.4. Quy ước tên GroupBlock khi hỗ trợ Unity
+
+- **Chỉ khi người dùng chọn `2. Có — WEB + UNITY`**, bắt buộc đặt **tên Group** cho tất cả biến thể vũ khí là chính xác `Weapon`, và **tên Group** cho tất cả biến thể trang phục/skin là chính xác `Skin` (phân biệt chữ hoa–thường).
+- Ví dụ: vũ khí `Sword`, `Dagger` thuộc group `Weapon`; trang phục `Default`, `Armor` thuộc group `Skin`. Đây là tên **group**, không phải tên variant, tên Block hoặc tên ảnh.
+- Không dùng `Outfit`, `Weapons`, `VuKhi`, `TrangPhuc` thay cho hai tên group chuẩn trên trong chế độ Unity. Nếu dữ liệu đầu vào có tên khác, ánh xạ sang `Weapon` / `Skin` khi dựng GroupBlock và ghi rõ ánh xạ trong kế hoạch; không tự ý đổi tên animation, skill hoặc asset.
+- Dùng đúng hai tên group này nhất quán trong Web JSON, Unity JSON, bảng kế hoạch, báo cáo và các ví dụ API `SetGroupVariant`. Nếu một loại không có biến thể hoặc không cần GroupBlock, không tự tạo group rỗng.
+- **Chế độ `1. Không — WEB`** không bắt buộc quy ước tên này; dùng tên group theo yêu cầu của người dùng.
+
+### 1.5. Chất lượng ảnh và animation
 
 - Tạo bằng công cụ tạo ảnh khi có quyền sử dụng; ảnh bộ phận và asset cần tách nền trong suốt (PNG), không chữ, không watermark.
 - Phong cách, tỷ lệ, pivot/chân đứng, vị trí gắn Bone, ánh sáng/bảng màu phải đồng bộ giữa các hướng và frame.
@@ -93,7 +101,7 @@ Sau khi nhận câu trả lời, áp dụng **một trong hai chế độ**:
 2. **Bảng xương:** chọn R6/R15/Custom sau khi phân tích; nêu tổng Bone cùng `id`, `name`, `parentId`, `length`, góc mặc định, vai trò và Bone dùng cho hiệu ứng nếu có.
 3. **Bảng Block/GroupBlock:** liệt kê Block dùng chung, `group`, tên mọi variant và `blockIds` riêng, Bone gắn, biến thể nào có ảnh ngay (tối đa hai ảnh demo khi số biến thể > 2), biến thể nào là slot chờ có `demo: false`.
 4. **Kế hoạch animation:** tên exact-match, bốn hướng nếu được hỗ trợ/yêu cầu, FPS, frameCount, số frame theo các pha; cách đồng bộ hình ảnh/transform giữa các hướng.
-5. **Nếu chọn WEB + UNITY:** lập bảng Combat cho từng animation `Attack`/`Skill` với `isCombat`, `castStartFrame`, `castEndFrame`:
+5. **Nếu chọn WEB + UNITY:** đặt group vũ khí đúng `Weapon`, group trang phục đúng `Skin`; kiểm tra tên group ngay trong bảng GroupBlock và lập bảng Combat cho từng animation `Attack`/`Skill` với `isCombat`, `castStartFrame`, `castEndFrame`:
    - **Charge:** frame `0` → `castStartFrame - 1`.
    - **Cast:** frame `castStartFrame` → `castEndFrame`.
    - **End/Recovery:** frame `castEndFrame + 1` → `frameCount - 1`.
@@ -142,7 +150,7 @@ Sau khi nhận câu trả lời, áp dụng **một trong hai chế độ**:
     ```csharp
     characterAnimation.SetGroupVariant("Weapon", "Sword");
     characterAnimation.SetGroupVariant("Weapon", ""); // None: không cầm vũ khí
-    characterAnimation.SetGroupVariant("Outfit", "Armor");
+    characterAnimation.SetGroupVariant("Skin", "Armor");
     ```
 
     Chỉ dùng ví dụ API nếu script runtime thực tế có phương thức tương ứng; nếu khác thì ghi đúng API của bản mã được cung cấp.
@@ -157,7 +165,7 @@ Sau khi nhận câu trả lời, áp dụng **một trong hai chế độ**:
 - [ ] Đủ Bone/Block, không có Bone cha không tồn tại, không trùng ID trong cùng hướng; Bone/Block ID tương ứng trên các hướng.
 - [ ] Một Bone có thể gắn **hai Block trở lên** mà không mất ảnh, layer hoặc transform riêng khi save/load/export.
 - [ ] GroupBlock có đủ mọi group/variant/Block ID; mỗi Block chỉ ở một variant; Block nền ở ngoài group.
-- [ ] `Weapon` và `Outfit` độc lập; chọn `None` chỉ ẩn group tương ứng; visibility keyframe vẫn hoạt động.
+- [ ] `Weapon` và group trang phục độc lập (tên `Skin` nếu chọn Unity); chọn `None` chỉ ẩn group tương ứng; visibility keyframe vẫn hoạt động.
 - [ ] Dữ liệu nhóm, tên variant, lựa chọn mặc định và ảnh của biến thể ẩn giữ nguyên sau save/load.
 - [ ] Nếu có hơn hai biến thể: **chỉ tối đa hai bộ ảnh demo**, nhưng **đã tạo đủ các Block chờ** để dán ảnh sau.
 - [ ] Không có skill/animation tự tạo hoặc sai tên Excel.
@@ -167,7 +175,7 @@ Sau khi nhận câu trả lời, áp dụng **một trong hai chế độ**:
 
 - [ ] `format = "BoneAnimatorUnity"`, `schemaVersion = 1`; có đủ `directions`, `animations`, `assets`, `groupBlocks` hợp lệ.
 - [ ] Mỗi hướng không trùng Bone/Block ID; `parentId`, `boneId`, BoneTrack hợp lệ; không có vòng lặp Bone.
-- [ ] Group/variant không rỗng/trùng tên; mỗi `blockId` tồn tại và chỉ thuộc một variant; `defaultVariant` hợp lệ hoặc `""`.
+- [ ] Nếu có vũ khí/trang phục: group tương ứng phải tên chính xác `Weapon`/`Skin` (không phải `Outfit`); Group/variant không rỗng/trùng tên; mỗi `blockId` tồn tại và chỉ thuộc một variant; `defaultVariant` hợp lệ hoặc `""`.
 - [ ] Block có `drawImage: true` phải tham chiếu asset tồn tại; Block chờ chưa có ảnh không làm Unity báo JSON lỗi.
 - [ ] Combat có `0 <= castStartFrame <= castEndFrame < frameCount` với frameRate, frameCount và Cast markers nhất quán giữa các hướng.
 - [ ] Unity Inspector hiển thị group và variant từ JSON; `None` không làm mất phần thân; đổi vũ khí/trang phục không reset animation/skillId khi runtime hỗ trợ.

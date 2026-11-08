@@ -59,7 +59,7 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 .crop-footer button{min-width:100px;min-height:42px}
 @media(max-width:600px){.crop-modal{padding:6px}.crop-dialog{width:100%;height:96dvh;max-height:96dvh;border-radius:9px}.crop-head,.crop-footer{padding:10px}.crop-content{padding:9px;gap:8px}.crop-stage-wrap{min-height:180px;max-height:58dvh;padding:4px}.crop-fields{grid-template-columns:1fr 1fr;gap:7px}.crop-fields label:first-child{grid-column:1/-1}.crop-fields input{min-height:42px}.crop-help{font-size:12px}}
 
-.asset-actions{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}.asset-actions button{flex:1;min-width:85px}
+.recolor-controls{border:1px solid var(--l);border-radius:7px;padding:10px;margin:8px 0;background:#1b222c}.recolor-controls .row label{width:105px}.recolor-controls input[type=number]{max-width:95px}.recolor-controls input[type=color]{flex:none;width:58px}.recolor-controls p{font-size:11px;color:var(--m);margin:5px 0}.recolor-controls button{flex:1}.recolor-preview{width:100%;max-height:180px;object-fit:contain;image-rendering:pixelated;background:repeating-conic-gradient(#303642 0 25%,#242a34 0 50%) 0/16px 16px}.asset-actions{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0}.asset-actions button{flex:1;min-width:85px}
 .asset-download-row{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:8px 0}.asset-download-row label{flex:0 0 auto;color:var(--m);font-size:12px}.asset-download-row select{flex:1 1 130px;min-width:110px}.asset-download-row button{flex:1 1 110px;min-width:110px}
 .animation-setup{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.animation-setup input{width:130px}.animation-setup select{max-width:160px}
 #timelineControls[hidden]{display:none!important}#list{padding-bottom:12px}
@@ -389,8 +389,19 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
    <div>
     <div id="assetPreview" class="preview"><span>Chọn ảnh trong kho</span></div>
     <div id="selectedAssetName" class="status"></div>
-    <div class="asset-actions"><button onclick="startCrop()">✂ Cắt ảnh</button><button onclick="removeBgSelected()">Xoá nền</button><button onclick="renameSelectedAsset()">Rename</button></div>
-    <div class="row"><label>Phạm vi tải</label><select id="assetDownloadScope" onchange="refreshAssetDownloadOptions()"><option value="single">Ảnh đang chọn</option><option value="groupCurrent">Ảnh của biến thể đang chọn (ZIP)</option><option value="groupAll">Tất cả biến thể của một Group (ZIP)</option></select></div>
+    <div class="asset-actions"><button onclick="startCrop()">✂ Cắt ảnh</button><button onclick="removeBgSelected()">Xoá nền</button><button onclick="renameSelectedAsset()">Rename</button><button onclick="startRecolor()">🎨 Đổi màu</button></div>
+         <div id="recolorControls" class="recolor-controls" hidden>
+       <strong>Đổi màu theo vùng · giữ sáng/tối</strong>
+       <div class="row"><label>Màu cần đổi</label><input id="recolorFrom" type="color" value="#999999"><button type="button" onclick="pickRecolorFromImage()">Chấm màu trên ảnh</button></div>
+       <div class="row"><label>Độ lệch RGB</label><input id="recolorTolerance" type="number" min="0" max="441" value="30" step="1"><span>0–441</span></div>
+       <div class="row"><label>Màu thay thế</label><input id="recolorTo" type="color" value="#e33b35"></div>
+       <div class="row"><label>Tên ảnh mới</label><input id="recolorName" type="text" placeholder="ten_anh_red.png"></div>
+       <p>Giữ độ sáng/tối theo ảnh gốc; vùng không khớp và độ trong suốt không đổi. Nhấp vào ảnh xem trước để lấy màu gốc.</p>
+       <img id="recolorPreview" class="recolor-preview" alt="Xem trước đổi màu">
+       <div class="row"><button type="button" onclick="saveRecolor()">Lưu thành ảnh mới</button><button type="button" onclick="closeRecolor()">Huỷ</button></div>
+       <div id="recolorStatus" class="status"></div>
+     </div>
+<div class="row"><label>Phạm vi tải</label><select id="assetDownloadScope" onchange="refreshAssetDownloadOptions()"><option value="single">Ảnh đang chọn</option><option value="groupCurrent">Ảnh của biến thể đang chọn (ZIP)</option><option value="groupAll">Tất cả biến thể của một Group (ZIP)</option></select></div>
     <div class="row"><label>Group</label><select id="assetDownloadGroup" onchange="refreshAssetDownloadOptions()"></select></div>
     <div class="asset-download-row"><label for="assetDownloadSize">Kích thước PNG</label><select id="assetDownloadSize" aria-label="Kích thước ảnh tải về"><option value="0">Kích thước gốc</option><option value="16">16 × 16</option><option value="32">32 × 32</option><option value="64">64 × 64</option><option value="128">128 × 128</option><option value="256">256 × 256</option><option value="512">512 × 512</option><option value="1024">1024 × 1024</option><option value="2048">2048 × 2048</option></select><button type="button" id="downloadAssetBtn" onclick="downloadSelectedAsset()">⬇ Tải ảnh PNG</button></div>
     <div class="status">Ảnh đang chọn tải PNG riêng. Khi tải theo group, mỗi ảnh được đóng gói vào ZIP theo tên group và biến thể, không làm mất trạng thái editor.</div>
@@ -1388,10 +1399,37 @@ function rmImg(event,name){event?.preventDefault?.();deleteImageByName(name);ret
 $('up').onchange=async e=>{const files=[...e.target.files];await addFiles(files,true);e.target.value='';};
 $('upModal').onchange=async e=>{const files=[...e.target.files];await addFiles(files,false);e.target.value='';if(files.length)selectAsset(LIB[LIB.length-files.length]);};
 function openLibrary(name='',targetDir=M.dir){imageTargetDir=targetDir;modalImage=LIB.includes(name)?name:(LIB[0]||'');$('imgModal').hidden=false;$('cropModal').hidden=true;$('imageActionStatus').textContent='';renderAssetList();refreshAssetDownloadOptions();}
-function closeLibrary(){$('imgModal').hidden=true;$('cropModal').hidden=true;hideImageContext();}
-function selectAsset(name){modalImage=name;$('cropModal').hidden=true;$('imageActionStatus').textContent='';renderAssetList();renderAssetPreview();}
+function closeLibrary(){closeRecolor();$('imgModal').hidden=true;$('cropModal').hidden=true;hideImageContext();}
+function selectAsset(name){closeRecolor();modalImage=name;$('cropModal').hidden=true;$('imageActionStatus').textContent='';renderAssetList();renderAssetPreview();}
 function renderAssetList(){$('assetList').innerHTML=LIB.map(name=>`<div class="asset-item ${name===modalImage?'active':''}" onclick="selectAsset(this.dataset.name)" oncontextmenu="return imageContextMenu(event,this.dataset.name)" data-name="${esc(name)}"><img class="asset-thumb" src="${imageSrc(name)}"><span>${esc(name)}</span></div>`).join('')||'<span>Kho ảnh đang trống</span>';}
 function renderAssetPreview(){const box=$('assetPreview');$('downloadAssetBtn').disabled=$('assetDownloadScope').value==='single'&&(!modalImage||!imageSrc(modalImage));if(!modalImage){box.innerHTML='<span>Chọn ảnh trong kho</span>';$('selectedAssetName').textContent='';return}box.innerHTML=`<img src="${imageSrc(modalImage)}" alt="${esc(modalImage)}">`;$('selectedAssetName').textContent=modalImage;}
+// Pixel-level selective recoloring; RGB tolerance is Euclidean distance (0..441).
+let recolorSource='',recolorOriginal=null,recolorTimer=0;
+function recolorRgb(hex){return [1,3,5].map(i=>parseInt(hex.slice(i,i+2),16));}
+function recolorHsl(rgb){const [r,g,b]=rgb.map(v=>v/255),max=Math.max(r,g,b),min=Math.min(r,g,b),delta=max-min,l=(max+min)/2;let h=0,s=0;if(delta){s=delta/(1-Math.abs(2*l-1));switch(max){case r:h=((g-b)/delta)%6;break;case g:h=(b-r)/delta+2;break;default:h=(r-g)/delta+4;}h=(h*60+360)%360;}return [h,s,l];}
+function recolorHslRgb(h,s,l){const c=(1-Math.abs(2*l-1))*s,x=c*(1-Math.abs((h/60)%2-1)),m=l-c/2;let rgb=h<60?[c,x,0]:h<120?[x,c,0]:h<180?[0,c,x]:h<240?[0,x,c]:h<300?[x,0,c]:[c,0,x];return rgb.map(v=>Math.round((v+m)*255));}
+function closeRecolor(){$('recolorControls').hidden=true;recolorOriginal=null;recolorSource='';}
+async function startRecolor(){
+ if(!modalImage||!imageSrc(modalImage))return;
+ try{const source=modalImage,im=new Image();im.src=imageSrc(source);await im.decode();
+ const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(im,0,0);recolorOriginal=ctx.getImageData(0,0,c.width,c.height);recolorSource=source;
+ $('recolorName').value=source.replace(/\.[^.]+$/,'')+'_recolor.png';$('recolorControls').hidden=false;
+ $('recolorStatus').textContent='';updateRecolorPreview();}catch(e){$('imageActionStatus').textContent='Lỗi đọc ảnh: '+e.message;}
+}
+function recolorResult(){
+ const original=recolorOriginal;if(!original)return null;
+ const result=new ImageData(new Uint8ClampedArray(original.data),original.width,original.height),d=result.data,from=recolorRgb($('recolorFrom').value),to=recolorHsl(recolorRgb($('recolorTo').value)),tol=Math.max(0,Math.min(441,+$('recolorTolerance').value||0));let changed=0;
+ for(let i=0;i<d.length;i+=4){if(!d[i+3])continue;const dist=Math.hypot(d[i]-from[0],d[i+1]-from[1],d[i+2]-from[2]);if(dist>tol)continue;
+ const sourceLight=recolorHsl([d[i],d[i+1],d[i+2]])[2];const rgb=recolorHslRgb(to[0],to[1],sourceLight);d[i]=rgb[0];d[i+1]=rgb[1];d[i+2]=rgb[2];changed++;}
+ return {result,changed};
+}
+function recolorCanvas(){const data=recolorResult();if(!data)return null;const c=document.createElement('canvas');c.width=data.result.width;c.height=data.result.height;c.getContext('2d').putImageData(data.result,0,0);return {canvas:c,changed:data.changed};}
+function updateRecolorPreview(){if(!recolorOriginal)return;const out=recolorCanvas();$('recolorPreview').src=out.canvas.toDataURL('image/png');$('recolorStatus').textContent=`Đã chọn ${out.changed} pixel / ${recolorOriginal.width*recolorOriginal.height} pixel.`;}
+function scheduleRecolorPreview(){clearTimeout(recolorTimer);recolorTimer=setTimeout(updateRecolorPreview,75);}
+['recolorFrom','recolorTo','recolorTolerance'].forEach(id=>$(id).addEventListener('input',scheduleRecolorPreview));
+function pickRecolorFromImage(){if(!recolorOriginal)return;$('recolorStatus').textContent='Nhấp vào ảnh xem trước để lấy màu gốc.';}
+$('recolorPreview').addEventListener('click',e=>{if(!recolorOriginal)return;const rect=e.target.getBoundingClientRect(),scale=Math.min(rect.width/recolorOriginal.width,rect.height/recolorOriginal.height),dw=recolorOriginal.width*scale,dh=recolorOriginal.height*scale,x=Math.floor((e.clientX-rect.left-(rect.width-dw)/2)/scale),y=Math.floor((e.clientY-rect.top-(rect.height-dh)/2)/scale);if(x<0||y<0||x>=recolorOriginal.width||y>=recolorOriginal.height)return;const i=(y*recolorOriginal.width+x)*4,d=recolorOriginal.data;$('recolorFrom').value='#'+[d[i],d[i+1],d[i+2]].map(v=>v.toString(16).padStart(2,'0')).join('');updateRecolorPreview();});
+function saveRecolor(){if(!recolorOriginal)return;const out=recolorCanvas();let name=$('recolorName').value.trim()||'recolor.png';if(!/\.png$/i.test(name))name=name.replace(/\.[^.]+$/,'')+'.png';const created=registerImage(name,out.canvas.toDataURL('image/png'));modalImage=created;closeRecolor();renderAssetList();renderAssetPreview();$('imageActionStatus').textContent=`Đã tạo ${created} · đổi ${out.changed} pixel, ảnh gốc được giữ nguyên.`;}
 function refreshAssetDownloadOptions(){
  const groupSelect=$('assetDownloadGroup'),previous=groupSelect.value,scope=$('assetDownloadScope').value;
  groupSelect.innerHTML=(M.groupBlocks||[]).map((g,i)=>`<option value="${i}">${esc(g.name)}</option>`).join('');
