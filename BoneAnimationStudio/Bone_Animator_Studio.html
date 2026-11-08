@@ -75,7 +75,7 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 @media (max-width:900px) and (orientation:portrait){
  :root{--side-height:clamp(150px,23dvh,300px);--timeline-height:clamp(230px,30dvh,430px)}
  html,body{height:100%;height:100dvh;overflow:hidden}
- body{grid-template:"N N" 52px "C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}
+ body{grid-template:"N N" auto "C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}
  #C{grid-area:C;min-height:0}
  #L{grid-area:L;min-width:0;min-height:0;overflow:auto;border-right:1px solid var(--l)}
  #R{grid-area:R;display:block;position:relative;inset:auto;width:auto;max-width:none;min-width:0;min-height:0;overflow:auto;box-shadow:none;border-left:0;padding:8px}
@@ -101,7 +101,7 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 /* Landscape phone: keep skeleton and properties visible in side columns; timeline stays at bottom. */
 @media (max-width:900px) and (orientation:landscape){
  html,body{height:100%;height:100dvh;overflow:hidden}
- body{grid-template:"N N N" 50px "L C R" minmax(0,1fr) "T T T" clamp(118px,32dvh,190px)/minmax(125px,19vw) minmax(0,1fr) minmax(175px,25vw)}
+ body{grid-template:"N N N" auto "L C R" minmax(0,1fr) "T T T" clamp(118px,32dvh,190px)/minmax(125px,19vw) minmax(0,1fr) minmax(175px,25vw)}
  #L{grid-area:L;display:block;min-width:0;min-height:0;overflow:auto;padding:5px}
  #C{grid-area:C;min-width:0;min-height:0}
  #R{grid-area:R;display:block;position:relative;inset:auto;width:auto;max-width:none;min-width:0;min-height:0;overflow:auto;box-shadow:none;padding:5px;border-left:1px solid var(--l)}
@@ -132,19 +132,37 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 
 /* Floating project tools stay over the canvas and leave the Properties column clear. */
 
-#mainMenu{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:5px 10px;background:#20252d;border-bottom:1px solid var(--l);min-width:0;z-index:100}
-.brand{display:flex;flex-direction:column;gap:0;min-width:170px;line-height:1.15;white-space:nowrap}.brand strong{font-size:14px;letter-spacing:.2px}.brand small{font-size:10px;color:var(--m)}
-.menu-center{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;flex:1}.mode-switch{min-width:112px;font-weight:650}.menu-center .toolbar{margin:0;flex-wrap:nowrap}.menu-center .toolbar button{min-width:82px;flex:0 1 auto;padding:6px 9px}
-.menu-right{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0}.menu-right .nudge-pad{display:flex;grid-template:none;gap:3px;margin:0;width:auto}.menu-right .nudge-pad button{min-width:25px;min-height:26px;width:25px;padding:2px}.menu-right .nudge-pad .n-up,.menu-right .nudge-pad .n-left,.menu-right .nudge-pad .n-down,.menu-right .nudge-pad .n-right{grid-area:auto}
-.visibility-toggle{display:flex;align-items:center;gap:4px;font-size:11px;color:#c7ced8;white-space:nowrap}.visibility-toggle input{width:15px;height:15px;margin:0}
-.menu-feature-pill{display:inline-flex;align-items:center;gap:4px;background:#28303c;border:1px solid var(--l);border-radius:5px;padding:2px 6px;font-size:11px;color:#d6dde6;white-space:nowrap}
+#mainMenu{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px;background:#20252d;border-bottom:1px solid var(--l);min-width:0;z-index:100}
+#mainMenu button,#mainMenu label,#mainMenu select,#mainMenu input,#mainMenu .toolbar,#mainMenu .menu-feature-pill,#mainMenu .nudge-pad{flex-shrink:0;white-space:nowrap}
+.brand{display:flex;flex-direction:column;gap:0;min-width:155px;line-height:1.15;white-space:nowrap;flex-shrink:0}.brand strong{font-size:14px;letter-spacing:.2px}.brand small{font-size:10px;color:var(--m)}
+.menu-center{display:flex;align-items:center;justify-content:flex-start;gap:6px;min-width:0;flex:1;overflow-x:auto;scrollbar-width:thin}.menu-center::-webkit-scrollbar{height:3px}.menu-center::-webkit-scrollbar-thumb{background:#3e4756;border-radius:3px}
+.mode-switch{min-width:104px;font-weight:650}.menu-center .toolbar{margin:0;flex-wrap:nowrap;flex-shrink:0}.menu-center .toolbar button{min-width:72px;flex:0 0 auto;padding:5px 8px}
+#ikFlipBtn[hidden],#menuEasingSelect[hidden],#menuSkewSubControls[hidden]{display:none!important}
+.menu-sub-inline{display:inline-flex;align-items:center;gap:4px}
+.menu-right{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0;flex-shrink:0}.menu-right .nudge-pad{display:flex;grid-template:none;gap:3px;margin:0;width:auto}.menu-right .nudge-pad button{min-width:25px;min-height:26px;width:25px;padding:2px}.menu-right .nudge-pad .n-up,.menu-right .nudge-pad .n-left,.menu-right .nudge-pad .n-down,.menu-right .nudge-pad .n-right{grid-area:auto}
+.visibility-toggle{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#c7ced8;white-space:nowrap;cursor:pointer}.visibility-toggle input{width:15px;height:15px;margin:0}
+.menu-feature-pill{display:inline-flex;align-items:center;gap:4px;background:#28303c;border:1px solid var(--l);border-radius:5px;padding:2px 6px;font-size:11px;color:#d6dde6;white-space:nowrap;flex-shrink:0}
 .menu-feature-pill select{padding:2px 4px;font-size:11px;height:22px;background:#1d222b}
-.menu-feature-pill input[type=number]{width:44px;padding:2px 4px;font-size:11px;height:22px;background:#1d222b}
+.menu-feature-pill input[type=number]{width:42px;padding:2px 4px;font-size:11px;height:22px;background:#1d222b}
 .it.ms{background:#29605d;color:#e6fffd;outline:1px solid var(--a)}
-#mainMenu .quick-tools>button{width:32px;height:32px;border-radius:7px;font-size:18px;box-shadow:none}#mainMenu .quick-tools-panel{top:39px}
-@media(max-width:900px){#mainMenu{gap:5px;padding:4px 6px}.brand{min-width:0}.brand strong{font-size:11px}.brand small{display:none}.menu-center{gap:4px}.menu-center .toolbar button{min-width:0;padding:5px;font-size:10px}.mode-switch{min-width:85px;font-size:10px}.menu-right{gap:4px}.visibility-toggle{font-size:10px}.menu-right .nudge-pad button{width:21px;min-width:21px}}
-@media(max-width:600px){#mainMenu{flex-wrap:wrap;align-content:center;gap:3px}.brand{display:none}.menu-center{flex:1;justify-content:flex-start}.menu-right{gap:3px}.menu-center .toolbar button{font-size:9px;padding:4px 3px}.menu-right .nudge-pad button{width:19px;min-width:19px;min-height:23px}.visibility-toggle{font-size:9px;gap:2px}}
-@media(max-width:600px) and (orientation:portrait){body{grid-template:"N N" 68px "C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}#mainMenu{justify-content:center}.menu-center{flex:1 1 100%;justify-content:center}.menu-right{flex:1 1 100%;justify-content:center}}
+#hintToggleBtn{min-width:26px;height:26px;padding:2px 6px;font-size:12px;font-weight:700;border-radius:6px}
+#hint[hidden]{display:none!important}
+#mainMenu .quick-tools>button{width:30px;height:30px;border-radius:7px;font-size:17px;box-shadow:none;padding:0}#mainMenu .quick-tools-panel{top:39px}
+@media(max-width:900px){
+ #mainMenu{flex-direction:column;align-items:stretch;justify-content:flex-start;gap:4px;padding:4px 6px;height:auto}
+ .brand{display:none}
+ .menu-center{width:100%;flex:0 0 auto;justify-content:flex-start;gap:4px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+ .menu-center::-webkit-scrollbar{display:none}
+ .menu-center .toolbar{gap:3px}
+ .menu-center .toolbar button,#undoBtn,#ikFlipBtn{min-width:0;padding:4px 7px;font-size:11px}
+ .mode-switch{min-width:86px;padding:4px 7px;font-size:11px}
+ .menu-right{width:100%;flex:0 0 auto;justify-content:space-between;gap:5px;border-top:1px solid #2f3642;padding-top:3px;overflow-x:auto;scrollbar-width:none}
+ .menu-right::-webkit-scrollbar{display:none}
+ .visibility-toggle{font-size:10px;gap:3px}
+ .menu-right .nudge-pad button{width:23px;min-width:23px;min-height:24px;font-size:10px}
+ #mainMenu .quick-tools-panel{position:fixed;top:76px;right:8px;z-index:1350}
+ #hint{top:auto;bottom:6px;left:6px;right:6px;max-width:calc(100% - 12px);font-size:10px;line-height:1.35}
+}
 .quick-tools{position:relative;z-index:80;top:auto;right:auto;flex:none}
 .quick-tools>button{width:42px;height:42px;border-radius:50%;font-size:20px;background:#245b58;border-color:var(--a);box-shadow:0 5px 18px #0008}
 .quick-tools-panel{position:absolute;right:0;top:48px;width:min(300px,88vw);max-height:min(78dvh,650px);overflow:auto;background:#252b35;border:1px solid #566170;border-radius:10px;padding:12px;box-shadow:0 12px 36px #000b}
@@ -195,7 +213,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
 #tls{display:block;width:100%;height:auto;min-height:100%;touch-action:none;cursor:crosshair}
 #noAnimationHint{position:absolute;left:10px;top:8px;z-index:1;pointer-events:none}
 @media(max-width:900px) and (orientation:portrait){
- body{grid-template:"N N" 52px "C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}
+ body{grid-template:"N N" auto "C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}
  .resize-handle{display:none!important}
  #T{height:auto;overflow:hidden}
  #animBar{flex-basis:84px;height:84px;min-height:84px;padding:5px}
@@ -203,7 +221,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
  #timelineControls .row{overflow-x:auto}
 }
 @media(max-width:900px) and (orientation:landscape){
- body{grid-template:"N N N" 50px "L C R" minmax(0,1fr) "T T T" clamp(118px,32dvh,190px)/minmax(125px,19vw) minmax(0,1fr) minmax(175px,25vw)}
+ body{grid-template:"N N N" auto "L C R" minmax(0,1fr) "T T T" clamp(118px,32dvh,190px)/minmax(125px,19vw) minmax(0,1fr) minmax(175px,25vw)}
  .resize-handle{display:none!important}
  #T{height:auto;overflow:hidden}
  #animBar{flex-basis:75px;height:75px;min-height:75px;padding:4px}
@@ -211,7 +229,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
  #timelineControls .row{overflow-x:auto}
 }
 @media(max-width:600px) and (orientation:portrait){
- body{grid-template:"N N" 68px "C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}
+ body{grid-template:"N N" auto "C C" minmax(180px,1fr) "L R" var(--side-height) "T T" var(--timeline-height)/minmax(0,1fr) minmax(0,1fr)}
 }
 
 
@@ -285,7 +303,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
    <button id="toolScale" onclick="setTool('scale')">⤢ Thu phóng</button>
    <button id="toolIk" onclick="setTool('ik')" title="Động học ngược 2 xương (2-Bone IK)">🦾 IK 2-Xương</button>
   </div>
-  <button id="ikFlipBtn" onclick="toggleIkBendDir()" title="Đổi hướng gập khớp gối/khuỷu tay 2-Bone IK">⇄ Gập IK: +</button>
+  <button id="ikFlipBtn" hidden onclick="toggleIkBendDir()" title="Đổi hướng gập khớp gối/khuỷu tay 2-Bone IK">⇄ Gập IK: +</button>
   <span class="menu-feature-pill" title="Bật/tắt đường cong chuyển động (Easing / Tweening Curves) và chọn kiểu nội suy cho keyframe">
    <label class="visibility-toggle"><input id="enableEasing" type="checkbox" checked onchange="toggleEasingEnabled(this.checked)"> Easing</label>
    <select id="menuEasingSelect" onchange="setSelectionEasing(this.value)" title="Kiểu Easing cho Keyframe">
@@ -298,9 +316,11 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
   </span>
   <span class="menu-feature-pill" title="Bật/tắt chế độ Nắn lưới ảnh 4 góc / Nghiêng hình bình hành (Skew & Free-Form Deformation)">
    <label class="visibility-toggle"><input id="enableMeshSkew" type="checkbox" onchange="toggleMeshSkewMode(this.checked)"> Skew/Mesh</label>
-   <input id="menuSkewX" type="number" step="2" value="0" title="Skew X (độ nghiêng ngang của Block đang chọn)" oninput="setMenuSkew('skewX',this.value)">
-   <input id="menuSkewY" type="number" step="2" value="0" title="Skew Y (độ nghiêng dọc của Block đang chọn)" oninput="setMenuSkew('skewY',this.value)">
-   <button type="button" onclick="resetSelectedBlockMesh()" title="Đặt lại Skew và 4 góc lưới ảnh về mặc định" style="padding:2px 5px;font-size:10px">↺</button>
+   <span id="menuSkewSubControls" class="menu-sub-inline" hidden>
+    <input id="menuSkewX" type="number" step="2" value="0" title="Skew X (độ nghiêng ngang của Block đang chọn)" oninput="setMenuSkew('skewX',this.value)">
+    <input id="menuSkewY" type="number" step="2" value="0" title="Skew Y (độ nghiêng dọc của Block đang chọn)" oninput="setMenuSkew('skewY',this.value)">
+    <button type="button" onclick="resetSelectedBlockMesh()" title="Đặt lại Skew và 4 góc lưới ảnh về mặc định" style="padding:2px 5px;font-size:10px">↺</button>
+   </span>
   </span>
  </div>
  <div class="menu-right">
@@ -308,6 +328,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
   <label class="visibility-toggle" title="Onion Skinning: hiển thị bóng mờ của 1-2 frame trước (xanh) và sau (đỏ)"><input id="showOnion" type="checkbox" onchange="toggleOnionSkin(this.checked)"> Onion</label>
   <label class="visibility-toggle"><input id="showBones" type="checkbox" checked> Xương</label>
   <label class="visibility-toggle"><input id="showImages" type="checkbox" checked> Ảnh</label>
+  <button type="button" id="hintToggleBtn" onclick="toggleCanvasHint()" title="Bật/tắt dòng hướng dẫn trên Canvas">?</button>
   <div class="quick-tools" id="quickTools">
  <button type="button" id="quickToolsButton" title="Công cụ dự án" aria-label="Công cụ dự án" onclick="toggleQuickTools()">⋯</button>
  <div id="quickToolsPanel" class="quick-tools-panel" hidden>
@@ -794,6 +815,7 @@ function toggleOnionSkin(enabled){
 function toggleEasingEnabled(enabled){
  easingEnabled=!!enabled;
  if($('enableEasing'))$('enableEasing').checked=easingEnabled;
+ if($('menuEasingSelect'))$('menuEasingSelect').hidden=!easingEnabled;
  draw();
 }
 function setSelectionEasing(easeType){
@@ -815,7 +837,14 @@ function setSelectionEasing(easeType){
 function toggleMeshSkewMode(enabled){
  meshSkewEnabled=!!enabled;
  if($('enableMeshSkew'))$('enableMeshSkew').checked=meshSkewEnabled;
+ if($('menuSkewSubControls'))$('menuSkewSubControls').hidden=!meshSkewEnabled;
  draw();
+}
+function toggleCanvasHint(force){
+ const h=$('hint'),btn=$('hintToggleBtn');if(!h)return;
+ const next=typeof force==='boolean'?force:h.hidden;
+ h.hidden=!next;
+ if(btn)btn.classList.toggle('active',next);
 }
 function syncMenuBarInputs(){
  const o=cur();
@@ -1015,6 +1044,7 @@ function setTool(next){
   const el=$('tool'+name[0].toUpperCase()+name.slice(1));
   if(el)el.classList.toggle('active',tool===name);
  });
+ if($('ikFlipBtn'))$('ikFlipBtn').hidden=(tool!=='ik');
  draw();
 }
 function renderAll(){syncMenuBarInputs();renderList();renderProps();renderImageAssets();renderGroupBlock();}
@@ -2805,6 +2835,9 @@ $('showImages').addEventListener('change',e=>{
 });
 installPanelResizers();
 updateUndoButton();
+toggleCanvasHint(!window.matchMedia('(max-width:900px)').matches);
+toggleEasingEnabled(easingEnabled);
+toggleMeshSkewMode(meshSkewEnabled);
 requestAnimationFrame(loop);
 </script>
 </body></html>
