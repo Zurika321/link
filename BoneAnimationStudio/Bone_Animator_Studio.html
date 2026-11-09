@@ -288,6 +288,49 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
 .block-image-choice{padding:4px;min-width:0;text-align:center}.block-image-choice.selected{border-color:var(--a);background:#245b58}
 .block-image-choice img{display:block;width:100%;height:50px;object-fit:contain;image-rendering:pixelated;background:#171c24}
 .block-image-choice span{display:block;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Responsive animation toolbar: no text collisions on narrow iPhones.
+   Mobile uses a 2-row grid; action names stay available to screen readers. */
+#animBar .animation-setup > * { box-sizing:border-box; }
+#animBar .animation-setup .mobile-label { display:none; }
+#animBar .animation-setup button { flex-shrink:0; }
+@media (max-width:900px) {
+ #animBar {height:120px!important;min-height:120px!important;flex:0 0 120px!important;
+   overflow:hidden!important;padding:5px 6px!important;}
+ #animBar .animation-setup {display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr) repeat(4,minmax(31px,36px));
+   grid-template-rows:34px 34px;gap:4px!important;height:72px!important;width:100%!important;min-height:72px!important;
+   margin:0 0 3px!important;align-items:stretch;white-space:normal!important;}
+ #animBar .animation-setup > label {display:flex;align-items:center;gap:4px;
+   margin:0!important;padding:0;min-width:0!important;max-width:none!important;overflow:hidden;white-space:nowrap;}
+ #animBar .animation-setup > label:first-child {grid-column:1 / 3;grid-row:1;}
+ #animBar .animation-setup > label:nth-child(2) {grid-column:3 / 7;grid-row:1;}
+ #animBar .animation-setup label select {width:100%;min-width:0!important;max-width:none!important;flex:1 1 auto;
+   padding:5px 2px!important;font-size:11px!important;}
+ #animBar #animationName {grid-column:1 / 3;grid-row:2;width:100%!important;min-width:0!important;
+   max-width:none!important;flex:none!important;font-size:12px!important;padding:4px 6px!important;}
+ #animBar .animation-setup > button {min-width:0!important;width:100%;max-width:none!important;height:34px!important;
+   min-height:34px!important;padding:3px 0!important;font-size:18px!important;overflow:hidden;}
+ #animBar .animation-setup > button:nth-of-type(1) {grid-column:3;grid-row:2;}
+ #animBar .animation-setup > button:nth-of-type(2) {grid-column:4;grid-row:2;}
+ #animBar .animation-setup > button:nth-of-type(3) {grid-column:5;grid-row:2;}
+ #animBar .animation-setup > button:nth-of-type(4) {grid-column:6;grid-row:2;}
+ #animBar .animation-setup .desktop-label {display:none;}
+ #animBar .animation-setup .mobile-label {display:inline;}
+ #timelineControls {display:block!important;width:100%!important;height:36px!important;min-height:36px!important;
+   overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin;touch-action:pan-x;}
+ #timelineControls[hidden] {display:none!important;}
+ #timelineControls > .row {display:flex!important;flex-wrap:nowrap!important;align-items:center!important;
+   width:max-content!important;min-width:100%!important;height:34px!important;min-height:34px!important;
+   gap:4px!important;padding-right:12px;white-space:nowrap!important;margin:0!important;}
+ #timelineControls .row button {flex:0 0 auto!important;width:auto!important;min-width:max-content!important;
+   height:30px!important;min-height:30px!important;padding:3px 7px!important;font-size:11px!important;}
+ #timelineControls .row input {flex:0 0 42px!important;width:42px!important;max-width:42px!important;min-width:42px!important;}
+}
+@media (max-width:380px) {
+ #animBar .animation-setup {grid-template-columns:minmax(0,1fr) minmax(0,1fr) repeat(4,minmax(28px,32px));gap:3px!important;}
+ #animBar .animation-setup > label {font-size:10px!important;}
+}
+
 </style>
 </head>
 <body>
@@ -390,10 +433,10 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
    <label>Hướng <select id="directionSelect" onchange="setDir(this.value)"><option value="down">⬇ Down</option><option value="up">⬆ Up</option><option value="left">⬅ Left</option><option value="right">➡ Right</option></select></label>
    <label>Animation <select id="animationSelect" onchange="selectAnimation(this.value)"></select></label>
    <input id="animationName" placeholder="Tên animation mới / tên mới">
-   <button onclick="createAnimation()">＋ Tạo</button>
-   <button onclick="renameAnimation()" title="Đổi tên animation đang chọn">✎ Rename</button>
-    <button onclick="duplicateAnimation()" title="Nhân bản toàn bộ animation và keyframe">⧉ Nhân bản</button>
-   <button onclick="deleteAnimation()" id="deleteAnimationBtn" disabled>🗑 Xoá</button>
+    <button class="anim-crud-button" type="button" onclick="createAnimation()" title="Tạo animation" aria-label="Tạo animation"><span class="desktop-label">＋ Tạo</span><span class="mobile-label" aria-hidden="true">＋</span></button>
+    <button class="anim-crud-button" type="button" onclick="renameAnimation()" title="Đổi tên animation đang chọn" aria-label="Đổi tên animation"><span class="desktop-label">✎ Rename</span><span class="mobile-label" aria-hidden="true">✎</span></button>
+    <button class="anim-crud-button" type="button" onclick="duplicateAnimation()" title="Nhân bản toàn bộ animation và keyframe" aria-label="Nhân bản animation"><span class="desktop-label">⧉ Nhân bản</span><span class="mobile-label" aria-hidden="true">⧉</span></button>
+    <button class="anim-crud-button" type="button" onclick="deleteAnimation()" title="Xoá animation" aria-label="Xoá animation" id="deleteAnimationBtn" disabled><span class="desktop-label">🗑 Xoá</span><span class="mobile-label" aria-hidden="true">🗑</span></button>
   </div>
   <div id="timelineControls" hidden>
    <div class="row">
@@ -491,7 +534,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
   <header class="unity-export-head"><div><strong id="unityExportTitle">Xuất Unity JSON — Smooth 2D Rig</strong><div class="crop-subtitle">Thiết lập loop và chia pha âm thanh cho từng animation.</div></div><button type="button" onclick="closeUnityExportSettings()">Đóng ✕</button></header>
   <div class="unity-export-body">
    <div class="row"><label style="width:125px">Pixels Per Unit</label><input id="unityPpu" type="number" min="1" max="2048" step="1" value="100"></div>
-   <p class="unity-export-note">Keyframe Bone sẽ được nội suy liên tục trong Unity. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết. Tên SFX và dropdown RegistryId sẽ được cấu hình trong Inspector của CharacterAnimation sau khi dán JSON.</p>
+   <p class="unity-export-note">Schema v2: giữ nguyên GroupBlock / Block Keyframe, đồng thời xuất Easing từng keyframe và Skew/Mesh 4 góc sang Unity. Reader mới chấp nhận cả JSON v1 và v2. Keyframe Bone sẽ được nội suy liên tục trong Unity. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết. Tên SFX và dropdown RegistryId sẽ được cấu hình trong Inspector của CharacterAnimation sau khi dán JSON.</p>
    <div class="unity-animation-row" style="font-size:11px;color:#9da8b7;font-weight:700"><span>ANIMATION</span><span>LOOP</span><span>ATTACK / SKILL</span><span>CAST START</span><span>CAST END</span></div>
    <div id="unityAnimationSettings"></div>
    <div id="unityExportStatus" class="unity-export-status"></div>
@@ -1424,7 +1467,7 @@ function duplicateAnimation(){
  while(M.animationSets.some(a=>a.name.toLowerCase()===name.toLowerCase())){
   name=base+suffix++;
  }
- const copy={name,dirs:cloneData(source.dirs)};
+ const copy={name,dirs:cloneData(source.dirs),unity:cloneData(ensureUnityMeta(source))};
  M.animationSets.push(copy);
  M.activeAnimation=name;
  M.anims=copy.dirs;
@@ -2477,6 +2520,8 @@ function unityValidateModel(){
   for(const b of bones){if(b.p&& !boneIds.has(String(b.p)))errors.push(`Hướng ${dir}: Bone '${b.name}' có parent không tồn tại (${b.p}).`);}
   const blockIds=new Set();
   for(const b of blocks){
+   if(!Number.isFinite(+b.skewX||0)||!Number.isFinite(+b.skewY||0))errors.push(`Hướng ${dir}: Block '${b.name}' có skew không hợp lệ.`);
+   if(b.mesh!=null&&(!Array.isArray(b.mesh)||b.mesh.length!==4||b.mesh.some(p=>!p||!Number.isFinite(+p.dx)||!Number.isFinite(+p.dy))))errors.push(`Hướng ${dir}: Block '${b.name}' cần mesh gồm đúng 4 góc (dx/dy).`);
    if(blockIds.has(String(b.id)))errors.push(`Hướng ${dir}: trùng Block ID ${b.id}.`);blockIds.add(String(b.id));
    if(b.b&&!boneIds.has(String(b.b)))errors.push(`Hướng ${dir}: Block '${b.name}' gắn Bone không tồn tại (${b.b}).`);
    if(b.demo!==false){const image=imageForDirection(b,dir);if(!image)errors.push(`Hướng ${dir}: Block '${b.name}' chưa gán ảnh.`);else if(!imageData[image])errors.push(`Thiếu dữ liệu ảnh '${image}' của Block '${b.name}' (${dir}).`);}
@@ -2512,7 +2557,7 @@ function unityBuildPayload(){
   const rig=M.rigsByDir[dir],bones=rig.bones||[],blocks=rig.blocks||[];
   return {name:dir,
    bones:bones.map(b=>({id:+b.id,name:String(b.name||('Bone_'+b.id)),parentId:+b.p||0,x:+b.x||0,y:+b.y||0,angle:+b.a||0,length:Math.max(0,+b.l||0)})),
-   blocks:blocks.map(k=>({id:+k.id,name:String(k.name||('Block_'+k.id)),boneId:+k.b||0,x:+k.x||0,y:+k.y||0,angle:+k.a||0,freeWidth:Math.max(4,+k.freeW||80),start:+k.s||0,end:Number.isFinite(+k.e)?+k.e:1,height:Math.max(1,+k.h||40),offsetX:+k.ox||0,offsetY:+k.oy||0,rank:Math.max(1,+k.rank||1),sortingOrder:Math.round(+k.z||0),visibility:k.vis||'all',visible:k.visible!==false,drawImage:k.demo!==false,imageDown:imageForDirection(k,'down'),imageUp:imageForDirection(k,'up'),imageLeft:imageForDirection(k,'left'),imageRight:imageForDirection(k,'right'),imageRotation:+k.ir||0,imageScale:Math.max(.001,+k.is||1),imageOffsetX:+k.ix||0,imageOffsetY:+k.iy||0,flipX:!!k.fx,scaleX:Math.max(.001,+k.sx||1),scaleY:Math.max(.001,+k.sy||1),color:String(k.col||'#ffffff')}))
+   blocks:blocks.map(k=>({id:+k.id,name:String(k.name||('Block_'+k.id)),boneId:+k.b||0,x:+k.x||0,y:+k.y||0,angle:+k.a||0,freeWidth:Math.max(4,+k.freeW||80),start:+k.s||0,end:Number.isFinite(+k.e)?+k.e:1,height:Math.max(1,+k.h||40),offsetX:+k.ox||0,offsetY:+k.oy||0,rank:Math.max(1,+k.rank||1),sortingOrder:Math.round(+k.z||0),visibility:k.vis||'all',visible:k.visible!==false,drawImage:k.demo!==false,imageDown:imageForDirection(k,'down'),imageUp:imageForDirection(k,'up'),imageLeft:imageForDirection(k,'left'),imageRight:imageForDirection(k,'right'),imageRotation:+k.ir||0,imageScale:Math.max(.001,+k.is||1),imageOffsetX:+k.ix||0,imageOffsetY:+k.iy||0,flipX:!!k.fx,scaleX:Math.max(.001,+k.sx||1),scaleY:Math.max(.001,+k.sy||1),color:String(k.col||'#ffffff'),skewX:+k.skewX||0,skewY:+k.skewY||0,mesh:(Array.isArray(k.mesh)&&k.mesh.length===4?k.mesh:[{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0}]).map(pt=>({dx:+pt.dx||0,dy:+pt.dy||0}))}))
   };
  });
  const animations=M.animationSets.map(set=>{
@@ -2521,8 +2566,8 @@ function unityBuildPayload(){
    const anim=set.dirs[dir]||emptyAnim(),rig=M.rigsByDir[dir],boneTracks=[];
    (rig.bones||[]).forEach(b=>{
     const source=anim.keys?.[b.id]||anim.keys?.[String(b.id)]||{};
-    const keys=Object.entries(source).map(([frame,value])=>({frame:+frame,x:Number.isFinite(+value.x)?+value.x:+b.x||0,y:Number.isFinite(+value.y)?+value.y:+b.y||0,angle:Number.isFinite(+value.a)?+value.a:+b.a||0,length:Number.isFinite(+value.l)?+value.l:+b.l||0})).filter(k=>Number.isFinite(k.frame)).sort((a,b)=>a.frame-b.frame);
-    if(!keys.some(k=>k.frame===0))keys.unshift({frame:0,x:+b.x||0,y:+b.y||0,angle:+b.a||0,length:+b.l||0});
+    const keys=Object.entries(source).map(([frame,value])=>({frame:+frame,x:Number.isFinite(+value.x)?+value.x:+b.x||0,y:Number.isFinite(+value.y)?+value.y:+b.y||0,angle:Number.isFinite(+value.a)?+value.a:+b.a||0,length:Number.isFinite(+value.l)?+value.l:+b.l||0,easing:['linear','easeIn','easeOut','easeInOut','step'].includes(value.ease)?value.ease:'linear'})).filter(k=>Number.isFinite(k.frame)).sort((a,b)=>a.frame-b.frame);
+    if(!keys.some(k=>k.frame===0))keys.unshift({frame:0,x:+b.x||0,y:+b.y||0,angle:+b.a||0,length:+b.l||0,easing:'linear'});
     boneTracks.push({boneId:+b.id,keyframes:keys});
    });
    const blockKeyframes=Object.entries(anim.blockKeys||{}).map(([frame,items])=>({frame:+frame,states:(items||[]).map(item=>({blockId:+item.blockId,visible:item.visible!==false,imageName:String(item.image||'')}))})).sort((a,b)=>a.frame-b.frame);
@@ -2536,7 +2581,7 @@ function unityBuildPayload(){
  animations.forEach(a=>a.directions.forEach(d=>d.blockKeyframes.forEach(k=>k.states.forEach(st=>{if(st.imageName)assetNames.add(st.imageName);}))))
  const assets=[...assetNames].sort().map(name=>({name,dataUrl:imageData[name]||''}));
  const groupBlocks=M.groupBlocks.map(g=>({name:g.name,defaultVariant:g.defaultVariant,variants:g.variants.map(v=>({name:v.name,blockIds:[...v.blockIds]}))}));
- return {format:'BoneAnimatorUnity',schemaVersion:1,groupBlocks,modelName:String($('mn').value.trim()||'Character'),pixelsPerUnit:Math.max(1,Math.min(2048,Math.round(+$('unityPpu').value||100))),coordinateSystem:'BoneAnimatorCanvasYDown_ConvertedToUnityYUp',directions:directionData,animations,assets};
+ return {format:'BoneAnimatorUnity',schemaVersion:2,groupBlocks,modelName:String($('mn').value.trim()||'Character'),pixelsPerUnit:Math.max(1,Math.min(2048,Math.round(+$('unityPpu').value||100))),coordinateSystem:'BoneAnimatorCanvasYDown_ConvertedToUnityYUp',directions:directionData,animations,assets};
 }
 function exportUnityJson(){
  const validation=unityValidateModel();
