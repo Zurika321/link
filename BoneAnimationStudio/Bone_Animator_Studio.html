@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Bone Animator Studio v16</title>
+<title>Bone Animator Studio v17</title>
 <style>
 :root{--bg:#1c2027;--p:#252a33;--l:#373e4a;--t:#e4e8ee;--m:#8c97a6;--a:#3fb8af;--orange:#ff7a59}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
@@ -394,7 +394,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
    <button id="toolMove" class="active" onclick="setTool('move')">↔ Di chuyển</button>
    <button id="toolRotate" onclick="setTool('rotate')">⟳ Xoay</button>
    <button id="toolScale" onclick="setTool('scale')">⤢ Thu phóng</button>
-   <button id="toolFree" onclick="setTool('free')" title="Kéo ô vuông để xoay và thu phóng. Kéo qua tâm để quay ngược.">⤧ Tự do</button>
+   <button id="toolFree" onclick="setTool('free')" title="Kéo thân Block để di chuyển. Kéo ô vuông để xoay và thu phóng.">⤧ Tự do</button>
    <button id="toolIk" onclick="setTool('ik')" title="Động học ngược 2 xương (2-Bone IK)">🦾 IK 2-Xương</button>
   </div>
   <button id="ikFlipBtn" hidden onclick="toggleIkBendDir()" title="Đổi hướng gập khớp gối/khuỷu tay 2-Bone IK">⇄ Gập IK: +</button>
@@ -462,13 +462,13 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 <div id="resizeLeft" class="resize-handle resize-vertical" role="separator" aria-orientation="vertical" aria-label="Resize bảng trái"></div>
 <div id="C">
  <canvas id="cvs"></canvas>
- <div id="hint">Quét chọn: công cụ ⬚ hoặc Shift+Kéo · Tự do: kéo ô vuông để xoay và thu phóng, kéo qua tâm để quay ngược · 🦾 IK 2-Xương: kéo khớp cổ chân/cổ tay · Skew/Mesh: kéo 4 góc tím</div>
+ <div id="hint">Quét chọn: công cụ ⬚ hoặc Shift+Kéo · Tự do: kéo thân Block để di chuyển, kéo ô vuông để xoay và thu phóng · 🦾 IK 2-Xương: kéo khớp cổ chân/cổ tay · Skew/Mesh: kéo 4 góc tím</div>
  <div class="canvas-floating-tools">
   <button type="button" id="hintToggleBtn" class="canvas-tool-button" onclick="toggleCanvasHint()" aria-label="Bật/tắt hướng dẫn trên Canvas" title="Bật/tắt hướng dẫn trên Canvas">?</button>
   <div id="quickTools">
    <button type="button" id="quickToolsButton" class="canvas-tool-button" title="Công cụ dự án" aria-label="Công cụ dự án" aria-controls="quickToolsPanel" aria-expanded="false" onclick="toggleQuickTools()">⋯</button>
    <div id="quickToolsPanel" class="quick-tools-panel" hidden>
-    <h3>Công cụ dự án · v16</h3>
+    <h3>Công cụ dự án · v17</h3>
     <div class="row"><label for="mn">Tên model</label><input id="mn" value="BoneAnimatorModel" placeholder="Tên model"></div>
     <div class="quick-tools-actions">
      <button type="button" id="saveModelJson" onclick="saveM()">⬇ Xuất JSON</button>
@@ -765,21 +765,21 @@ function renderGroupBlock(){
  host.innerHTML=`<div class="group-preview-list">${groups.map((g,gi)=>`<div class="group-preview-row"><label for="groupPreview${gi}" title="${esc(g.name)}">group-${esc(g.name)}</label><select id="groupPreview${gi}" aria-label="Biến thể ${esc(g.name)}" onchange="selectGroupBlockVariantAt(${gi},this.value)"><option value="" ${g.defaultVariant===''?'selected':''}>None / không chọn</option>${g.variants.map(v=>`<option value="${esc(v.name)}" ${v.name===g.defaultVariant?'selected':''}>${esc(v.name)}</option>`).join('')}</select></div>`).join('')}</div>
  <div class="group-create"><label for="groupNameInput">Tạo group mới</label><div class="group-inline"><input id="groupNameInput" placeholder="Ví dụ: Weapon, Outfit"><button type="button" onclick="addGroupBlock()">＋ Tạo</button></div></div>
  <div id="groupStatus" class="group-feedback" role="status" aria-live="polite"></div>
- ${groups.length?'':'<p class="group-help">Tạo group → thêm biến thể → kéo block từ Skeleton vào ô của biến thể.</p>'}
+ ${groups.length?'':'<p class="group-help">Tạo group → thêm biến thể → kéo Block từ Character vào ô của biến thể.</p>'}
  ${groups.map((g,gi)=>`<section class="group-editor-card"><div class="group-card-head"><strong>group-${esc(g.name)}</strong><button type="button" class="group-remove" onclick="removeGroupBlock(${gi})" title="Xóa group, giữ block gốc">Xóa group</button></div>
  <div class="group-inline"><input id="groupRename${gi}" aria-label="Tên group ${esc(g.name)}" value="${esc(g.name)}"><button type="button" onclick="renameGroupBlock(${gi})">Đổi tên</button></div>
  <div class="group-inline group-add-variant"><input id="groupVariantInput${gi}" aria-label="Biến thể mới của ${esc(g.name)}" placeholder="Tên biến thể, ví dụ Kiếm"><button type="button" onclick="addGroupBlockVariant(${gi})">＋ Biến thể</button></div>
  ${g.variants.length?'':'<p class="group-help">Thêm một biến thể để có ô nhận block.</p>'}
  ${g.variants.map((v,vi)=>`<div class="group-variant-card ${g.defaultVariant===v.name?'is-current':''}"><div class="group-variant-title"><strong>${esc(v.name)}</strong><span>${v.blockIds.length} block${g.defaultVariant===v.name?' · đang hiện':''}</span></div>
  <div class="group-inline"><input id="variantRename${gi}_${vi}" aria-label="Tên biến thể ${esc(v.name)}" value="${esc(v.name)}"><button type="button" onclick="renameGroupBlockVariant(${gi},${vi})">Đổi tên</button><button type="button" onclick="removeGroupBlockVariant(${gi},${vi})" aria-label="Xóa biến thể ${esc(v.name)}">×</button></div>
- <div class="group-drop" data-group-index="${gi}" data-variant-index="${vi}" ondragover="groupDragOver(event)" ondragleave="groupDragLeave(event)" ondrop="groupDropBlock(event,${gi},${vi})"><div class="group-drop-label">↓ Kéo block từ Skeleton vào ${esc(v.name)}</div>
+ <div class="group-drop" data-group-index="${gi}" data-variant-index="${vi}" ondragover="groupDragOver(event)" ondragleave="groupDragLeave(event)" ondrop="groupDropBlock(event,${gi},${vi})"><div class="group-drop-label">↓ Kéo Block từ Character vào ${esc(v.name)}</div>
  ${v.blockIds.map(id=>{const k=M.blocks.find(b=>b.id===id);return `<div class="group-entry"><span>${k?.effectId?'✦':'▣'} ${esc(k?.name||'Block #'+id)} <small>#${id}${k?'':' · hướng khác'}</small></span><button type="button" onclick="removeGroupBlockMember(${id},${gi},${vi})" aria-label="Bỏ block ${id}">×</button></div>`;}).join('')}</div>
  <button type="button" class="group-add-selected" onclick="addSelectedBlockToGroup(${gi},${vi})">＋ Thêm block đang chọn</button></div>`).join('')}</section>`).join('')}
  <p class="group-help">Mỗi block thuộc một biến thể. Trên điện thoại, kéo bằng tay nắm ⠿ ở dòng Block hoặc Block Effect, hoặc chọn Block rồi bấm ＋ Thêm block đang chọn. Chọn None để ẩn biến thể. Có thể Undo.</p>`;
 }
 function addGroupBlock(){const name=($('groupNameInput')?.value||'').trim();if(!name)return groupMessage('Nhập tên group mới.');if(groupNameTaken(name))return groupMessage('Tên group đã tồn tại.');checkpointUndo();M.groupBlocks.push({name,defaultVariant:'',variants:[]});selectedGroupIndex=M.groupBlocks.length-1;groupRefresh('Đã tạo group-'+name+'. Thêm biến thể ở khung bên dưới.');$('groupVariantInput'+selectedGroupIndex)?.focus();}
 function renameGroupBlock(gi=selectedGroupIndex){const g=M.groupBlocks[gi],name=($('groupRename'+gi)?.value||'').trim();if(!g||!name)return groupMessage('Tên group không được để trống.');if(groupNameTaken(name,gi))return groupMessage('Tên group đã tồn tại.');checkpointUndo();g.name=name;groupRefresh('Đã đổi tên group.');}
-function removeGroupBlock(gi=selectedGroupIndex){if(!M.groupBlocks[gi])return;checkpointUndo();M.groupBlocks.splice(gi,1);selectedGroupIndex=Math.max(0,Math.min(selectedGroupIndex,M.groupBlocks.length-1));groupRefresh('Đã bỏ group; block gốc vẫn ở Skeleton.');}
+function removeGroupBlock(gi=selectedGroupIndex){if(!M.groupBlocks[gi])return;checkpointUndo();M.groupBlocks.splice(gi,1);selectedGroupIndex=Math.max(0,Math.min(selectedGroupIndex,M.groupBlocks.length-1));groupRefresh('Đã bỏ group. Block gốc vẫn ở Character.');}
 function selectGroupBlockVariantAt(gi,name){const g=M.groupBlocks[gi];if(!g||(name&&!g.variants.some(v=>v.name===name)))return;checkpointUndo();g.defaultVariant=name;selectedGroupIndex=gi;groupRefresh('group-'+g.name+': '+(name||'None / không chọn'));}
 function selectGroupBlockVariant(name){selectGroupBlockVariantAt(selectedGroupIndex,name);}
 function addGroupBlockVariant(gi=selectedGroupIndex){const g=M.groupBlocks[gi],name=($('groupVariantInput'+gi)?.value||'').trim();if(!g||!name)return groupMessage('Nhập tên biến thể trước.');if(g.variants.some(v=>v.name.toLocaleLowerCase()===name.toLocaleLowerCase()))return groupMessage('Tên biến thể đã tồn tại trong group.');checkpointUndo();g.variants.push({name,blockIds:[]});g.defaultVariant=name;selectedGroupIndex=gi;groupRefresh('Đã tạo '+name+'. Kéo block vào đúng ô của bộ này.');}
@@ -791,7 +791,7 @@ function addGroupBlockMember(id,gi=selectedGroupIndex,vi=null){
  checkpointUndo();let moved=false;for(const owner of M.groupBlocks)for(const variant of owner.variants){if(variant.blockIds.includes(id))moved=true;variant.blockIds=variant.blockIds.filter(n=>n!==id);}v.blockIds.push(id);selectedGroupIndex=gi;groupRefresh((moved?'Đã chuyển ':'Đã thêm ')+block.name+' → '+g.name+' / '+v.name+'.');
 }
 function removeGroupBlockMember(id,gi=selectedGroupIndex,vi=null){const {v}=groupTargetVariant(gi,vi);if(!v)return;checkpointUndo();v.blockIds=v.blockIds.filter(n=>n!==+id);groupRefresh('Đã bỏ liên kết; block gốc vẫn còn.');}
-function addSelectedBlockToGroup(gi=selectedGroupIndex,vi=null){if(sel?.t!=='k')return groupMessage('Chọn một block ở Skeleton bên trái, rồi bấm nút này.');addGroupBlockMember(sel.id,gi,vi);}
+function addSelectedBlockToGroup(gi=selectedGroupIndex,vi=null){if(sel?.t!=='k')return groupMessage('Chọn một Block ở Character bên trái, rồi bấm nút này.');addGroupBlockMember(sel.id,gi,vi);}
 function groupDragOver(e){
  const types=Array.from(e.dataTransfer?.types||[]),isBlock=treeDragPayload?.type==='k'||types.includes('application/x-bone-block');
  if(!isBlock)return;e.preventDefault();e.stopPropagation();e.currentTarget.classList.add('drag-target');if(e.dataTransfer)e.dataTransfer.dropEffect='move';
@@ -799,7 +799,7 @@ function groupDragOver(e){
 function groupDragLeave(e){if(!e.currentTarget.contains(e.relatedTarget))e.currentTarget.classList.remove('drag-target');}
 function groupDropBlock(e,gi=selectedGroupIndex,vi=null){
  e.preventDefault();e.stopPropagation();e.currentTarget.classList.remove('drag-target');const dt=e.dataTransfer,raw=dt?.getData('application/x-bone-block')||dt?.getData('text/plain')||'',match=/^(?:k:)?(\d+)$/.exec(raw),payload=treeDragPayload;treeDragPayload=null;
- const id=payload?.type==='k'?+payload.id:match?+match[1]:null;if(Number.isInteger(id))addGroupBlockMember(id,gi,vi);else groupMessage('Hãy kéo một Block từ Skeleton, không phải Bone hoặc ảnh.');
+ const id=payload?.type==='k'?+payload.id:match?+match[1]:null;if(Number.isInteger(id))addGroupBlockMember(id,gi,vi);else groupMessage('Hãy kéo một Block từ Character.');
 }
 
 document.addEventListener('dragend',()=>{treeDragPayload=null;document.querySelectorAll('.group-drop.drag-target').forEach(node=>node.classList.remove('drag-target'));});
@@ -1520,7 +1520,7 @@ function renderRigGuide(){
             <p>Di chuyển block:	Chọn Move, kéo block</p>
             <p>Xoay block:	Chọn Rotate, kéo block</p>
             <p>Thu phóng: Kéo một góc khung xanh.</p>
-            <p>Tự do: Kéo ô vuông ở đầu xương hoặc góc Block. Kéo ra xa tâm để phóng to, kéo vào để thu nhỏ, kéo qua tâm để quay ngược.</p>
+            <p>Tự do: Kéo thân Block để di chuyển. Kéo ô vuông ở đầu xương hoặc góc Block để xoay và thu phóng. Kéo qua tâm để quay ngược.</p>
             <p>Gắn block vào xương:	Kéo block lên xương hoặc chọn</p>
             <p>Tạo quan hệ cha/con:	Kéo xương vào xương khác</p>
             <p>Ẩn/hiện block:	Tick checkbox trước tên block</p>
@@ -2087,7 +2087,7 @@ function draw(){
   g.closePath();
   g.stroke();
   g.restore();
-  if(selected&&meshSkewEnabled){
+  if(selected&&meshSkewEnabled&&tool!=='free'){
    cPts.forEach(c=>{
     g.fillStyle=meshSkewEnabled?'#d8b4fe':'#f2f5f8';
     g.strokeStyle=meshSkewEnabled?'#9333ea':'#168f88';
@@ -2149,7 +2149,7 @@ const canvasPoint=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.l
 const zoomAt=(x,y,factor)=>{const before=toW(x,y),next=clamp(cam.z*factor,.15,8);cam.z=next;cam.x=x-cv.width/2-before.x*next;cam.y=y-cv.height/2-before.y*next};
 function startBlockDrag(k,p,W,S){
  const info=blockInfo(k,W,S),local=worldToLocal(p,info.w);
- if(tool==='move')drag={type:'blockMove',k,start:local,startWorld:{x:p.x,y:p.y},ox:k.ox||0,oy:k.oy||0,x:k.x||0,y:k.y||0};
+ if(tool==='move'||tool==='free')drag={type:'blockMove',k,start:local,startWorld:{x:p.x,y:p.y},ox:k.ox||0,oy:k.oy||0,x:k.x||0,y:k.y||0};
  else if(tool==='rotate')drag={type:'blockRotate',k,info,startAngle:Math.atan2(local.y-info.cy,local.x-(info.x0+info.width/2)),startRotation:info.independent?(k.a||0):(k.ir||0)};
 }
 function pointInBoneTriangle(p,w){
@@ -2159,6 +2159,7 @@ function pointInBoneTriangle(p,w){
  return !((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));
 }
 const transformTools=['move','rotate','scale','free'];
+const freeHandleHalfSize=8;
 function gizmoObjects(){
  return getSelection().filter(item=>item.t==='b'?showBones:showImages);
 }
@@ -2203,7 +2204,13 @@ function getTransformGizmo(W=solve(),S=segs(W)){
 }
 function transformHandleAt(point,gizmo=getTransformGizmo()){
  if(!gizmo)return null;
- if(tool==='free')return Math.hypot(point.x-gizmo.tip.x,point.y-gizmo.tip.y)<=19?'free':null;
+ if(tool==='free'){
+  const dx=point.x-gizmo.tip.x,dy=point.y-gizmo.tip.y;
+  const onHandle=gizmo.selection.some(item=>item.t==='k')
+   ?Math.abs(dx)<=freeHandleHalfSize+1&&Math.abs(dy)<=freeHandleHalfSize+1
+   :Math.hypot(dx,dy)<=19;
+  return onHandle?'free':null;
+ }
  const dx=point.x-gizmo.center.x,dy=point.y-gizmo.center.y;
  if(tool==='move'){
   if(Math.abs(dx)<=11&&Math.abs(dy)<=11)return 'moveBoth';
@@ -2254,9 +2261,9 @@ function drawTransformGizmo(g,W,S){
   }
  }
  if(tool==='free'){
-  const {x,y}=gizmo.tip;
-  g.fillStyle=active==='free'?'#fff0b5':'#a9eaff';g.fillRect(x-8,y-8,16,16);
-  g.strokeStyle=edge;g.lineWidth=2;g.strokeRect(x-8,y-8,16,16);
+  const {x,y}=gizmo.tip,half=freeHandleHalfSize;
+  g.fillStyle=active==='free'?'#fff0b5':'#a9eaff';g.fillRect(x-half,y-half,2*half,2*half);
+  g.strokeStyle=edge;g.lineWidth=2;g.strokeRect(x-half,y-half,2*half,2*half);
  }
  g.restore();
 }
@@ -2339,11 +2346,11 @@ function applySelectionTransform(world){
   }
  }
 }
-function startMultiTransformDrag(world,W,S){
+function startMultiTransformDrag(world,W,S,dragTool=tool){
  const selection=getSelection();
- if(selection.length<=1||!['move','rotate','scale'].includes(tool))return false;
+ if(selection.length<=1||!['move','rotate','scale'].includes(dragTool))return false;
  const bounds=getSelectionBoundsAndPivot(W,S,selection);
- return !!bounds&&startSelectionTransform(tool==='move'?'moveBoth':tool,world,W,S,selection,{x:bounds.px,y:bounds.py});
+ return !!bounds&&startSelectionTransform(dragTool==='move'?'moveBoth':dragTool,world,W,S,selection,{x:bounds.px,y:bounds.py});
 }
 
 let canvasObjectPress=null;
@@ -2414,7 +2421,7 @@ function startCanvasInteraction(e,p){
  }
 
  // Ưu tiên kéo 4 góc lưới ảnh (Mesh FFD) hoặc Scale góc của Block đang chọn
- if(showImages&&!selectionLocked('k')&&meshSkewEnabled&&sel?.t==='k'){
+ if(tool!=='free'&&showImages&&!selectionLocked('k')&&meshSkewEnabled&&sel?.t==='k'){
   const k=cur(),info=k&&blockInfo(k,W,S),corner=info&&nearestCorner(world,k,info,Math.max(radius,18/cam.z));
   if(corner){
    if(!Array.isArray(k.mesh)||k.mesh.length!==4)k.mesh=[{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0}];
@@ -2470,8 +2477,8 @@ function startCanvasInteraction(e,p){
   if(!blockHit(world,k,W,S))continue;
   if(e.shiftKey||e.ctrlKey||e.metaKey){pick('k',k.id,e);return;}
   if(!isSelected('k',k.id)){sel={t:'k',id:k.id};multiSel=[{t:'k',id:k.id}];ksel=null;renderAll();}
-  if(getSelection().length>1&&startMultiTransformDrag(world,W,S))return;
-  if(tool==='scale'||tool==='free')return;
+  if(getSelection().length>1&&startMultiTransformDrag(world,W,S,tool==='free'?'move':tool))return;
+  if(tool==='scale')return;
   startBlockDrag(k,world,W,S);return;
  }
 
