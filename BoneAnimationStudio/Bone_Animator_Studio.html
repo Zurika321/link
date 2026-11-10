@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Bone Animator Studio</title>
+<title>Bone Animator Studio v15</title>
 <style>
 :root{--bg:#1c2027;--p:#252a33;--l:#373e4a;--t:#e4e8ee;--m:#8c97a6;--a:#3fb8af;--orange:#ff7a59}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
@@ -264,6 +264,11 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
 .tree-row .demo-label{color:#ff8989}
 .tree-row.s .demo-label{color:#681819}
 .tree-row .tree-z{flex:none;font-size:10px;font-variant-numeric:tabular-nums}
+.group-touch-grip{display:none}
+@media(pointer:coarse){
+ #list.group-tab-open .group-touch-grip{display:grid;place-items:center;width:28px;height:28px;flex:none;padding:0;touch-action:none;user-select:none;-webkit-touch-callout:none}
+}
+.group-touch-grip.dragging{background:#245b58;border-color:var(--a)}
 
 
 .unity-export-modal{position:fixed;inset:0;z-index:1400;background:#080a0def;display:flex;align-items:center;justify-content:center;padding:12px}
@@ -466,7 +471,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <div id="quickTools">
    <button type="button" id="quickToolsButton" class="canvas-tool-button" title="Công cụ dự án" aria-label="Công cụ dự án" aria-controls="quickToolsPanel" aria-expanded="false" onclick="toggleQuickTools()">⋯</button>
    <div id="quickToolsPanel" class="quick-tools-panel" hidden>
-    <h3>Công cụ dự án</h3>
+    <h3>Công cụ dự án · v15</h3>
     <div class="row"><label for="mn">Tên model</label><input id="mn" value="BoneAnimatorModel" placeholder="Tên model"></div>
     <div class="quick-tools-actions">
      <button type="button" id="saveModelJson" onclick="saveM()">⬇ Xuất JSON</button>
@@ -649,7 +654,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <header class="unity-export-head"><div><strong id="unityExportTitle">Xuất Unity JSON — Smooth 2D Rig</strong><div class="crop-subtitle">Thiết lập loop và chia pha âm thanh cho từng animation.</div></div><button type="button" onclick="closeUnityExportSettings()">Đóng ✕</button></header>
   <div class="unity-export-body">
    <div class="row"><label style="width:125px">Pixels Per Unit</label><input id="unityPpu" type="number" min="1" max="2048" step="1" value="100"></div>
-   <p class="unity-export-note">Schema v2: giữ nguyên GroupBlock / Block Keyframe, đồng thời xuất Easing từng keyframe và Skew/Mesh 4 góc sang Unity. Reader mới chấp nhận cả JSON v1 và v2. Keyframe Bone sẽ được nội suy liên tục trong Unity. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết. Tên SFX và dropdown RegistryId sẽ được cấu hình trong Inspector của CharacterAnimation sau khi dán JSON.</p>
+   <p class="unity-export-note">Unity JSON dùng schema v3 khi có Block Effect đã tắt Demo. Hãy dùng bộ script Unity v4 để đọc schema 1–3. GroupBlock, Block Keyframe, Easing và Skew/Mesh đều được xuất. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết. Tên SFX và dropdown RegistryId được cấu hình trong Inspector của CharacterAnimation.</p>
    <div class="unity-animation-row" style="font-size:11px;color:#9da8b7;font-weight:700"><span>ANIMATION</span><span>LOOP</span><span>ATTACK / SKILL</span><span>CAST START</span><span>CAST END</span></div>
    <div id="unityAnimationSettings"></div>
    <label class="web-json-option"><input id="unityIncludeWebJson" type="checkbox"> Xuất kèm JSON chỉnh sửa (Web)</label>
@@ -738,6 +743,7 @@ function showRightTab(tab){
  $('tabGroupBlock').classList.toggle('active',rightTab==='group');
  $('rightPropertiesPane').hidden=rightTab!=='properties';
  $('rightGroupPane').hidden=rightTab!=='group';
+ $('list').classList.toggle('group-tab-open',rightTab==='group');
  if(rightTab==='group')renderGroupBlock();
 }
 /* GroupBlock editor: one preview row per group, directly editable variant cards. */
@@ -759,9 +765,9 @@ function renderGroupBlock(){
  ${g.variants.map((v,vi)=>`<div class="group-variant-card ${g.defaultVariant===v.name?'is-current':''}"><div class="group-variant-title"><strong>${esc(v.name)}</strong><span>${v.blockIds.length} block${g.defaultVariant===v.name?' · đang hiện':''}</span></div>
  <div class="group-inline"><input id="variantRename${gi}_${vi}" aria-label="Tên biến thể ${esc(v.name)}" value="${esc(v.name)}"><button type="button" onclick="renameGroupBlockVariant(${gi},${vi})">Đổi tên</button><button type="button" onclick="removeGroupBlockVariant(${gi},${vi})" aria-label="Xóa biến thể ${esc(v.name)}">×</button></div>
  <div class="group-drop" data-group-index="${gi}" data-variant-index="${vi}" ondragover="groupDragOver(event)" ondragleave="groupDragLeave(event)" ondrop="groupDropBlock(event,${gi},${vi})"><div class="group-drop-label">↓ Kéo block từ Skeleton vào ${esc(v.name)}</div>
- ${v.blockIds.map(id=>{const k=M.blocks.find(b=>b.id===id);return `<div class="group-entry"><span>▣ ${esc(k?.name||'Block #'+id)} <small>#${id}${k?'':' · hướng khác'}</small></span><button type="button" onclick="removeGroupBlockMember(${id},${gi},${vi})" aria-label="Bỏ block ${id}">×</button></div>`;}).join('')}</div>
+ ${v.blockIds.map(id=>{const k=M.blocks.find(b=>b.id===id);return `<div class="group-entry"><span>${k?.effectId?'✦':'▣'} ${esc(k?.name||'Block #'+id)} <small>#${id}${k?'':' · hướng khác'}</small></span><button type="button" onclick="removeGroupBlockMember(${id},${gi},${vi})" aria-label="Bỏ block ${id}">×</button></div>`;}).join('')}</div>
  <button type="button" class="group-add-selected" onclick="addSelectedBlockToGroup(${gi},${vi})">＋ Thêm block đang chọn</button></div>`).join('')}</section>`).join('')}
- <p class="group-help">Mỗi block thuộc một biến thể. Kéo sang ô khác sẽ chuyển liên kết, không xóa block. Chọn None ở hàng trên để bỏ vũ khí/trang phục của riêng group đó. Có thể Undo.</p>`;
+ <p class="group-help">Mỗi block thuộc một biến thể. Trên điện thoại, kéo bằng tay nắm ⠿ ở dòng Block Effect, hoặc chọn Block rồi bấm ＋ Thêm block đang chọn. Chọn None để ẩn biến thể. Có thể Undo.</p>`;
 }
 function addGroupBlock(){const name=($('groupNameInput')?.value||'').trim();if(!name)return groupMessage('Nhập tên group mới.');if(groupNameTaken(name))return groupMessage('Tên group đã tồn tại.');checkpointUndo();M.groupBlocks.push({name,defaultVariant:'',variants:[]});selectedGroupIndex=M.groupBlocks.length-1;groupRefresh('Đã tạo group-'+name+'. Thêm biến thể ở khung bên dưới.');$('groupVariantInput'+selectedGroupIndex)?.focus();}
 function renameGroupBlock(gi=selectedGroupIndex){const g=M.groupBlocks[gi],name=($('groupRename'+gi)?.value||'').trim();if(!g||!name)return groupMessage('Tên group không được để trống.');if(groupNameTaken(name,gi))return groupMessage('Tên group đã tồn tại.');checkpointUndo();g.name=name;groupRefresh('Đã đổi tên group.');}
@@ -773,7 +779,7 @@ function renameGroupBlockVariant(gi,vi){const g=M.groupBlocks[gi],v=g?.variants[
 function removeGroupBlockVariant(gi,vi){const g=M.groupBlocks[gi],v=g?.variants[vi];if(!v)return;checkpointUndo();if(g.defaultVariant===v.name)g.defaultVariant='';g.variants.splice(vi,1);groupRefresh('Đã bỏ biến thể; không xóa block gốc.');}
 function groupTargetVariant(gi,vi){const g=M.groupBlocks[gi];return {g,v:Number.isInteger(vi)?g?.variants[vi]:g?.variants.find(v=>v.name===g.defaultVariant)};}
 function addGroupBlockMember(id,gi=selectedGroupIndex,vi=null){
- id=+id;const {g,v}=groupTargetVariant(gi,vi);if(!g||!v)return groupMessage('Tạo biến thể rồi thả vào ô của bộ đó.');const block=M.blocks.find(k=>k.id===id);if(!block)return groupMessage('Block không có ở hướng hiện tại.');if(block.effectId)return groupMessage('Block Effect dùng để xem thử trên Character.');if(v.blockIds.includes(id))return groupMessage('Block này đã nằm trong '+v.name+'.');
+ id=+id;const {g,v}=groupTargetVariant(gi,vi);if(!g||!v)return groupMessage('Tạo biến thể rồi thả vào ô của bộ đó.');const block=M.blocks.find(k=>k.id===id);if(!block)return groupMessage('Block không có ở hướng hiện tại.');if(v.blockIds.includes(id))return groupMessage('Block này đã nằm trong '+v.name+'.');
  checkpointUndo();let moved=false;for(const owner of M.groupBlocks)for(const variant of owner.variants){if(variant.blockIds.includes(id))moved=true;variant.blockIds=variant.blockIds.filter(n=>n!==id);}v.blockIds.push(id);selectedGroupIndex=gi;groupRefresh((moved?'Đã chuyển ':'Đã thêm ')+block.name+' → '+g.name+' / '+v.name+'.');
 }
 function removeGroupBlockMember(id,gi=selectedGroupIndex,vi=null){const {v}=groupTargetVariant(gi,vi);if(!v)return;checkpointUndo();v.blockIds=v.blockIds.filter(n=>n!==+id);groupRefresh('Đã bỏ liên kết; block gốc vẫn còn.');}
@@ -1281,8 +1287,9 @@ function renderList(){
  const blockRows=[],effectRows=[];
  for(const k of [...M.blocks].sort((a,b)=>String(a.name).localeCompare(String(b.name)))){
   const parent=byId(k.b),kind=parent?`<small>· Gắn vào ${esc(parent.name)}</small>`:'<small>· Block độc lập</small>';
-  const demo=k.previewOnly||k.effectId;
-  const row=`<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}${selectionLocked('k')?' selection-locked':''}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn ${k.effectId?'Effect':'block'}" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label${demo?' demo-label':''}">${k.effectId?'✦':'▣'} ${esc(k.name)} ${kind}${demo?' <small>· Demo</small>':''}</span><small class="tree-z" title="Lớp Z trong Properties">Z: ${+k.z||0}</small></div>`;
+  const demo=k.previewOnly;
+  const grip=k.effectId?`<button type="button" class="group-touch-grip" draggable="false" title="Kéo Effect vào ô biến thể" aria-label="Kéo ${esc(k.name)} vào GroupBlock" onclick="pick('k',${k.id})">⠿</button>`:'';
+  const row=`<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}${selectionLocked('k')?' selection-locked':''}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn ${k.effectId?'Effect':'block'}" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label${demo?' demo-label':''}">${k.effectId?'✦':'▣'} ${esc(k.name)} ${kind}${demo?' <small>· Demo</small>':''}</span>${grip}<small class="tree-z" title="Lớp Z trong Properties">Z: ${+k.z||0}</small></div>`;
   (k.effectId?effectRows:blockRows).push(row);
  }
  $('rigTree').innerHTML=`
@@ -1394,7 +1401,7 @@ window.addEventListener('pointerdown',e=>{if(!$('treeContext').contains(e.target
 window.addEventListener('keydown',e=>{if(e.key==='Escape')hideContextMenu();});
 
 const HOLD_MS=500, TAP_RADIUS=10, DOUBLE_TAP_MS=380;
-let lastObjectTap=null,treeHold=null,skipTreeClickUntil=0;
+let lastObjectTap=null,treeHold=null,skipTreeClickUntil=0,groupTouchDrag=null;
 function clearObjectTap(){lastObjectTap=null;}
 function recordObjectTap(surface,target,event){
  const tap={surface,t:target?.t||null,id:target?.id??null,x:event.clientX,y:event.clientY,time:performance.now()};
@@ -1427,9 +1434,18 @@ objectTree.addEventListener('click',e=>{
 objectTree.addEventListener('pointerdown',e=>{
  cancelTreeHold();
  skipTreeClickUntil=0;
- if(e.pointerType!=='touch'||!e.isPrimary||e.target.closest('button,input,select,label'))return;
+ if(e.pointerType!=='touch'||!e.isPrimary)return;
  const target=treeObjectAt(e.target);
  if(target&&selectionLocked(target.t))return;
+ const grip=e.target.closest('.group-touch-grip');
+ if(grip&&target?.t==='k'&&rightTab==='group'){
+  e.preventDefault();clearObjectTap();
+  grip.setPointerCapture?.(e.pointerId);
+  grip.classList.add('dragging');
+  groupTouchDrag={pointerId:e.pointerId,id:target.id,grip,drop:null};
+  return;
+ }
+ if(e.target.closest('button,input,select,label'))return;
  const hold={pointerId:e.pointerId,x:e.clientX,y:e.clientY,target};
  hold.timer=setTimeout(()=>{
   if(treeHold!==hold)return;
@@ -1440,12 +1456,28 @@ objectTree.addEventListener('pointerdown',e=>{
 });
 window.addEventListener('pointermove',e=>{
  if(treeHold?.pointerId===e.pointerId&&Math.hypot(e.clientX-treeHold.x,e.clientY-treeHold.y)>TAP_RADIUS)cancelTreeHold();
+ if(groupTouchDrag?.pointerId!==e.pointerId)return;
+ const drop=document.elementFromPoint(e.clientX,e.clientY)?.closest('.group-drop');
+ if(drop===groupTouchDrag.drop)return;
+ groupTouchDrag.drop?.classList.remove('drag-target');
+ drop?.classList.add('drag-target');
+ groupTouchDrag.drop=drop;
 });
 for(const name of ['pointerup','pointercancel'])window.addEventListener(name,e=>{
  if(treeHold?.pointerId===e.pointerId)cancelTreeHold();
+ if(groupTouchDrag?.pointerId!==e.pointerId)return;
+ const {id,grip,drop}=groupTouchDrag;
+ groupTouchDrag=null;
+ grip.classList.remove('dragging');
+ drop?.classList.remove('drag-target');
+ if(name==='pointerup'&&rightTab==='group'&&!selectionLocked('k')){
+  const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('.group-drop');
+  if(target)addGroupBlockMember(id,Number(target.dataset.groupIndex),Number(target.dataset.variantIndex));
+ }
 });
 objectTree.addEventListener('contextmenu',e=>{
  e.preventDefault();
+ if(groupTouchDrag||e.target.closest('.group-touch-grip'))return;
  const target=treeObjectAt(e.target);
  // The touch timer opens the same menu on devices that do not emit contextmenu.
  if(treeHold||performance.now()<skipTreeClickUntil)return;
@@ -1516,7 +1548,7 @@ function renderProps(){
  const isBone=sel.t==='b',W=solve(),w=isBone&&W[o.id],q=isBone&&pose(o,frame);
  const field=(label,key,value,type='number',extra='')=>`<div class="row"><label>${label}</label><input type="${type}" ${extra} value="${esc(value)}" oninput="setP('${key}',this.value)"></div>`;
  let html=`<h4>${isBone?'XƯƠNG':'BLOCK'}${mode==='anim'&&isBone?' · key frame '+Math.round(frame):''}</h4>`+field('Tên','name',o.name,'text');
- html+=`<div class="row"><label>Demo</label><input type="checkbox" ${o.previewOnly||o.effectId?'checked':''} ${o.effectId?'disabled':''} onchange="setObjectDemo(this.checked)"></div>`;
+ html+=`<div class="row"><label for="objectDemo">Demo</label><input id="objectDemo" type="checkbox" ${o.previewOnly?'checked':''} onchange="setObjectDemo(this.checked)"></div>`;
  if(o.effectId){
   html+=`<div class="status">Effect: ${esc(findEffect(o.effectId)?.name||'Đã bị xóa')} · Timeline riêng</div>
     <div class="row"><label>Gắn vào xương</label><select onchange="setP('b',this.value)"><option value="0">— Độc lập —</option>${M.bones.map(b=>`<option value="${b.id}" ${b.id===o.b?'selected':''}>${esc(b.name)}</option>`).join('')}</select></div>`
@@ -1565,8 +1597,10 @@ function renderProps(){
  P.innerHTML=html+renderBlockKeyframeProperties();
 }
 function setObjectDemo(enabled){
- const object=cur();if(!object||object.effectId)return;
- checkpointUndo();object.previewOnly=!!enabled;renderList();renderProps();draw();
+ const object=cur();if(!object)return;
+ checkpointUndo();
+ if(object.effectId&&object.previewOnly&&!enabled)object.visible=true;
+ object.previewOnly=!!enabled;renderList();renderProps();draw();
 }
 function projectImageBlocks(){
  const project=projectModel();
@@ -2874,7 +2908,7 @@ function keptRig(rig){
  for(const id of demoBones)for(const child of children.get(id)||[])demoBones.add(child);
  return {
   bones:rig.bones.filter(b=>!demoBones.has(String(b.id))),
-  blocks:rig.blocks.filter(k=>!k.previewOnly&&!k.effectId&&!demoBones.has(String(k.b)))
+  blocks:rig.blocks.filter(k=>!k.previewOnly&&!demoBones.has(String(k.b)))
  };
 }
 function withEffectFrame(effect,index,callback){
@@ -2892,13 +2926,13 @@ function paintRigBlocks(g,includeDemo,measure,allowEffects=true){
   const W=solve(),S=segs(W);
   for(const k of [...M.blocks].filter(k=>(!k.b||byId(k.b))&&blockVis(k)).sort((a,b)=>blockZ(a)-blockZ(b))){
    const info=blockInfo(k,W,S);if(!info)continue;
-   if(k.effectId){if(allowEffects)drawEffectDemo(g,k,info,measure);continue;}
+   if(k.effectId){if(allowEffects)drawEffectDemo(g,k,info,measure,includeDemo);continue;}
    const image=k.demo!==false?img(animatedBlockImage(k)):null;
    drawBlockWithDeformation(g,k,info,image,measure);
   }
  }finally{Object.assign(M,original);}
 }
-function drawEffectDemo(g,block,info,measure){
+function drawEffectDemo(g,block,info,measure,includeDemo=true){
  const effect=findEffect(block.effectId),start=effectStartFrame(block);
  if(!effect||start===null)return;
  const count=Math.max(1,Math.round(+effect.animation.frames||1));
@@ -2911,7 +2945,7 @@ function drawEffectDemo(g,block,info,measure){
   g.translate(info.independent?0:info.x0+info.width/2,info.cy);
   if(!info.independent)g.rotate((+block.ir||0)*D);
   g.scale(info.xScale,info.yScale);
-  withEffectFrame(effect,sample,()=>paintRigBlocks(g,true,measure,false));
+  withEffectFrame(effect,sample,()=>paintRigBlocks(g,includeDemo,measure,false));
  }finally{g.restore();}
 }
 /* Quản lý ảnh thuần trình duyệt: file chỉ tồn tại trong bộ nhớ phiên. */
@@ -3234,7 +3268,9 @@ function unityValidateModel(){
    if(b.mesh!=null&&(!Array.isArray(b.mesh)||b.mesh.length!==4||b.mesh.some(p=>!p||!Number.isFinite(+p.dx)||!Number.isFinite(+p.dy))))errors.push(`Hướng ${dir}: Block '${b.name}' cần mesh gồm đúng 4 góc (dx/dy).`);
    if(blockIds.has(String(b.id)))errors.push(`Hướng ${dir}: trùng Block ID ${b.id}.`);blockIds.add(String(b.id));
    if(b.b&&!boneIds.has(String(b.b)))errors.push(`Hướng ${dir}: Block '${b.name}' gắn Bone không tồn tại (${b.b}).`);
-   if(b.demo!==false){const image=b.img;if(!image)errors.push(`Hướng ${dir}: Block '${b.name}' chưa gán ảnh.`);else if(!imageData[image])errors.push(`Thiếu dữ liệu ảnh '${image}' của Block '${b.name}' (${dir}).`);}
+   if(b.effectId){
+    if(!findEffect(b.effectId))errors.push(`Hướng ${dir}: Block Effect '${b.name}' thiếu Effect gốc.`);
+   }else if(b.demo!==false){const image=b.img;if(!image)errors.push(`Hướng ${dir}: Block '${b.name}' chưa gán ảnh.`);else if(!imageData[image])errors.push(`Thiếu dữ liệu ảnh '${image}' của Block '${b.name}' (${dir}).`);}
   }
   // Detect cyclic bone hierarchy.
   const parentOf=new Map(bones.map(b=>[String(b.id),String(b.p||0)]));
@@ -3277,7 +3313,7 @@ function unityBuildPayload(){
   const rig=rigs[dir],bones=rig.bones,blocks=rig.blocks;
   return {name:dir,
    bones:bones.map(b=>({id:+b.id,name:String(b.name||('Bone_'+b.id)),parentId:+b.p||0,x:+b.x||0,y:+b.y||0,angle:+b.a||0,length:Math.max(0,+b.l||0)})),
-   blocks:blocks.map(k=>({id:+k.id,name:String(k.name||('Block_'+k.id)),boneId:+k.b||0,x:+k.x||0,y:+k.y||0,angle:+k.a||0,freeWidth:Math.max(4,+k.freeW||80),start:+k.s||0,end:Number.isFinite(+k.e)?+k.e:1,height:Math.max(1,+k.h||40),offsetX:+k.ox||0,offsetY:+k.oy||0,rank:Math.max(1,+k.rank||1),sortingOrder:Math.round(+k.z||0),visibility:k.vis||'all',visible:k.visible!==false,drawImage:k.demo!==false,imageDown:k.img||'',imageRotation:+k.ir||0,imageScale:Math.max(.001,+k.is||1),imageOffsetX:+k.ix||0,imageOffsetY:+k.iy||0,flipX:!!k.fx,scaleX:Math.max(.001,+k.sx||1),scaleY:Math.max(.001,+k.sy||1),color:String(k.col||'#ffffff'),skewX:+k.skewX||0,skewY:+k.skewY||0,mesh:(Array.isArray(k.mesh)&&k.mesh.length===4?k.mesh:[{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0}]).map(pt=>({dx:+pt.dx||0,dy:+pt.dy||0}))}))
+   blocks:blocks.map(k=>({id:+k.id,name:String(k.name||('Block_'+k.id)),boneId:+k.b||0,x:+k.x||0,y:+k.y||0,angle:+k.a||0,freeWidth:Math.max(4,+k.freeW||80),start:+k.s||0,end:Number.isFinite(+k.e)?+k.e:1,height:Math.max(1,+k.h||40),offsetX:+k.ox||0,offsetY:+k.oy||0,rank:Math.max(1,+k.rank||1),sortingOrder:Math.round(+k.z||0),visibility:k.vis||'all',visible:k.visible!==false,drawImage:!k.effectId&&k.demo!==false,imageDown:k.effectId?'':k.img||'',...(k.effectId?{effectId:k.effectId}:{}),imageRotation:+k.ir||0,imageScale:Math.max(.001,+k.is||1),imageOffsetX:+k.ix||0,imageOffsetY:+k.iy||0,flipX:!!k.fx,scaleX:Math.max(.001,+k.sx||1),scaleY:Math.max(.001,+k.sy||1),color:String(k.col||'#ffffff'),skewX:+k.skewX||0,skewY:+k.skewY||0,mesh:(Array.isArray(k.mesh)&&k.mesh.length===4?k.mesh:[{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0}]).map(pt=>({dx:+pt.dx||0,dy:+pt.dy||0}))}))
   };
  });
  const animations=M.animationSets.map(set=>{
@@ -3305,7 +3341,8 @@ function unityBuildPayload(){
  const assets=[...assetNames].sort().map(name=>({name,dataUrl:imageData[name]||''}));
  const keptIds=new Set(directionData.flatMap(d=>d.blocks.map(k=>k.id)));
  const groupBlocks=M.groupBlocks.map(g=>({name:g.name,defaultVariant:g.defaultVariant,variants:g.variants.map(v=>({name:v.name,blockIds:v.blockIds.filter(id=>keptIds.has(id))}))}));
- return {format:'BoneAnimatorUnity',schemaVersion:2,groupBlocks,modelName:String($('mn').value.trim()||'Character'),pixelsPerUnit:Math.max(1,Math.min(2048,Math.round(+$('unityPpu').value||100))),coordinateSystem:'BoneAnimatorCanvasYDown_ConvertedToUnityYUp',directions:directionData,animations,assets};
+ const schemaVersion=directionData.some(dir=>dir.blocks.some(block=>block.effectId))?3:2;
+ return {format:'BoneAnimatorUnity',schemaVersion,groupBlocks,modelName:String($('mn').value.trim()||'Character'),pixelsPerUnit:Math.max(1,Math.min(2048,Math.round(+$('unityPpu').value||100))),coordinateSystem:'BoneAnimatorCanvasYDown_ConvertedToUnityYUp',directions:directionData,animations,assets};
 }
 function prepareImage(name){
  if(!imageData[name])return Promise.reject(new Error('Thiếu ảnh Effect: '+name));
@@ -3388,6 +3425,7 @@ async function exportUnityJson(){
   const validation=unityValidateModel();
   if(validation.errors.length)throw new Error(validation.errors.join('\n• '));
   const payload=unityBuildPayload(),effects=cloneData(M.effects||[]);
+  const attachedEffects=new Set(payload.directions.flatMap(dir=>dir.blocks.map(block=>block.effectId).filter(Boolean)));
   const name=String($('mn').value.trim()||'Character').replace(/[^a-z0-9_-]+/gi,'_');
   const editable=$('unityIncludeWebJson').checked?modelPackage():null;
   status.textContent='Đang tạo các clip Effect…';
@@ -3397,7 +3435,11 @@ async function exportUnityJson(){
    let assetName='__effect_'+fileStem(effect.id)+'.png';
    while(used.has(assetName))assetName='_'+assetName;
    const baked=bakeEffectClip(effect,assetName);
-   if(!baked){validation.warnings.push('Effect '+effect.name+' không có phần hiển thị để xuất.');continue;}
+   if(!baked){
+    const message='Effect '+effect.name+' không có phần hiển thị để xuất.';
+    if(attachedEffects.has(effect.id))throw new Error(message);
+    validation.warnings.push(message);continue;
+   }
    used.add(assetName);(payload.effects??=[]).push(baked.clip);payload.assets.push(baked.asset);
   }
   downloadJSON(name+'_unity.json',payload);
