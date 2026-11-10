@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Bone Animator Studio v15</title>
+<title>Bone Animator Studio v16</title>
 <style>
 :root{--bg:#1c2027;--p:#252a33;--l:#373e4a;--t:#e4e8ee;--m:#8c97a6;--a:#3fb8af;--orange:#ff7a59}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
@@ -264,11 +264,16 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
 .tree-row .demo-label{color:#ff8989}
 .tree-row.s .demo-label{color:#681819}
 .tree-row .tree-z{flex:none;font-size:10px;font-variant-numeric:tabular-nums}
-.group-touch-grip{display:none}
+.group-touch-grip,.image-touch-grip{display:none}
 @media(pointer:coarse){
- #list.group-tab-open .group-touch-grip{display:grid;place-items:center;width:28px;height:28px;flex:none;padding:0;touch-action:none;user-select:none;-webkit-touch-callout:none}
+ #list.group-tab-open .group-touch-grip,.image-touch-grip{display:grid;place-items:center;width:28px;height:28px;flex:none;padding:0;touch-action:none;user-select:none;-webkit-touch-callout:none}
+ .image-touch-grip{margin:3px auto 0}
 }
-.group-touch-grip.dragging{background:#245b58;border-color:var(--a)}
+.group-touch-grip.dragging,.image-touch-grip.dragging{background:#245b58;border-color:var(--a)}
+#cvs.drag-target{outline:2px solid var(--a);outline-offset:-2px}
+#imageTarget{overflow-wrap:anywhere}
+#imagePane .row{flex-wrap:wrap}
+@media(max-width:600px){#R>.side-tabs button{font-size:clamp(9px,2.65vw,12px);padding-inline:3px}}
 
 
 .unity-export-modal{position:fixed;inset:0;z-index:1400;background:#080a0def;display:flex;align-items:center;justify-content:center;padding:12px}
@@ -423,7 +428,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 </nav>
 
 <div id="L" class="pn">
- <div class="side-tabs"><button id="tabSkeleton" class="active" onclick="showSideTab('skeleton')">Character</button><button id="tabImage" onclick="showSideTab('image')">Image</button><button id="tabEffect" onclick="showSideTab('effect')">Effect</button></div>
+ <div class="side-tabs"><button id="tabSkeleton" class="active" onclick="showSideTab('skeleton')">Character</button><button id="tabEffect" onclick="showSideTab('effect')">Effect</button></div>
  <div id="effectControls" hidden>
   <div class="row"><select id="effectEditSelect" aria-label="Effect đang chỉnh" onchange="selectEffectEditor(this.value)"></select><button onclick="createEffectPackage()">＋ Effect</button></div>
   <div class="row"><button onclick="renameEffectPackage()">Đổi tên</button><button onclick="deleteEffectPackage()">Xóa</button><label><input id="effectLoop" type="checkbox" onchange="setEffectLoop(this.checked)"> Lặp</label></div>
@@ -453,14 +458,6 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   </div>
   <p class="status">Nhập/xuất model và xuất sprite sheet bằng nút công cụ nổi ở góc trên.</p>
  </section>
- <section id="imagePane" class="side-pane" hidden>
-  <div class="row"><label style="width:105px">Kích thước ô (px)</label><input id="importCellSize" type="number" min="1" max="2048" step="1" value="64"></div>
-  <p class="status">Xác định kích thước frame trước khi đưa ảnh lên Canvas. Ảnh gốc vẫn giữ nguyên độ phân giải.</p>
-  <div class="row"><button onclick="openLibrary()">Quản lý ảnh</button><button onclick="$('up').click()">＋ Thêm ảnh</button></div>
-  <input type="file" id="up" accept="image/*" multiple hidden>
-  <p class="status">Chọn ảnh từ máy. Ảnh chỉ tồn tại trong phiên trình duyệt; kéo vào canvas để tạo component.</p>
-  <div id="imageAssets" class="image-assets"></div>
- </section>
 </div>
 <div id="resizeLeft" class="resize-handle resize-vertical" role="separator" aria-orientation="vertical" aria-label="Resize bảng trái"></div>
 <div id="C">
@@ -471,7 +468,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <div id="quickTools">
    <button type="button" id="quickToolsButton" class="canvas-tool-button" title="Công cụ dự án" aria-label="Công cụ dự án" aria-controls="quickToolsPanel" aria-expanded="false" onclick="toggleQuickTools()">⋯</button>
    <div id="quickToolsPanel" class="quick-tools-panel" hidden>
-    <h3>Công cụ dự án · v15</h3>
+    <h3>Công cụ dự án · v16</h3>
     <div class="row"><label for="mn">Tên model</label><input id="mn" value="BoneAnimatorModel" placeholder="Tên model"></div>
     <div class="quick-tools-actions">
      <button type="button" id="saveModelJson" onclick="saveM()">⬇ Xuất JSON</button>
@@ -491,8 +488,16 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 </div>
 <div id="resizeRight" class="resize-handle resize-vertical" role="separator" aria-orientation="vertical" aria-label="Resize bảng phải"></div>
 <div id="R" class="pn">
- <div class="side-tabs"><button id="tabProperties" class="active" onclick="showRightTab('properties')">Properties</button><button id="tabGroupBlock" onclick="showRightTab('group')">GroupBlock</button></div>
+ <div class="side-tabs"><button id="tabProperties" class="active" onclick="showRightTab('properties')">Properties</button><button id="tabImage" onclick="showRightTab('image')">Image</button><button id="tabGroupBlock" onclick="showRightTab('group')">GroupBlock</button></div>
  <section id="rightPropertiesPane" class="side-pane"><div id="props"></div></section>
+ <section id="imagePane" class="side-pane" hidden>
+  <strong id="imageTarget" aria-live="polite">Đích thả ảnh · Character</strong>
+  <div class="row"><label for="importCellSize">Kích thước ô (px)</label><input id="importCellSize" type="number" min="1" max="2048" step="1" value="64"></div>
+  <div class="row"><button onclick="openLibrary()">Quản lý ảnh</button><button onclick="$('up').click()">＋ Thêm ảnh</button></div>
+  <input type="file" id="up" accept="image/*" multiple hidden>
+  <p id="imageCanvasHint" class="status"></p>
+  <div id="imageAssets" class="image-assets"></div>
+ </section>
  <section id="rightGroupPane" class="side-pane group-section" hidden><div id="groupBlockPanel"></div></section>
 </div>
 <div id="resizeBottom" class="resize-handle resize-horizontal" role="separator" aria-orientation="horizontal" aria-label="Resize bảng animation"></div>
@@ -737,14 +742,17 @@ function groupBlockAllows(blockId){
  return true;
 }
 function showRightTab(tab){
- if(activeSideTab!=='skeleton')tab='properties';
- rightTab=tab==='group'?'group':'properties';
+ if(tab==='group'&&activeSideTab!=='skeleton')tab='properties';
+ rightTab=tab==='group'||tab==='image'?tab:'properties';
  $('tabProperties').classList.toggle('active',rightTab==='properties');
+ $('tabImage').classList.toggle('active',rightTab==='image');
  $('tabGroupBlock').classList.toggle('active',rightTab==='group');
  $('rightPropertiesPane').hidden=rightTab!=='properties';
+ $('imagePane').hidden=rightTab!=='image';
  $('rightGroupPane').hidden=rightTab!=='group';
  $('list').classList.toggle('group-tab-open',rightTab==='group');
  if(rightTab==='group')renderGroupBlock();
+ if(rightTab==='image')renderImageAssets();
 }
 /* GroupBlock editor: one preview row per group, directly editable variant cards. */
 function currentGroup(){return M.groupBlocks?.[selectedGroupIndex]||null;}
@@ -767,7 +775,7 @@ function renderGroupBlock(){
  <div class="group-drop" data-group-index="${gi}" data-variant-index="${vi}" ondragover="groupDragOver(event)" ondragleave="groupDragLeave(event)" ondrop="groupDropBlock(event,${gi},${vi})"><div class="group-drop-label">↓ Kéo block từ Skeleton vào ${esc(v.name)}</div>
  ${v.blockIds.map(id=>{const k=M.blocks.find(b=>b.id===id);return `<div class="group-entry"><span>${k?.effectId?'✦':'▣'} ${esc(k?.name||'Block #'+id)} <small>#${id}${k?'':' · hướng khác'}</small></span><button type="button" onclick="removeGroupBlockMember(${id},${gi},${vi})" aria-label="Bỏ block ${id}">×</button></div>`;}).join('')}</div>
  <button type="button" class="group-add-selected" onclick="addSelectedBlockToGroup(${gi},${vi})">＋ Thêm block đang chọn</button></div>`).join('')}</section>`).join('')}
- <p class="group-help">Mỗi block thuộc một biến thể. Trên điện thoại, kéo bằng tay nắm ⠿ ở dòng Block Effect, hoặc chọn Block rồi bấm ＋ Thêm block đang chọn. Chọn None để ẩn biến thể. Có thể Undo.</p>`;
+ <p class="group-help">Mỗi block thuộc một biến thể. Trên điện thoại, kéo bằng tay nắm ⠿ ở dòng Block hoặc Block Effect, hoặc chọn Block rồi bấm ＋ Thêm block đang chọn. Chọn None để ẩn biến thể. Có thể Undo.</p>`;
 }
 function addGroupBlock(){const name=($('groupNameInput')?.value||'').trim();if(!name)return groupMessage('Nhập tên group mới.');if(groupNameTaken(name))return groupMessage('Tên group đã tồn tại.');checkpointUndo();M.groupBlocks.push({name,defaultVariant:'',variants:[]});selectedGroupIndex=M.groupBlocks.length-1;groupRefresh('Đã tạo group-'+name+'. Thêm biến thể ở khung bên dưới.');$('groupVariantInput'+selectedGroupIndex)?.focus();}
 function renameGroupBlock(gi=selectedGroupIndex){const g=M.groupBlocks[gi],name=($('groupRename'+gi)?.value||'').trim();if(!g||!name)return groupMessage('Tên group không được để trống.');if(groupNameTaken(name,gi))return groupMessage('Tên group đã tồn tại.');checkpointUndo();g.name=name;groupRefresh('Đã đổi tên group.');}
@@ -1288,7 +1296,7 @@ function renderList(){
  for(const k of [...M.blocks].sort((a,b)=>String(a.name).localeCompare(String(b.name)))){
   const parent=byId(k.b),kind=parent?`<small>· Gắn vào ${esc(parent.name)}</small>`:'<small>· Block độc lập</small>';
   const demo=k.previewOnly;
-  const grip=k.effectId?`<button type="button" class="group-touch-grip" draggable="false" title="Kéo Effect vào ô biến thể" aria-label="Kéo ${esc(k.name)} vào GroupBlock" onclick="pick('k',${k.id})">⠿</button>`:'';
+  const grip=`<button type="button" class="group-touch-grip" draggable="false" title="Kéo Block vào ô biến thể" aria-label="Kéo ${esc(k.name)} vào GroupBlock" onclick="pick('k',${k.id})">⠿</button>`;
   const row=`<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}${selectionLocked('k')?' selection-locked':''}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn ${k.effectId?'Effect':'block'}" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label${demo?' demo-label':''}">${k.effectId?'✦':'▣'} ${esc(k.name)} ${kind}${demo?' <small>· Demo</small>':''}</span>${grip}<small class="tree-z" title="Lớp Z trong Properties">Z: ${+k.z||0}</small></div>`;
   (k.effectId?effectRows:blockRows).push(row);
  }
@@ -1401,7 +1409,7 @@ window.addEventListener('pointerdown',e=>{if(!$('treeContext').contains(e.target
 window.addEventListener('keydown',e=>{if(e.key==='Escape')hideContextMenu();});
 
 const HOLD_MS=500, TAP_RADIUS=10, DOUBLE_TAP_MS=380;
-let lastObjectTap=null,treeHold=null,skipTreeClickUntil=0,groupTouchDrag=null;
+let lastObjectTap=null,treeHold=null,skipTreeClickUntil=0,panelTouchDrag=null;
 function clearObjectTap(){lastObjectTap=null;}
 function recordObjectTap(surface,target,event){
  const tap={surface,t:target?.t||null,id:target?.id??null,x:event.clientX,y:event.clientY,time:performance.now()};
@@ -1423,6 +1431,18 @@ function cancelTreeHold(){
  if(!treeHold)return;
  clearTimeout(treeHold.timer);treeHold=null;
 }
+function startPanelTouchDrag(event,grip,kind,source){
+ if(panelTouchDrag)return;
+ event.preventDefault();
+ grip.setPointerCapture?.(event.pointerId);
+ grip.classList.add('dragging');
+ panelTouchDrag={pointerId:event.pointerId,kind,source,grip,drop:null};
+}
+function panelDropAt(event,kind){
+ const hit=document.elementFromPoint(event.clientX,event.clientY);
+ if(kind==='image')return rightTab==='image'&&hit===cv?cv:null;
+ return rightTab==='group'?hit?.closest('.group-drop'):null;
+}
 const objectTree=$('list');
 objectTree.addEventListener('click',e=>{
  if(e.target.closest('button,input,select,label'))return;
@@ -1439,10 +1459,8 @@ objectTree.addEventListener('pointerdown',e=>{
  if(target&&selectionLocked(target.t))return;
  const grip=e.target.closest('.group-touch-grip');
  if(grip&&target?.t==='k'&&rightTab==='group'){
-  e.preventDefault();clearObjectTap();
-  grip.setPointerCapture?.(e.pointerId);
-  grip.classList.add('dragging');
-  groupTouchDrag={pointerId:e.pointerId,id:target.id,grip,drop:null};
+  clearObjectTap();
+  startPanelTouchDrag(e,grip,'group',target.id);
   return;
  }
  if(e.target.closest('button,input,select,label'))return;
@@ -1456,28 +1474,31 @@ objectTree.addEventListener('pointerdown',e=>{
 });
 window.addEventListener('pointermove',e=>{
  if(treeHold?.pointerId===e.pointerId&&Math.hypot(e.clientX-treeHold.x,e.clientY-treeHold.y)>TAP_RADIUS)cancelTreeHold();
- if(groupTouchDrag?.pointerId!==e.pointerId)return;
- const drop=document.elementFromPoint(e.clientX,e.clientY)?.closest('.group-drop');
- if(drop===groupTouchDrag.drop)return;
- groupTouchDrag.drop?.classList.remove('drag-target');
+ if(panelTouchDrag?.pointerId!==e.pointerId)return;
+ const drop=panelDropAt(e,panelTouchDrag.kind);
+ if(drop===panelTouchDrag.drop)return;
+ panelTouchDrag.drop?.classList.remove('drag-target');
  drop?.classList.add('drag-target');
- groupTouchDrag.drop=drop;
+ panelTouchDrag.drop=drop;
 });
 for(const name of ['pointerup','pointercancel'])window.addEventListener(name,e=>{
  if(treeHold?.pointerId===e.pointerId)cancelTreeHold();
- if(groupTouchDrag?.pointerId!==e.pointerId)return;
- const {id,grip,drop}=groupTouchDrag;
- groupTouchDrag=null;
+ if(panelTouchDrag?.pointerId!==e.pointerId)return;
+ const {kind,source,grip,drop}=panelTouchDrag;
+ panelTouchDrag=null;
  grip.classList.remove('dragging');
  drop?.classList.remove('drag-target');
- if(name==='pointerup'&&rightTab==='group'&&!selectionLocked('k')){
-  const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('.group-drop');
-  if(target)addGroupBlockMember(id,Number(target.dataset.groupIndex),Number(target.dataset.variantIndex));
- }
+ if(name!=='pointerup')return;
+ const target=panelDropAt(e,kind);
+ if(!target)return;
+ if(kind==='image'){
+  const p=canvasPoint(e);
+  createBlockFromImage(source,toW(p.x,p.y));
+ }else if(!selectionLocked('k'))addGroupBlockMember(source,Number(target.dataset.groupIndex),Number(target.dataset.variantIndex));
 });
 objectTree.addEventListener('contextmenu',e=>{
  e.preventDefault();
- if(groupTouchDrag||e.target.closest('.group-touch-grip'))return;
+ if(panelTouchDrag||e.target.closest('.group-touch-grip'))return;
  const target=treeObjectAt(e.target);
  // The touch timer opens the same menu on devices that do not emit contextmenu.
  if(treeHold||performance.now()<skipTreeClickUntil)return;
@@ -2746,8 +2767,9 @@ function play(){if(!activeSet())return alert('Hãy tạo hoặc chọn animation
 $('fps').onchange=e=>{if(activeSet())A().fps=Math.max(1,+e.target.value||12)};$('nf').onchange=e=>{if(activeSet()){A().frames=Math.max(1,Math.round(+e.target.value||24));frame=clamp(frame,0,lastFrame());syncAnim();draw();}};$('fr').onchange=e=>{if(activeSet()){frame=clamp(+e.target.value||0,0,lastFrame());renderProps();draw();}};
 function syncAnim(){if(!$('fps'))return;const anim=activeSet()?.dirs[M.dir]||emptyAnim();$('fps').value=anim.fps;$('nf').value=anim.frames;$('fr').max=Math.max(0,anim.frames-1);$('fr').value=clamp(frame,0,anim.frames-1);}
 
-/* Tab Skeleton / Image */
+/* Không gian chỉnh Character hoặc Effect */
 function showSideTab(which){
+ if(which!==activeSideTab)pendingImage='';
  if(which==='skeleton'&&editedEffectId)leaveEffectWorkspace();
  activeSideTab=which;
  if(which==='effect'&&!editedEffectId){
@@ -2755,7 +2777,6 @@ function showSideTab(which){
   if(effect){selectEffectEditor(effect.id);return;}
  }
  refreshEffectWorkspaceUI();
- if(which==='image')renderImageAssets();
 }
 function refreshEffectWorkspaceUI(){
  const effects=projectModel().effects||[];
@@ -2764,13 +2785,11 @@ function refreshEffectWorkspaceUI(){
  $('effectControls').hidden=!isEffect;
  $('effectBlockSection').hidden=!isCharacter;
  $('characterEffectControls').hidden=!isCharacter||!effects.length;
- $('imagePane').hidden=activeSideTab!=='image';
  $('skeletonPane').hidden=!isCharacter&&!(isEffect&&editedEffectId);
  $('tabSkeleton').classList.toggle('active',isCharacter);
- $('tabImage').classList.toggle('active',activeSideTab==='image');
  $('tabEffect').classList.toggle('active',isEffect);
  $('tabGroupBlock').hidden=!isCharacter;
- if(!isCharacter)showRightTab('properties');
+ if(!isCharacter&&rightTab==='group')showRightTab('properties');
  document.body.classList.toggle('effect-workspace',!!editedEffectId);
  $('effectEditSelect').innerHTML=options||'<option value="">Chưa có Effect</option>';
  $('effectEditSelect').value=editedEffectId||selectedEffectId;
@@ -2779,6 +2798,7 @@ function refreshEffectWorkspaceUI(){
  if(findEffect(previous))$('effectPasteSelect').value=previous;
  else if(findEffect(selectedEffectId))$('effectPasteSelect').value=selectedEffectId;
  const effect=findEffect(editedEffectId);
+ $('imageTarget').textContent=isCharacter?'Đích thả ảnh · Character':effect?'Đích thả ảnh · Effect / '+effect.name:'Đích thả ảnh · Chọn hoặc tạo Effect';
  $('effectLoop').checked=effect?.loop===true;
  $('effectLoop').disabled=!effect;
  $('effectHint').textContent=effect?'Một rig, một timeline. Tâm Effect ở giao điểm hai trục.':'Bấm ＋ Effect để bắt đầu.';
@@ -2833,7 +2853,7 @@ function leaveEffectWorkspace(){
 }
 function refreshWorkspaceView(){
  playing=false;$('pb').textContent='▶';
- objectClipboard=null;keyClipboard=null;frameClipboard=null;
+ objectClipboard=null;keyClipboard=null;frameClipboard=null;pendingImage='';
  refreshEffectWorkspaceUI();refreshAnimationState();syncRigDirectionTabs();setMode(mode);renderAll();draw();
 }
 function selectEffectEditor(id){
@@ -2965,10 +2985,22 @@ async function addFiles(files,openAfter=true){
  if(accepted.length&&openAfter)openLibrary(LIB[LIB.length-accepted.length]);
 }
 async function loadLib(){renderImageAssets();renderProps();if(!$('imgModal').hidden){renderAssetList();renderAssetPreview();}}
-function renderImageAssets(){$('imageAssets').innerHTML=LIB.map(name=>`<div class="image-asset ${pendingImage===name?'pending':''}" draggable="true" data-name="${esc(name)}" onclick="selectImageForCanvas(this.dataset.name)" ondblclick="openLibrary(this.dataset.name)" oncontextmenu="return imageContextMenu(event,this.dataset.name)" ondragstart="imageDragStart(event,this.dataset.name)"><img src="${imageSrc(name)}"><span>${esc(name)}</span></div>`).join('')||'<span class="status">Chưa có ảnh.</span>';}
-function selectImageForCanvas(name){pendingImage=name;renderImageAssets();$('imagePane').querySelector('.status').textContent='Đã chọn '+name+'. Chạm canvas để tạo component hoặc kéo ảnh vào canvas.';}
+function renderImageAssets(){
+ $('imageAssets').innerHTML=LIB.map(name=>`<div class="image-asset ${pendingImage===name?'pending':''}" draggable="true" data-name="${esc(name)}" onclick="selectImageForCanvas(this.dataset.name)" ondblclick="openLibrary(this.dataset.name)" oncontextmenu="return imageContextMenu(event,this.dataset.name)" ondragstart="imageDragStart(event,this.dataset.name)"><img src="${imageSrc(name)}"><span>${esc(name)}</span><button type="button" class="image-touch-grip" draggable="false" aria-label="Kéo ${esc(name)} vào canvas" onclick="event.stopPropagation()" oncontextmenu="event.preventDefault();event.stopPropagation()">⠿</button></div>`).join('')||'<span class="status">Chưa có ảnh.</span>';
+ $('imageCanvasHint').textContent=pendingImage?'Đã chọn '+pendingImage+'. Chạm canvas để tạo Block.':'Kéo ảnh vào canvas. Trên điện thoại, kéo bằng ⠿ hoặc chọn ảnh rồi chạm canvas.';
+}
+function selectImageForCanvas(name){pendingImage=name;renderImageAssets();}
+$('imageAssets').addEventListener('pointerdown',e=>{
+ if(e.pointerType!=='touch'||!e.isPrimary||rightTab!=='image')return;
+ const grip=e.target.closest('.image-touch-grip');
+ if(grip)startPanelTouchDrag(e,grip,'image',grip.closest('.image-asset').dataset.name);
+});
 function imageDragStart(e,name){e.dataTransfer.effectAllowed='copy';e.dataTransfer.setData('application/x-bone-image',name);e.dataTransfer.setData('text/plain','image:'+name);}
 function createBlockFromImage(name,world){
+ if(!LIB.includes(name))return;
+ if(activeSideTab==='effect'&&!editedEffectId){alert('Chọn hoặc tạo Effect trước khi thả ảnh.');return;}
+ checkpointUndo();
+ if(pendingImage===name)pendingImage='';
  const cellSize=Math.max(1,Math.min(2048,Math.round(+$('importCellSize').value||64)));
  // Chỉ gắn component khi người dùng chọn trực tiếp một Bone; nếu không thì tạo block độc lập.
  const bone=sel&&sel.t==='b'?byId(sel.id):null;
