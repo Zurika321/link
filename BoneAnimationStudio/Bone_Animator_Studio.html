@@ -163,6 +163,19 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 #quickToolsButton{background:#245b58;border-color:var(--a);font-size:22px}
 .quick-tools-panel{position:fixed;width:min(300px,calc(100vw - 16px));overflow:auto;overscroll-behavior:contain;background:#252b35;border:1px solid #566170;border-radius:10px;padding:12px;box-shadow:0 12px 36px #000b}
 .quick-tools-panel[hidden]{display:none!important}.quick-tools-panel h3{font-size:14px;margin:2px 0 10px}.quick-tools-panel .row{margin:7px 0}.quick-tools-panel .row label{width:120px}.quick-tools-panel button{min-height:36px}.quick-tools-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.quick-tools-actions button{width:100%}
+#effectExportList{margin-bottom:12px}
+#effectExportSelectAll{margin:0 5px 0 0}
+#effectExportPpuRow[hidden],#effectSequenceDelivery[hidden]{display:none}
+.web-json-option{display:flex;align-items:center;gap:7px;margin:9px 0}
+.web-json-option[hidden]{display:none}
+#effectSequenceOrder{padding:0;margin:8px 0;list-style:none}
+#effectSequenceOrder li{display:flex;align-items:center;gap:5px;margin:4px 0}
+#effectSequenceOrder span{flex:1;overflow-wrap:anywhere}
+#effectSequenceOrder button{min-width:34px;min-height:34px}
+#effectDownloadList{display:grid;gap:7px;margin:10px 0}
+#effectDownloadList button{min-height:42px;text-align:left;overflow-wrap:anywhere}
+#effectExportStatus{white-space:pre-line;margin:8px 0}
+#modelNameModal button:disabled,#effectExportModal button:disabled{opacity:.45;cursor:default}
 .sprite-modal{position:fixed;inset:0;z-index:1300;background:#080a0def;display:flex;align-items:center;justify-content:center;padding:12px}
 .sprite-modal[hidden]{display:none!important}.sprite-dialog{width:min(560px,100%);max-height:94dvh;overflow:auto;background:#222832;border:1px solid #586273;border-radius:12px;box-shadow:0 18px 70px #000c;padding:16px}
 .sprite-dialog h3{margin:0 0 12px}.sprite-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.sprite-animation-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.sprite-animation-list label{display:flex;align-items:center;gap:8px;background:#303642;border:1px solid #414a58;border-radius:6px;padding:8px;min-width:0}.sprite-animation-list input{width:18px;min-height:18px;flex:none}.sprite-animation-list span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sprite-animation-list small{color:#9da8b7;margin-left:auto;white-space:nowrap}.sprite-grid label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:#c5ccd5}.sprite-grid input,.sprite-grid select{width:100%;min-height:40px;font-size:15px}.sprite-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;flex-wrap:wrap}
@@ -446,11 +459,12 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
     <h3>Công cụ dự án</h3>
     <div class="row"><label for="mn">Tên model</label><input id="mn" value="BoneAnimatorModel" placeholder="Tên model"></div>
     <div class="quick-tools-actions">
-     <button type="button" onclick="saveM()">⬇ Xuất JSON</button>
-     <button type="button" onclick="exportM()">Tải JSON</button>
+     <button type="button" id="saveModelJson" onclick="saveM()">⬇ Xuất JSON</button>
      <button type="button" onclick="openUnityExportSettings()">⬇ Unity JSON</button>
      <button type="button" onclick="$('modelImport').click()">⬆ Nhập JSON</button>
      <button type="button" onclick="openSpriteExport()">▦ Xuất Sprite Sheet</button>
+     <button type="button" onclick="openEffectExport('sprites')">▦ Sprite Sheet Effect</button>
+     <button type="button" onclick="openEffectExport('unity')">⬇ Effect Unity JSON</button>
     </div>
     <input id="modelImport" type="file" accept=".json,application/json" multiple hidden>
     <h3 class="session-models-title">JSON trong phiên</h3>
@@ -512,6 +526,56 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <label style="display:flex;align-items:center;gap:8px;margin-top:8px"><input id="spriteIncludeDemo" type="checkbox" style="width:18px;height:18px"> Thêm Demo (xương, Block và Effect)</label>
   <div id="spriteExportStatus" class="status"></div>
   <div class="sprite-actions"><button type="button" onclick="closeSpriteExport()">Huỷ</button><button type="button" class="active" onclick="exportSpriteSheet()">Chỉ xuất PNG</button></div>
+ </section>
+</div>
+<div id="modelNameModal" class="sprite-modal" hidden>
+ <section class="sprite-dialog" role="dialog" aria-modal="true" aria-labelledby="modelNameTitle">
+  <h3 id="modelNameTitle">Đặt tên file JSON</h3>
+  <form id="modelNameForm">
+   <div class="row"><label for="exportModelName">Tên model</label><input id="exportModelName" type="text" required></div>
+   <div class="sprite-actions">
+    <button type="button" onclick="closeModelNameDialog()">Hủy</button>
+    <button type="submit" id="confirmModelName" class="active" disabled>OK</button>
+   </div>
+  </form>
+ </section>
+</div>
+<div id="effectExportModal" class="sprite-modal" hidden>
+ <section class="sprite-dialog" role="dialog" aria-modal="true" aria-labelledby="effectExportTitle">
+  <h3 id="effectExportTitle">Xuất Effect</h3>
+  <p class="status" id="effectExportHelp"></p>
+  <div id="effectSequenceSettings" hidden>
+   <div class="row">
+    <label for="effectSequenceSelect">Chuỗi Effect</label>
+    <select id="effectSequenceSelect" aria-label="Chuỗi Effect đang chỉnh"></select>
+    <button type="button" id="addEffectSequence" onclick="addEffectSequence()">＋ Chuỗi</button>
+    <button type="button" id="removeEffectSequence" onclick="removeEffectSequence()">Xóa</button>
+   </div>
+   <div class="row"><label for="effectSequenceName">Tên chuỗi</label><input id="effectSequenceName" type="text"></div>
+  </div>
+  <label><input type="checkbox" id="effectExportSelectAll"> Chọn tất cả</label>
+  <div id="effectExportList" class="sprite-animation-list"></div>
+  <ol id="effectSequenceOrder" aria-label="Thứ tự Effect trong chuỗi" hidden></ol>
+  <div class="row" id="effectSequenceDelivery" hidden>
+   <label for="effectSequenceDownloadMode">Tải nhiều chuỗi</label>
+   <select id="effectSequenceDownloadMode"><option value="zip">Đóng ZIP</option><option value="separate">Tải từng PNG</option></select>
+  </div>
+  <div id="effectExportPpuRow" class="row" hidden><label for="effectExportPpu">Pixels Per Unit</label><input type="number" id="effectExportPpu" min="1" max="2048" step="1" value="100"></div>
+  <label class="web-json-option" id="effectWebJsonOption" hidden><input id="effectIncludeWebJson" type="checkbox"> Xuất kèm JSON chỉnh sửa (Web)</label>
+  <button type="button" id="effectWebJsonDownload" onclick="downloadEditableJson('effectWebJsonDownload')" hidden>Tải lại JSON chỉnh sửa</button>
+  <div id="effectExportStatus" class="status" role="status"></div>
+  <div class="sprite-actions">
+   <button type="button" id="closeEffectExport" onclick="closeEffectExport()">Hủy</button>
+   <button type="button" id="confirmEffectExport" class="active" onclick="exportSelectedEffects()" disabled>Xuất</button>
+  </div>
+ </section>
+</div>
+<div id="effectDownloadModal" class="sprite-modal" hidden>
+ <section class="sprite-dialog" role="dialog" aria-modal="true" aria-labelledby="effectDownloadTitle">
+  <h3 id="effectDownloadTitle">Tải từng chuỗi Effect</h3>
+  <p class="status">Bấm tên file để tải PNG tương ứng.</p>
+  <div id="effectDownloadList"></div>
+  <div class="sprite-actions"><button type="button" onclick="closeEffectDownloads()">Đóng</button></div>
  </section>
 </div>
 <div id="imgModal" class="modal" hidden>
@@ -578,6 +642,8 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
    <p class="unity-export-note">Schema v2: giữ nguyên GroupBlock / Block Keyframe, đồng thời xuất Easing từng keyframe và Skew/Mesh 4 góc sang Unity. Reader mới chấp nhận cả JSON v1 và v2. Keyframe Bone sẽ được nội suy liên tục trong Unity. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết. Tên SFX và dropdown RegistryId sẽ được cấu hình trong Inspector của CharacterAnimation sau khi dán JSON.</p>
    <div class="unity-animation-row" style="font-size:11px;color:#9da8b7;font-weight:700"><span>ANIMATION</span><span>LOOP</span><span>ATTACK / SKILL</span><span>CAST START</span><span>CAST END</span></div>
    <div id="unityAnimationSettings"></div>
+   <label class="web-json-option"><input id="unityIncludeWebJson" type="checkbox"> Xuất kèm JSON chỉnh sửa (Web)</label>
+   <button type="button" id="unityWebJsonDownload" onclick="downloadEditableJson('unityWebJsonDownload')" hidden>Tải lại JSON chỉnh sửa</button>
    <div id="unityExportStatus" class="unity-export-status"></div>
   </div>
   <footer class="unity-export-foot"><button type="button" onclick="closeUnityExportSettings()">Huỷ</button><button type="button" class="active" onclick="exportUnityJson()">⬇ Xuất _unity.json</button></footer>
@@ -3055,10 +3121,16 @@ function openUnityExportSettings(){
  M.animationSets.forEach(ensureUnityMeta);
  renderUnityAnimationSettings();
  $('unityExportStatus').textContent='';
+ $('unityIncludeWebJson').checked=false;
+ clearEditableJson('unityWebJsonDownload');
  $('unityExportModal').hidden=false;
  setQuickToolsOpen(false);
 }
-function closeUnityExportSettings(){$('unityExportModal').hidden=true;}
+function closeUnityExportSettings(){
+ if(exportingUnity)return;
+ $('unityExportModal').hidden=true;
+ clearEditableJson('unityWebJsonDownload');
+}
 function renderUnityAnimationSettings(){
  const host=$('unityAnimationSettings');
  host.innerHTML=M.animationSets.map((set,index)=>{
@@ -3219,13 +3291,19 @@ function newBounds(){
   get(){return Number.isFinite(minX)?{minX,minY,maxX,maxY,width:Math.max(1,maxX-minX),height:Math.max(1,maxY-minY)}:null;}
  };
 }
-function bakeEffectClip(effect,assetName){
- const count=Math.round(+effect.animation.frames||0),fps=+effect.animation.fps;
- if(!Number.isInteger(count)||count<1||count>1000||!Number.isFinite(fps)||fps<=0)
-  throw new Error('Effect '+effect.name+': cần 1–1000 frame và FPS hợp lệ.');
+function renderEffectAtlas(effects){
  const bounds=newBounds(),canvas=document.createElement('canvas'),g=canvas.getContext('2d');
- const paint=(index,measure)=>withEffectFrame(effect,index,()=>paintRigBlocks(g,false,measure,false));
- for(let f=0;f<count;f++)paint(f,bounds.add);
+ const paint=(effect,index,measure)=>withEffectFrame(effect,index,()=>paintRigBlocks(g,false,measure,false));
+ const counts=effects.map(effect=>{
+  const frames=Math.round(+effect.animation.frames||0),fps=+effect.animation.fps;
+  if(!Number.isInteger(frames)||frames<1||frames>1000||!Number.isFinite(fps)||fps<=0)
+   throw new Error('Effect '+effect.name+': cần 1–1000 frame và FPS hợp lệ.');
+  return frames;
+ });
+ const count=counts.reduce((total,frames)=>total+frames,0);
+ effects.forEach((effect,index)=>{
+  for(let frame=0;frame<counts[index];frame++)paint(effect,frame,bounds.add);
+ });
  const visible=bounds.get();if(!visible)return null;
  const left=Math.floor(Math.min(0,visible.minX))-2,top=Math.floor(Math.min(0,visible.minY))-2;
  const right=Math.ceil(Math.max(0,visible.maxX))+2,bottom=Math.ceil(Math.max(0,visible.maxY))+2;
@@ -3233,16 +3311,25 @@ function bakeEffectClip(effect,assetName){
  const columns=Math.min(count,Math.floor(maxSide/width));
  const rows=Math.ceil(count/Math.max(1,columns));
  if(columns<1||rows*height>maxSide)
-  throw new Error('Atlas Effect '+effect.name+' vượt 4096 px. Hãy giảm kích thước hoặc số frame.');
+  throw new Error('Atlas vượt 4096 px. Hãy giảm kích thước hoặc số frame.');
  canvas.width=columns*width;canvas.height=rows*height;g.imageSmoothingEnabled=false;
- for(let f=0;f<count;f++){
-  const x=f%columns*width,y=Math.floor(f/columns)*height;
-  g.setTransform(1,0,0,1,x-left,y-top);paint(f);
- }
+ let cell=0;
+ effects.forEach((effect,index)=>{
+  for(let frame=0;frame<counts[index];frame++,cell++){
+   const x=cell%columns*width,y=Math.floor(cell/columns)*height;
+   g.setTransform(1,0,0,1,x-left,y-top);paint(effect,frame);
+  }
+ });
+ return {canvas,frameCount:count,frameWidth:width,frameHeight:height,columns,pivotX:-left/width,pivotY:bottom/height};
+}
+function bakeEffectClip(effect,assetName){
+ const atlas=renderEffectAtlas([effect]);if(!atlas)return null;
+ const {canvas,...layout}=atlas;
  const dataUrl=canvas.toDataURL('image/png');
+ canvas.width=canvas.height=0;
  if(!dataUrl.startsWith('data:image/png;base64,'))throw new Error('Không tạo được atlas Effect '+effect.name+'.');
  return {
-  clip:{id:effect.id,name:effect.name,asset:assetName,frameRate:fps,frameCount:count,frameWidth:width,frameHeight:height,columns,pivotX:-left/width,pivotY:bottom/height},
+  clip:{id:effect.id,name:effect.name,loop:!!effect.loop,frameRate:+effect.animation.fps,asset:assetName,...layout},
   asset:{name:assetName,dataUrl}
  };
 }
@@ -3251,11 +3338,14 @@ async function exportUnityJson(){
  if(exportingUnity)return;
  const status=$('unityExportStatus');
  exportingUnity=true;
+ $('unityIncludeWebJson').disabled=true;
+ clearEditableJson('unityWebJsonDownload');
  try{
   const validation=unityValidateModel();
   if(validation.errors.length)throw new Error(validation.errors.join('\n• '));
   const payload=unityBuildPayload(),effects=cloneData(M.effects||[]);
   const name=String($('mn').value.trim()||'Character').replace(/[^a-z0-9_-]+/gi,'_');
+  const editable=$('unityIncludeWebJson').checked?modelPackage():null;
   status.textContent='Đang tạo các clip Effect…';
   await Promise.all([...new Set(effects.flatMap(e=>[...effectAssetNames(e)]))].map(prepareImage));
   const used=new Set(payload.assets.map(a=>a.name));
@@ -3267,9 +3357,10 @@ async function exportUnityJson(){
    used.add(assetName);(payload.effects??=[]).push(baked.clip);payload.assets.push(baked.asset);
   }
   downloadJSON(name+'_unity.json',payload);
-  status.textContent='Đã xuất '+name+'_unity.json · '+payload.animations.length+' animation Character · '+(payload.effects?.length||0)+' clip Effect'+(validation.warnings.length?'\n• '+validation.warnings.join('\n• '):'');
+  const companion=exportEditableJson('unityWebJsonDownload',name,editable);
+  status.textContent='Đã xuất '+name+'_unity.json · '+payload.animations.length+' animation Character · '+(payload.effects?.length||0)+' clip Effect'+companion+(validation.warnings.length?'\n• '+validation.warnings.join('\n• '):'');
  }catch(error){status.textContent='KHÔNG THỂ XUẤT\n• '+error.message;}
- finally{exportingUnity=false;}
+ finally{exportingUnity=false;$('unityIncludeWebJson').disabled=false;}
 }
 
 /* Model files stay in the current browser tab. */
@@ -3279,9 +3370,42 @@ function modelPackage(){
   assets:Object.fromEntries(LIB.map(name=>[name,imageData[name]]).filter(([,data])=>!!data))};
 }
 function downloadJSON(filename,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function exportM(){const name=($('mn').value.trim()||'BoneAnimatorModel').replace(/[^a-z0-9_-]+/gi,'_');downloadJSON(name+'.json',modelPackage());}
+const editableJsonDownloads=new Map();
+function clearEditableJson(buttonId){
+ editableJsonDownloads.delete(buttonId);
+ $(buttonId).hidden=true;
+}
+function exportEditableJson(buttonId,basename,project){
+ if(!project)return '';
+ const filename=basename+'.json';
+ editableJsonDownloads.set(buttonId,{filename,project});
+ $(buttonId).hidden=false;
+ downloadEditableJson(buttonId);
+ return '\n• JSON để nhập lại web · '+filename;
+}
+function downloadEditableJson(buttonId){
+ const backup=editableJsonDownloads.get(buttonId);
+ if(backup)downloadJSON(backup.filename,backup.project);
+}
+function closeModelNameDialog(){
+ $('modelNameModal').hidden=true;
+ $('saveModelJson').focus();
+}
+$('exportModelName').addEventListener('input',()=>{$('confirmModelName').disabled=!$('exportModelName').value.trim();});
+$('modelNameForm').addEventListener('submit',event=>{
+ event.preventDefault();
+ const name=$('exportModelName').value.trim();if(!name)return;
+ $('mn').value=name;
+ closeModelNameDialog();
+ saveM();
+});
 function saveM(){
- const name=$('mn').value.trim();if(!name){setSessionStatus('Nhập tên model trước khi xuất JSON.');return;}
+ const name=$('mn').value.trim();
+ if(!name){
+  $('exportModelName').value='';$('confirmModelName').disabled=true;
+  $('modelNameModal').hidden=false;$('exportModelName').focus();
+  return;
+ }
  const pack=modelPackage(),filename=name.replace(/[^a-z0-9_-]+/gi,'_')+'.json';
  let item=sessionModels.find(item=>item.saved&&item.name===filename);
  if(item)item.package=pack;
@@ -3541,7 +3665,7 @@ function toggleQuickTools(){
 window.addEventListener('resize',positionQuickTools);
 new ResizeObserver(positionQuickTools).observe($('C'));
 window.addEventListener('pointerdown',e=>{
- if(!$('quickToolsPanel').hidden&&!$('quickTools').contains(e.target)&&!$('sessionImportDialog').contains(e.target))setQuickToolsOpen(false);
+ if(!$('quickToolsPanel').hidden&&!$('quickTools').contains(e.target)&&!$('sessionImportDialog').contains(e.target)&&!$('modelNameModal').contains(e.target))setQuickToolsOpen(false);
 });
 $('sessionImportDialog').addEventListener('click',e=>{if(e.target===$('sessionImportDialog'))closeSessionChoice();});
 $('modelImport').addEventListener('change',async e=>{
@@ -3562,6 +3686,178 @@ $('modelImport').addEventListener('change',async e=>{
  showNextSessionChoice();
 });
 renderSessionModels();
+
+let effectExportMode='sprites',exportingEffects=false;
+let effectSequences=[],activeEffectSequence=0,nextEffectSequence=1,effectDownloads=[];
+function effectExportChoices(){return [...$('effectExportList').querySelectorAll('input[type="checkbox"]')];}
+function renderEffectSequenceOrder(){
+ const sequence=effectSequences[activeEffectSequence];
+ const names=new Map((projectModel().effects||[]).map(effect=>[effect.id,effect.name]));
+ $('effectSequenceOrder').innerHTML=sequence.ids.map((id,index)=>`<li><span>${index+1}. ${esc(names.get(id)||id)}</span>
+  <button type="button" aria-label="Đưa lên" onclick="moveEffectInSequence(${index},-1)" ${index===0||exportingEffects?'disabled':''}>↑</button>
+  <button type="button" aria-label="Đưa xuống" onclick="moveEffectInSequence(${index},1)" ${index===sequence.ids.length-1||exportingEffects?'disabled':''}>↓</button></li>`).join('');
+}
+function syncEffectExportChoices(){
+ const choices=effectExportChoices(),count=choices.filter(input=>input.checked).length;
+ const all=$('effectExportSelectAll');
+ all.checked=count>0&&count===choices.length;
+ all.indeterminate=count>0&&count<choices.length;
+ all.disabled=exportingEffects||choices.length===0;
+ const grouped=effectExportMode==='sprites';
+ $('confirmEffectExport').disabled=exportingEffects||(grouped?effectSequences.some(sequence=>!sequence.ids.length):count===0);
+ if(grouped){
+  $('removeEffectSequence').disabled=exportingEffects||effectSequences.length<2;
+  $('effectSequenceDelivery').hidden=effectSequences.length<2;
+  renderEffectSequenceOrder();
+ }
+}
+function updateEffectSequenceChecks(){
+ if(effectExportMode==='sprites'){
+  const ids=effectSequences[activeEffectSequence].ids;
+  const checked=effectExportChoices().filter(input=>input.checked).map(input=>input.value);
+  effectSequences[activeEffectSequence].ids=[...ids.filter(id=>checked.includes(id)),...checked.filter(id=>!ids.includes(id))];
+ }
+ syncEffectExportChoices();
+}
+function selectEffectSequence(index){
+ activeEffectSequence=index;
+ const select=$('effectSequenceSelect'),sequence=effectSequences[index];
+ select.innerHTML=effectSequences.map((item,i)=>`<option value="${i}">${esc(item.name.trim()||('Chuỗi '+(i+1)))}</option>`).join('');
+ select.value=String(index);
+ $('effectSequenceName').value=sequence.name;
+ for(const input of effectExportChoices())input.checked=sequence.ids.includes(input.value);
+ syncEffectExportChoices();
+}
+function addEffectSequence(){
+ if(exportingEffects)return;
+ effectSequences.push({name:'Chuỗi '+nextEffectSequence++,ids:[]});
+ selectEffectSequence(effectSequences.length-1);
+}
+function removeEffectSequence(){
+ if(exportingEffects||effectSequences.length<2)return;
+ effectSequences.splice(activeEffectSequence,1);
+ selectEffectSequence(Math.min(activeEffectSequence,effectSequences.length-1));
+}
+function moveEffectInSequence(index,step){
+ if(exportingEffects)return;
+ const ids=effectSequences[activeEffectSequence].ids,to=index+step;
+ if(to<0||to>=ids.length)return;
+ [ids[index],ids[to]]=[ids[to],ids[index]];
+ renderEffectSequenceOrder();
+}
+$('effectSequenceSelect').addEventListener('change',event=>selectEffectSequence(+event.target.value));
+$('effectSequenceName').addEventListener('input',event=>{
+ const sequence=effectSequences[activeEffectSequence];
+ sequence.name=event.target.value;
+ $('effectSequenceSelect').options[activeEffectSequence].textContent=sequence.name.trim()||('Chuỗi '+(activeEffectSequence+1));
+});
+$('effectExportSelectAll').addEventListener('change',event=>{
+ for(const input of effectExportChoices())input.checked=event.target.checked;
+ updateEffectSequenceChecks();
+});
+$('effectExportList').addEventListener('change',updateEffectSequenceChecks);
+function openEffectExport(mode){
+ if(exportingEffects)return;
+ effectExportMode=mode;
+ const unity=mode==='unity',effects=projectModel().effects||[];
+ $('effectExportTitle').textContent=unity?'Xuất Effect Unity JSON':'Xuất Sprite Sheet Effect';
+ $('effectExportHelp').textContent=unity
+  ?'Gán file _effect_unity.json vào ObjectAnimation trong Unity. File chứa atlas PNG, FPS, tâm và chế độ lặp của từng Effect.'
+  :'Mỗi chuỗi xuất một PNG nền trong suốt. Tick các Effect rồi dùng ↑ ↓ để xếp thứ tự frame, ví dụ Bay → Nổ.';
+ $('effectExportPpuRow').hidden=!unity;
+ $('effectWebJsonOption').hidden=!unity;
+ $('effectIncludeWebJson').checked=false;
+ clearEditableJson('effectWebJsonDownload');
+ $('effectSequenceSettings').hidden=unity;$('effectSequenceOrder').hidden=unity;
+ $('effectSequenceDelivery').hidden=true;
+ $('effectExportList').innerHTML=effects.map(effect=>`<label><input type="checkbox" value="${esc(effect.id)}" checked><span>${esc(effect.name)}</span></label>`).join('');
+ $('effectExportStatus').textContent=effects.length?'':'Chưa có Effect. Hãy tạo trong tab Effect.';
+ if(unity)syncEffectExportChoices();
+ else{
+  effectSequences=[{name:'Chuỗi 1',ids:effects.map(effect=>effect.id)}];
+  nextEffectSequence=2;$('effectSequenceDownloadMode').value='zip';
+  selectEffectSequence(0);
+ }
+ $('effectExportModal').hidden=false;
+ setQuickToolsOpen(false);
+}
+function closeEffectExport(){
+ if(exportingEffects)return;
+ $('effectExportModal').hidden=true;
+ clearEditableJson('effectWebJsonDownload');
+ $('quickToolsButton').focus();
+}
+function openEffectDownloads(files){
+ effectDownloads=files;
+ $('effectDownloadList').innerHTML=files.map((file,i)=>`<button type="button" onclick="downloadEffectSheet(${i})">⬇ ${esc(file.name)}<br><small>${esc(file.info)}</small></button>`).join('');
+ $('effectExportModal').hidden=true;$('effectDownloadModal').hidden=false;
+}
+function closeEffectDownloads(){
+ effectDownloads=[];$('effectDownloadList').innerHTML='';
+ $('effectDownloadModal').hidden=true;$('effectExportModal').hidden=false;
+ $('confirmEffectExport').focus();
+}
+function downloadEffectSheet(index){
+ const file=effectDownloads[index];
+ if(file)downloadBlob(file.blob,file.name);
+}
+async function exportSelectedEffects(){
+ if(exportingEffects)return;
+ const unity=effectExportMode==='unity',status=$('effectExportStatus');
+ if(!unity&&effectSequences.some(sequence=>!sequence.ids.length))return;
+ const sequences=unity?[]:cloneData(effectSequences);
+ const ids=new Set(unity?effectExportChoices().filter(input=>input.checked).map(input=>input.value):sequences.flatMap(sequence=>sequence.ids));
+ flushEffectWorkspace();
+ const effects=cloneData((projectModel().effects||[]).filter(effect=>ids.has(effect.id)));
+ if(!effects.length)return;
+ const base=fileStem($('mn').value.trim()||'BoneAnimatorModel');
+ const ppu=clamp(Math.round(+$('effectExportPpu').value||100),1,2048);
+ const separate=$('effectSequenceDownloadMode').value==='separate';
+ exportingEffects=true;
+ clearEditableJson('effectWebJsonDownload');
+ const inputs=[...effectExportChoices(),...['effectExportPpu','effectIncludeWebJson','closeEffectExport','effectSequenceSelect','effectSequenceName','addEffectSequence','effectSequenceDownloadMode'].map($)];
+ inputs.forEach(input=>input.disabled=true);
+ syncEffectExportChoices();
+ status.textContent='Đang tạo atlas Effect…';
+ try{
+  const editable=unity&&$('effectIncludeWebJson').checked?modelPackage():null;
+  await Promise.all([...new Set(effects.flatMap(effect=>[...effectAssetNames(effect)]))].map(prepareImage));
+  if(unity){
+   const payload={format:'BoneAnimatorEffectUnity',schemaVersion:1,pixelsPerUnit:ppu,effects:[],assets:[]};
+   for(const [index,effect] of effects.entries()){
+    const baked=bakeEffectClip(effect,`effect_${index+1}.png`);
+    if(!baked)throw new Error('Effect «'+effect.name+'» chưa có Block hiển thị.');
+    payload.effects.push(baked.clip);payload.assets.push(baked.asset);
+   }
+   const filename=base+'_effect_unity.json';
+   downloadJSON(filename,payload);
+   status.textContent='Đã xuất '+filename+' · '+effects.length+' Effect.'+exportEditableJson('effectWebJsonDownload',base,editable);
+  }else{
+   const files=[],effectsById=new Map(effects.map(effect=>[effect.id,effect]));
+   for(const [index,sequence] of sequences.entries()){
+    const clips=sequence.ids.map(id=>effectsById.get(id)).filter(Boolean);
+    const name=sequence.name.trim()||('Chuỗi '+(index+1));
+    const atlas=renderEffectAtlas(clips);
+    if(!atlas)throw new Error('Chuỗi «'+name+'» chưa có Block hiển thị.');
+    const blob=await new Promise(resolve=>atlas.canvas.toBlob(resolve,'image/png'));
+    atlas.canvas.width=atlas.canvas.height=0;
+    if(!blob)throw new Error('Không tạo được PNG cho chuỗi «'+name+'».');
+    const prefix=sequences.length>1?`${index+1}_`:'';
+    const info=`${atlas.frameCount} frame · ${atlas.columns} cột · Ô ${atlas.frameWidth} × ${atlas.frameHeight} px`;
+    files.push({name:prefix+fileStem(name)+'_spritesheet.png',blob,info});
+   }
+   if(files.length===1)await downloadBlob(files[0].blob,files[0].name);
+   else if(separate)openEffectDownloads(files);
+   else await downloadBlob(await buildStoredZip(files),base+'_effect_spritesheets.zip');
+   status.textContent=files.map(file=>file.name+' · '+file.info).join('\n');
+  }
+ }catch(error){status.textContent='Lỗi xuất Effect: '+error.message;}
+ finally{
+  exportingEffects=false;
+  inputs.forEach(input=>input.disabled=false);
+  syncEffectExportChoices();
+ }
+}
 
 function selectedSpriteAnimations(){
  return [...$('spriteAnimationList').querySelectorAll('input[type="checkbox"]:checked')]
@@ -3826,6 +4122,9 @@ function installPanelResizers(){
 
 /* Phím tắt / vòng lặp */
 window.addEventListener('keydown',e=>{
+ if(!$('modelNameModal').hidden){if(e.key==='Escape'){e.preventDefault();closeModelNameDialog();}return;}
+ if(!$('effectDownloadModal').hidden){if(e.key==='Escape'){e.preventDefault();closeEffectDownloads();}return;}
+ if(!$('effectExportModal').hidden){if(e.key==='Escape'){e.preventDefault();closeEffectExport();}return;}
  if(!$('sessionImportDialog').hidden){if(e.key==='Escape'){e.preventDefault();closeSessionChoice();}return;}
  const textEditing=e.target.tagName==='TEXTAREA'||(e.target.tagName==='INPUT'&&['text','search','email','url','password'].includes((e.target.type||'').toLowerCase()));
  if((e.ctrlKey||e.metaKey)&&!textEditing&&$('imgModal').hidden){
