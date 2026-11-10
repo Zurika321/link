@@ -131,13 +131,13 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 /* Floating project tools stay over the canvas and leave the Properties column clear. */
 
 #mainMenu{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 10px;background:#20252d;border-bottom:1px solid var(--l);min-width:0;z-index:100}
-#mainMenu button,#mainMenu label,#mainMenu select,#mainMenu input,#mainMenu .toolbar,#mainMenu .menu-feature-pill,#mainMenu .nudge-pad{flex-shrink:0;white-space:nowrap}
+#mainMenu button,#mainMenu label,#mainMenu select,#mainMenu input,#mainMenu .toolbar,#mainMenu .menu-feature-pill{flex-shrink:0;white-space:nowrap}
 .brand{display:flex;flex-direction:column;gap:0;min-width:155px;line-height:1.15;white-space:nowrap;flex-shrink:0}.brand strong{font-size:14px;letter-spacing:.2px}.brand small{font-size:10px;color:var(--m)}
 .menu-center{display:flex;align-items:center;justify-content:flex-start;gap:6px;min-width:0;flex:1;overflow-x:auto;scrollbar-width:thin}.menu-center::-webkit-scrollbar{height:3px}.menu-center::-webkit-scrollbar-thumb{background:#3e4756;border-radius:3px}
 .mode-switch{min-width:104px;font-weight:650}.menu-center .toolbar{margin:0;flex-wrap:nowrap;flex-shrink:0}.menu-center .toolbar button{min-width:72px;flex:0 0 auto;padding:5px 8px}
 #ikFlipBtn[hidden],#menuEasingSelect[hidden],#menuSkewSubControls[hidden]{display:none!important}
 .menu-sub-inline{display:inline-flex;align-items:center;gap:4px}
-.menu-right{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0;flex-shrink:0}.menu-right .nudge-pad{display:flex;grid-template:none;gap:3px;margin:0;width:auto}.menu-right .nudge-pad button{min-width:25px;min-height:26px;width:25px;padding:2px}.menu-right .nudge-pad .n-up,.menu-right .nudge-pad .n-left,.menu-right .nudge-pad .n-down,.menu-right .nudge-pad .n-right{grid-area:auto}
+.menu-right{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0;flex-shrink:0}
 .visibility-toggle{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#c7ced8;white-space:nowrap;cursor:pointer}.visibility-toggle input{width:15px;height:15px;margin:0}
 .menu-feature-pill{display:inline-flex;align-items:center;gap:4px;background:#28303c;border:1px solid var(--l);border-radius:5px;padding:2px 6px;font-size:11px;color:#d6dde6;white-space:nowrap;flex-shrink:0}
 .menu-feature-pill select{padding:2px 4px;font-size:11px;height:22px;background:#1d222b}
@@ -157,7 +157,7 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
  .menu-right{width:100%;flex:0 0 auto;justify-content:space-between;gap:5px;border-top:1px solid #2f3642;padding-top:3px;overflow-x:auto;scrollbar-width:none}
  .menu-right::-webkit-scrollbar{display:none}
  .visibility-toggle{font-size:10px;gap:3px}
- .menu-right .nudge-pad button{width:23px;min-width:23px;min-height:24px;font-size:10px}
+
  #mainMenu .quick-tools-panel{position:fixed;top:76px;right:8px;z-index:1350}
  #hint{top:auto;bottom:6px;left:6px;right:6px;max-width:calc(100% - 12px);font-size:10px;line-height:1.35}
 }
@@ -178,10 +178,10 @@ h4{margin:10px 0 4px;color:var(--m);font-weight:600}#lib{display:flex;flex-wrap:
 .rig-direction-tabs button{min-width:0;padding:6px 3px;font-size:11px}
 .rig-direction-tabs button.active{background:#246d68;border-color:var(--a);color:#fff}
 .rig-direction-tabs .sync-rig-btn{grid-column:1/-1;background:#303a46}
-.nudge-pad{display:grid;grid-template-columns:repeat(3,32px);grid-template-rows:repeat(3,28px);gap:2px;margin:6px 0;align-items:center;width:max-content}
-.nudge-pad button{min-width:30px;min-height:26px;padding:1px;font-size:12px}
-.nudge-pad .n-up{grid-area:1/2}.nudge-pad .n-left{grid-area:2/1}.nudge-pad .n-right{grid-area:2/3}.nudge-pad .n-down{grid-area:3/2}
-@media(max-width:600px){.rig-direction-tabs{gap:3px}.rig-direction-tabs button{font-size:10px;padding:5px 1px}.nudge-pad{grid-template-columns:repeat(3,28px);grid-template-rows:repeat(3,26px)}.nudge-pad button{min-width:26px;min-height:24px}}
+
+
+
+@media(max-width:600px){.rig-direction-tabs{gap:3px}.rig-direction-tabs button{font-size:10px;padding:5px 1px}}
 .preset-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
 .preset-actions button{font-size:11px;padding:6px 2px;white-space:normal;min-height:34px}
 
@@ -356,6 +356,8 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 #cvs{-webkit-touch-callout:none}
 #treeContext{max-width:calc(100vw - 8px);max-height:calc(100dvh - 8px);overflow:auto}
 @media(pointer:coarse){#treeContext button{min-height:40px}.tree-row{-webkit-user-drag:none}}
+.selection-lock:has(input:checked){color:#ffd166;font-weight:650}
+.tree-row.selection-locked .tree-label{opacity:.52}
 </style>
 </head>
 <body>
@@ -370,6 +372,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
    <button id="toolMove" class="active" onclick="setTool('move')">↔ Di chuyển</button>
    <button id="toolRotate" onclick="setTool('rotate')">⟳ Xoay</button>
    <button id="toolScale" onclick="setTool('scale')">⤢ Thu phóng</button>
+   <button id="toolFree" onclick="setTool('free')" title="Kéo góc để thu phóng hoặc kéo vòng để xoay">⤧ Tự do</button>
    <button id="toolIk" onclick="setTool('ik')" title="Động học ngược 2 xương (2-Bone IK)">🦾 IK 2-Xương</button>
   </div>
   <button id="ikFlipBtn" hidden onclick="toggleIkBendDir()" title="Đổi hướng gập khớp gối/khuỷu tay 2-Bone IK">⇄ Gập IK: +</button>
@@ -393,8 +396,9 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   </span>
  </div>
  <div class="menu-right">
-  <div class="nudge-pad" aria-label="Di chuyển bằng mũi tên"><button class="n-up" onclick="nudgeSelection(0,-4)">▲</button><button class="n-left" onclick="nudgeSelection(-4,0)">◀</button><button class="n-down" onclick="nudgeSelection(0,4)">▼</button><button class="n-right" onclick="nudgeSelection(4,0)">▶</button></div>
   <label class="visibility-toggle" title="Onion Skinning: hiển thị bóng mờ của 1-2 frame trước (xanh) và sau (đỏ)"><input id="showOnion" type="checkbox" onchange="toggleOnionSkin(this.checked)"> Onion</label>
+  <label class="visibility-toggle selection-lock" title="Khóa chọn xương trên canvas, danh sách và timeline"><input id="lockBones" type="checkbox" onchange="setSelectionLock('b',this.checked)"> Khóa xương</label>
+  <label class="visibility-toggle selection-lock" title="Block tự khóa khi vào ANIM. Mở khóa để chọn và chỉnh hình học gốc của Block."><input id="lockBlocks" type="checkbox" onchange="setSelectionLock('k',this.checked)"> Khóa Block</label>
   <label class="visibility-toggle"><input id="showBones" type="checkbox" checked> Xương</label>
   <label class="visibility-toggle"><input id="showImages" type="checkbox" checked> Ảnh</label>
   <button type="button" id="hintToggleBtn" onclick="toggleCanvasHint()" title="Bật/tắt dòng hướng dẫn trên Canvas">?</button>
@@ -601,6 +605,7 @@ function lastFrame(anim=A()){return Math.max(0,Math.round(+anim?.frames||1)-1);}
 const emptyDirections=()=>({down:emptyAnim(),up:emptyAnim(),left:emptyAnim(),right:emptyAnim()});
 let M={nid:1,dir:'down',bones:[],blocks:[],animationSets:[],activeAnimation:'',groupBlocks:[]};
 let sel=null,multiSel=[],ksel=null,mode='rig',tool='move',frame=0,playing=false;
+let lockBoneSelection=false,lockRigBlocks=false,lockAnimBlocks=true;
 let cam={x:0,y:0,z:1},drag=null,marqueeRect=null,LIB=[],last=0,keyClipboard=null,frameClipboard=null,showBones=true,showImages=true;
 let onionSkin=false,onionPrevCount=2,onionNextCount=2,easingEnabled=true,currentEasing='linear',meshSkewEnabled=false,ikBendDir=1;
 const imageCache=Object.create(null),imageData=Object.create(null),activePointers=new Map();let pinchState=null,modalImage='',cropDrag=null,objectClipboard=null,treeDragPayload=null,pendingImage='';
@@ -808,26 +813,52 @@ function segsFor(world){
 }
 
 /* Multi-Selection & Shared Pivot Helpers */
+function selectionLocked(type){
+ if(type==='b')return lockBoneSelection;
+ if(type==='k')return mode==='anim'?lockAnimBlocks:lockRigBlocks;
+ return false;
+}
+function objectCanBeSelected(item){
+ return !!item&&!selectionLocked(item.t)&&
+  (item.t==='b'?!!byId(item.id):item.t==='k'&&M.blocks.some(block=>block.id===item.id));
+}
+function syncSelectionLockInputs(){
+ $('lockBones').checked=selectionLocked('b');
+ $('lockBlocks').checked=selectionLocked('k');
+}
+function discardLockedSelection(){
+ multiSel=multiSel.filter(objectCanBeSelected);
+ if(!objectCanBeSelected(sel))sel=multiSel.at(-1)||null;
+ if(sel&&!multiSel.some(item=>item.t===sel.t&&item.id===sel.id))multiSel=[sel];
+ if(lockBoneSelection)ksel=null;
+}
+function setSelectionLock(type,enabled){
+ if(type==='b')lockBoneSelection=!!enabled;
+ else if(mode==='anim')lockAnimBlocks=!!enabled;
+ else lockRigBlocks=!!enabled;
+ discardLockedSelection();clearObjectTap();clearCanvasObjectPress();drag=null;marqueeRect=null;
+ renderAll();draw();
+}
+function clearSelection(){
+ sel=ksel=null;multiSel=[];marqueeRect=null;drag=null;
+ hideContextMenu();renderAll();draw();
+}
 function getSelection(){
  const valid=[];
- for(const item of multiSel){
-  if(item.t==='b'&&byId(item.id)&&!valid.some(v=>v.t==='b'&&v.id===item.id))valid.push({t:'b',id:item.id});
-  else if(item.t==='k'&&mode==='rig'&&M.blocks.some(k=>k.id===item.id)&&!valid.some(v=>v.t==='k'&&v.id===item.id))valid.push({t:'k',id:item.id});
- }
- if(!valid.length&&sel){
-  if(sel.t==='b'&&byId(sel.id))valid.push({t:'b',id:sel.id});
-  else if(sel.t==='k'&&mode==='rig'&&M.blocks.some(k=>k.id===sel.id))valid.push({t:'k',id:sel.id});
- }
+ for(const item of multiSel)
+  if(objectCanBeSelected(item)&&!valid.some(v=>v.t===item.t&&v.id===item.id))valid.push(item);
+ if(!valid.length&&objectCanBeSelected(sel))valid.push(sel);
  return valid;
 }
 function isSelected(type,id){
+ if(selectionLocked(type))return false;
  if(sel&&sel.t===type&&sel.id===id)return true;
  return multiSel.some(item=>item.t===type&&item.id===id);
 }
 function selectedBoneIds(){
  const list=getSelection().filter(item=>item.t==='b').map(item=>item.id);
  if(list.length)return list;
- return sel?.t==='b'&&byId(sel.id)?[sel.id]:[];
+ return !lockBoneSelection&&sel?.t==='b'&&byId(sel.id)?[sel.id]:[];
 }
 /* Lọc thông minh khi di chuyển cha - con: bỏ qua xương con và block gắn vào xương được chọn */
 function getFilteredMoveRoots(selection=getSelection()){
@@ -955,6 +986,7 @@ function toggleCanvasHint(force){
  if(btn)btn.classList.toggle('active',next);
 }
 function syncMenuBarInputs(){
+ syncSelectionLockInputs();
  const o=cur();
  if($('menuSkewX'))$('menuSkewX').value=o&&sel?.t==='k'?r2(o.skewX||0):0;
  if($('menuSkewY'))$('menuSkewY').value=o&&sel?.t==='k'?r2(o.skewY||0):0;
@@ -1118,7 +1150,7 @@ function addBone(){
 function addBlock(){
  // Block mới được tạo độc lập. Khi gắn vào xương, nó trở thành component của xương đó.
  const k={id:M.nid++,name:'block'+M.nid,b:0,x:0,y:0,a:0,freeW:80,s:0,e:1,h:40,oy:0,ox:0,rank:1,z:0,vis:'all',col:['#e57373','#64b5f6','#81c784','#ffd54f','#ba68c8'][M.nid%5],img:'',demo:true,ir:0,is:1,ix:0,iy:0,fx:0,sx:1,sy:1,skewX:0,skewY:0,mesh:[{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0}]};
- M.blocks.push(k);sel={t:'k',id:k.id};multiSel=[{t:'k',id:k.id}];renderAll();
+ M.blocks.push(k);sel={t:'k',id:k.id};multiSel=[sel];renderAll();return k;
 }
 function del(){
  const targets=getSelection();
@@ -1130,7 +1162,7 @@ function del(){
  sel=ksel=null;multiSel=[];renderAll();draw();
 }
 function pick(type,id,evt){
- if(mode==='anim'&&type==='k'&&!M.blocks.some(block=>block.id===id&&block.effectId))return;
+ if(!objectCanBeSelected({t:type,id}))return;
  if(evt&&(evt.shiftKey||evt.ctrlKey||evt.metaKey)){
   const exists=multiSel.some(item=>item.t===type&&item.id===id);
   if(exists){
@@ -1149,14 +1181,14 @@ function pick(type,id,evt){
 }
 function setTool(next){
  tool=next;
- ['select','move','rotate','scale','ik'].forEach(name=>{
+ ['select','move','rotate','scale','free','ik'].forEach(name=>{
   const el=$('tool'+name[0].toUpperCase()+name.slice(1));
   if(el)el.classList.toggle('active',tool===name);
  });
  if($('ikFlipBtn'))$('ikFlipBtn').hidden=(tool!=='ik');
  draw();
 }
-function renderAll(){syncMenuBarInputs();renderList();renderProps();renderImageAssets();renderGroupBlock();}
+function renderAll(){discardLockedSelection();syncMenuBarInputs();renderList();renderProps();renderImageAssets();renderGroupBlock();}
 function renderList(){
  const active=(type,id)=>{
   if(sel&&sel.t===type&&sel.id===id)return' s';
@@ -1165,13 +1197,13 @@ function renderList(){
  };
  const boneRows=[];
  const boneRow=(b,depth)=>{
-  boneRows.push(`<div class="it tree-row${active('b',b.id)}" data-type="b" data-id="${b.id}" draggable="true" style="padding-left:${6+depth*12}px" ondragstart="treeDragStart(event,'b',${b.id})" ondragover="treeDragOver(event)" ondragleave="treeDragLeave(event)" ondrop="treeDrop(event,'b',${b.id})"><span class="tree-label">🦴 ${esc(b.name)}${b.previewOnly?' <small>· Demo</small>':''}</span></div>`);
+  boneRows.push(`<div class="it tree-row${active('b',b.id)}${selectionLocked('b')?' selection-locked':''}" data-type="b" data-id="${b.id}" draggable="true" style="padding-left:${6+depth*12}px" ondragstart="treeDragStart(event,'b',${b.id})" ondragover="treeDragOver(event)" ondragleave="treeDragLeave(event)" ondrop="treeDrop(event,'b',${b.id})"><span class="tree-label">🦴 ${esc(b.name)}${b.previewOnly?' <small>· Demo</small>':''}</span></div>`);
   kids(b.id).forEach(child=>boneRow(child,depth+1));
  };
  M.bones.filter(b=>!b.p||!byId(b.p)).forEach(b=>boneRow(b,0));
  const blocks=[...M.blocks].sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(k=>{
   const parent=byId(k.b),kind=parent?`<small>· Gắn vào ${esc(parent.name)}</small>`:'<small>· Block độc lập</small>';
-  return `<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn block" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label">${k.effectId?'✦':'▣'} ${esc(k.name)} ${kind}${k.previewOnly||k.effectId?' <small>· Demo</small>':''}</span></div>`;
+  return `<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}${selectionLocked('k')?' selection-locked':''}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn block" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label">${k.effectId?'✦':'▣'} ${esc(k.name)} ${kind}${k.previewOnly||k.effectId?' <small>· Demo</small>':''}</span></div>`;
  }).join('');
  $('list').innerHTML=`
 <section class="tree-section">
@@ -1218,10 +1250,10 @@ function reparentBone(childId,parentId){
  setB(child,{x:local.x,y:local.y,a:old.wa-P.wa,l:current.l});
  renderAll();draw();return true;
 }
-function treeDragStart(e,type,id){if(treeHold){e.preventDefault();return;}e.stopPropagation();treeDragPayload={type,id};e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',type+':'+id);if(type==='k')e.dataTransfer.setData('application/x-bone-block',String(id));}
+function treeDragStart(e,type,id){if(treeHold||selectionLocked(type)){e.preventDefault();return;}e.stopPropagation();treeDragPayload={type,id};e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',type+':'+id);if(type==='k')e.dataTransfer.setData('application/x-bone-block',String(id));}
 function treeDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-target');e.dataTransfer.dropEffect='move';}
 function treeDragLeave(e){e.currentTarget.classList.remove('drag-target');}
-function treeDrop(e,targetType,targetId){e.preventDefault();e.currentTarget.classList.remove('drag-target');const payload=treeDragPayload;treeDragPayload=null;if(!payload)return;if(mode==='anim'&&payload.type==='k')return;
+function treeDrop(e,targetType,targetId){e.preventDefault();e.currentTarget.classList.remove('drag-target');const payload=treeDragPayload;treeDragPayload=null;if(!payload||selectionLocked(payload.type)||selectionLocked(targetType))return;
  if(targetType==='b'&&payload.type==='b'){if(!reparentBone(payload.id,targetId))alert('Không thể đặt xương vào chính nó hoặc hậu duệ của nó.');}
  else if(targetType==='b'&&payload.type==='k'){const block=M.blocks.find(k=>k.id===payload.id);if(block)attachBlockToBone(block,targetId);}
 }
@@ -1254,6 +1286,7 @@ function pasteObject(){if(!objectClipboard)return alert('Clipboard đang trống
 }
 function renameObject(){if(!sel)return;const o=cur();if(!o)return;const name=prompt('Tên mới:',o.name);if(name&&name.trim()){o.name=name.trim();renderAll();}}
 function focusCanvasObject(type,id){
+ if(!objectCanBeSelected({t:type,id}))return;
  const bounds=getSelectionBoundsAndPivot(undefined,undefined,[{t:type,id}]);
  if(!bounds)return;
  const width=Math.max(24,bounds.maxX-bounds.minX),height=Math.max(24,bounds.maxY-bounds.minY);
@@ -1264,7 +1297,10 @@ function focusCanvasObject(type,id){
 }
 function showContextMenu(event,type,id){
  event.preventDefault?.();event.stopPropagation?.();
- if(type&&id!=null){sel={t:type,id};multiSel=[sel];ksel=null;renderAll();draw();}
+ if(type&&id!=null){
+  if(!objectCanBeSelected({t:type,id}))return;
+  sel={t:type,id};multiSel=[sel];ksel=null;renderAll();draw();
+ }
  const menu=$('treeContext'),has=!!sel,canPaste=!!objectClipboard;
  menu.innerHTML=`${has?'<button onclick="copyObject(false);hideContextMenu()">Copy</button><button onclick="copyObject(true);hideContextMenu()">Cut</button><button onclick="renameObject();hideContextMenu()">Rename</button>':''}<button onclick="pasteObject();hideContextMenu()" ${canPaste?'':'disabled'}>Paste</button><div class="separator"></div><button onclick="addBone();hideContextMenu()">＋ Thêm xương</button><button onclick="addBlock();hideContextMenu()">＋ Thêm block</button>${has?'<div class="separator"></div><button onclick="del();hideContextMenu()">Xóa</button>':''}`;
  menu.style.display='block';
@@ -1279,11 +1315,13 @@ const HOLD_MS=500, TAP_RADIUS=10, DOUBLE_TAP_MS=380;
 let lastObjectTap=null,treeHold=null,skipTreeClickUntil=0;
 function clearObjectTap(){lastObjectTap=null;}
 function recordObjectTap(surface,target,event){
- const tap={surface,t:target.t,id:target.id,x:event.clientX,y:event.clientY,time:performance.now()};
+ const tap={surface,t:target?.t||null,id:target?.id??null,x:event.clientX,y:event.clientY,time:performance.now()};
  const previous=lastObjectTap;
  if(previous&&previous.surface===surface&&previous.t===tap.t&&previous.id===tap.id&&
     tap.time-previous.time<=DOUBLE_TAP_MS&&Math.hypot(tap.x-previous.x,tap.y-previous.y)<=24){
-  clearObjectTap();focusCanvasObject(tap.t,tap.id);return true;
+  clearObjectTap();
+  if(target)focusCanvasObject(tap.t,tap.id);else clearSelection();
+  return true;
  }
  lastObjectTap=tap;
  return false;
@@ -1300,7 +1338,7 @@ const objectTree=$('list');
 objectTree.addEventListener('click',e=>{
  if(e.target.closest('button,input,select,label'))return;
  const target=treeObjectAt(e.target);
- if(!target)return;
+ if(!target||selectionLocked(target.t))return;
  if(performance.now()<skipTreeClickUntil){e.preventDefault();return;}
  if(!recordObjectTap('tree',target,e))pick(target.t,target.id,e);
 });
@@ -1309,6 +1347,7 @@ objectTree.addEventListener('pointerdown',e=>{
  skipTreeClickUntil=0;
  if(e.pointerType!=='touch'||!e.isPrimary||e.target.closest('button,input,select,label'))return;
  const target=treeObjectAt(e.target);
+ if(target&&selectionLocked(target.t))return;
  const hold={pointerId:e.pointerId,x:e.clientX,y:e.clientY,target};
  hold.timer=setTimeout(()=>{
   if(treeHold!==hold)return;
@@ -1337,15 +1376,15 @@ function renderRigGuide(){
             <p>Thêm xương:	Nhấn Thêm xương</p>
             <p>Thêm block:	Nhấn Thêm block</p>
             <p>Chọn xương/block: Nhấn vào danh sách hoặc canvas</p>
-            <p>Nhấn đúp xương/block để đưa nó vào giữa canvas và thu phóng.</p>
+            <p>Nhấn đúp xương/block để focus. Nhấn đúp chỗ trống để bỏ chọn.</p>
             <p>Menu thao tác: chuột phải trên PC, nhấn giữ trên điện thoại.</p>
-            <p>Di chuyển xương:	Chọn Move, kéo xương</p>
+            <p>Di chuyển: Chọn xương hoặc Block, kéo ô vuông hoặc một mũi tên</p>
             <p>Di chuyển đầu xương:	Kéo đầu xương</p>
-            <p>Xoay xương:	Chọn Rotate, kéo vùng tam giác xương</p>
+            <p>Xoay: Chọn Xoay, kéo vòng vàng</p>
             <p>Thay đổi chiều dài:	Chọn Scale, kéo xương</p>
             <p>Di chuyển block:	Chọn Move, kéo block</p>
             <p>Xoay block:	Chọn Rotate, kéo block</p>
-            <p>Thay đổi kích thước block:	Chọn Scale, kéo góc block</p>
+            <p>Thu phóng: Kéo một góc khung xanh. Tự do có cả khung và vòng xoay.</p>
             <p>Gắn block vào xương:	Kéo block lên xương hoặc chọn</p>
             <p>Tạo quan hệ cha/con:	Kéo xương vào xương khác</p>
             <p>Ẩn/hiện block:	Tick checkbox trước tên block</p>
@@ -1601,24 +1640,6 @@ function syncRigToAllDirections(){
  syncRigDirectionTabs();renderAll();draw();
  alert('Đã đồng bộ cấu trúc xương và block từ hướng '+M.dir.toUpperCase()+' sang cả 4 hướng. Bạn có thể thay ảnh và chỉnh khớp riêng từng hướng.');
 }
-function nudgeSelection(dx,dy){
- const roots=getFilteredMoveRoots();
- if(!roots.length)return;
- checkpointUndo();
- const W=solve();
- roots.forEach(item=>{
-  if(item.t==='b'){
-   const b=byId(item.id),w=W[item.id];if(!b||!w)return;
-   setHead(b,w.hx+dx,w.hy+dy);
-  }else if(mode==='rig'){
-   const k=M.blocks.find(x=>x.id===item.id);if(!k)return;
-   if(!k.b){k.x=(+k.x||0)+dx;k.y=(+k.y||0)+dy;}
-   else{const w=W[k.b],local=parentDeltaToLocal(dx,dy,w?.wa||0);k.ox=(+k.ox||0)+local.x;k.oy=(+k.oy||0)+local.y;}
-  }
- });
- renderProps();draw();
-}
-
 function createAnimation(){
  if(editedEffectId)return;
  const name=$('animationName').value.trim();if(!name)return alert('Nhập tên animation trước khi tạo.');
@@ -1900,7 +1921,7 @@ function draw(){
   g.closePath();
   g.stroke();
   g.restore();
-  if(selected&&(tool==='scale'||meshSkewEnabled)){
+  if(selected&&meshSkewEnabled){
    cPts.forEach(c=>{
     g.fillStyle=meshSkewEnabled?'#d8b4fe':'#f2f5f8';
     g.strokeStyle=meshSkewEnabled?'#9333ea':'#168f88';
@@ -1954,6 +1975,7 @@ function draw(){
   g.fillRect(x,y,w,h);g.strokeRect(x,y,w,h);
   g.restore();
  }
+ drawTransformGizmo(g,W,S);
  drawTL();
 }
 const toW=(x,y)=>({x:(x-cv.width/2-cam.x)/cam.z,y:(y-cv.height/2-cam.y)/cam.z});
@@ -1970,36 +1992,166 @@ function pointInBoneTriangle(p,w){
  const cross=(u,v,q)=>(q.x-u.x)*(v.y-u.y)-(q.y-u.y)*(v.x-u.x),d1=cross(a,b,p),d2=cross(b,c,p),d3=cross(c,a,p);
  return !((d1<0||d2<0||d3<0)&&(d1>0||d2>0||d3>0));
 }
-function startMultiTransformDrag(world,W,S){
- const selList=getSelection();
- if(selList.length<=1)return false;
- const bp=getSelectionBoundsAndPivot(W,S,selList);if(!bp)return false;
- const roots=getFilteredMoveRoots(selList);
- const captureState=list=>list.map(item=>{
-  if(item.t==='b'){
-   const b=byId(item.id),w=W[b.id],q=pose(b,frame);
-   return{t:'b',b,hx:w.hx,hy:w.hy,wa:w.wa,a:q.a,l:q.l,x:q.x,y:q.y};
-  }else{
-   const k=M.blocks.find(x=>x.id===item.id),info=blockInfo(k,W,S);
-   const center=localToWorld(info.x0+info.width/2,info.cy,info.w);
-   return{t:'k',k,cx:center.x,cy:center.y,ox:+k.ox||0,oy:+k.oy||0,x:+k.x||0,y:+k.y||0,sx:+k.sx||1,sy:+k.sy||1,ir:+k.ir||0,a:+k.a||0};
-  }
- });
+const transformTools=['move','rotate','scale','free'];
+function gizmoObjects(){
+ return getSelection().filter(item=>item.t==='b'?showBones:showImages);
+}
+function transformPivot(selection,bounds,W,S){
+ if(selection.length!==1)return {x:bounds.px,y:bounds.py};
+ const item=selection[0];
+ if(item.t==='b')return {x:W[item.id].hx,y:W[item.id].hy};
+ const block=M.blocks.find(k=>k.id===item.id),info=blockInfo(block,W,S);
+ if(info.independent)return {x:info.w.hx,y:info.w.hy};
+ return localToWorld(info.x0+info.width/2,info.cy,info.w);
+}
+function getTransformGizmo(W=solve(),S=segs(W)){
+ if(!transformTools.includes(tool))return null;
+ const selection=gizmoObjects(),bounds=getSelectionBoundsAndPivot(W,S,selection);
+ if(!bounds)return null;
+ const pivot=transformPivot(selection,bounds,W,S);
+ const center={x:cv.width/2+cam.x+pivot.x*cam.z,y:cv.height/2+cam.y+pivot.y*cam.z};
+ const boxCenter={x:cv.width/2+cam.x+bounds.px*cam.z,y:cv.height/2+cam.y+bounds.py*cam.z};
+ const halfW=clamp((bounds.maxX-bounds.minX)*cam.z/2+15,28,66);
+ const halfH=clamp((bounds.maxY-bounds.minY)*cam.z/2+15,26,55);
+ const corners=[[-1,-1],[1,-1],[1,1],[-1,1]].map(([x,y])=>({x:boxCenter.x+x*halfW,y:boxCenter.y+y*halfH}));
+ const radius=tool==='free'?Math.max(55,...corners.map(p=>Math.hypot(p.x-center.x,p.y-center.y)+18)):52;
+ // A fixed-size ring stays reachable even on long bones or at high zoom.
+ const ringRadius=Math.min(radius,105);
+ return {center,pivot,boxCenter,halfW,halfH,corners,radius:ringRadius,selection};
+}
+function transformHandleAt(point,gizmo=getTransformGizmo()){
+ if(!gizmo)return null;
+ const dx=point.x-gizmo.center.x,dy=point.y-gizmo.center.y;
  if(tool==='move'){
-  drag={type:'multiMove',start:world,roots:captureState(roots)};return true;
- }else if(tool==='rotate'){
-  drag={type:'multiRotate',pivot:{x:bp.px,y:bp.py},startAngle:Math.atan2(world.y-bp.py,world.x-bp.px),roots:captureState(roots),all:captureState(selList)};return true;
- }else if(tool==='scale'){
-  const startDist=Math.max(8,Math.hypot(world.x-bp.px,world.y-bp.py));
-  drag={type:'multiScale',pivot:{x:bp.px,y:bp.py},startDist,roots:captureState(roots),all:captureState(selList)};return true;
+  if(Math.abs(dx)<=11&&Math.abs(dy)<=11)return 'moveBoth';
+  if(Math.abs(dy)<=10&&Math.abs(dx)<=56)return 'moveX';
+  if(Math.abs(dx)<=10&&Math.abs(dy)<=56)return 'moveY';
  }
- return false;
+ if(tool==='scale'||tool==='free'){
+  if(gizmo.corners.some(p=>Math.hypot(point.x-p.x,point.y-p.y)<=13))return 'scale';
+  const x=Math.abs(point.x-gizmo.boxCenter.x),y=Math.abs(point.y-gizmo.boxCenter.y);
+  if((Math.abs(x-gizmo.halfW)<=6&&y<=gizmo.halfH)||
+     (Math.abs(y-gizmo.halfH)<=6&&x<=gizmo.halfW))return 'scale';
+ }
+ if((tool==='rotate'||tool==='free')&&Math.abs(Math.hypot(dx,dy)-gizmo.radius)<=10)return 'rotate';
+ return null;
+}
+function drawTransformGizmo(g,W,S){
+ const gizmo=getTransformGizmo(W,S);
+ if(!gizmo)return;
+ const {center,boxCenter,halfW,halfH,corners,radius}=gizmo;
+ g.save();
+ g.setTransform(1,0,0,1,0,0);
+ g.lineJoin='round';g.lineCap='round';g.globalAlpha=1;
+ const edge='#111827',active=drag?.type==='selectionTransform'?drag.operation:null;
+ if(tool==='move'){
+  const arrow=(vx,vy,color,operation)=>{
+   const {x,y}=center,tipX=x+vx*49,tipY=y+vy*49;
+   g.beginPath();g.moveTo(x+vx*9,y+vy*9);g.lineTo(tipX,tipY);
+   g.strokeStyle=edge;g.lineWidth=6;g.stroke();
+   g.strokeStyle=active===operation?'#ffd97a':color;g.lineWidth=3;g.stroke();
+   g.beginPath();g.moveTo(tipX,tipY);
+   g.lineTo(tipX-vx*13-vy*6,tipY-vy*13+vx*6);
+   g.lineTo(tipX-vx*13+vy*6,tipY-vy*13-vx*6);g.closePath();
+   g.fillStyle=g.strokeStyle;g.fill();g.strokeStyle=edge;g.lineWidth=2;g.stroke();
+  };
+  arrow(1,0,'#ff746f','moveX');arrow(-1,0,'#ff746f','moveX');
+  arrow(0,1,'#77df91','moveY');arrow(0,-1,'#77df91','moveY');
+  g.fillStyle=active==='moveBoth'?'#ffd97a':'#d7f1ff';g.fillRect(center.x-8,center.y-8,16,16);
+  g.strokeStyle=edge;g.lineWidth=2;g.strokeRect(center.x-8,center.y-8,16,16);
+ }
+ if(tool==='rotate'||tool==='free'){
+  g.beginPath();g.arc(center.x,center.y,radius,0,Math.PI*2);
+  g.strokeStyle=edge;g.lineWidth=7;g.stroke();
+  g.strokeStyle=active==='rotate'?'#fff0b5':'#ffd166';g.lineWidth=3;g.stroke();
+  g.beginPath();g.arc(center.x,center.y,3,0,Math.PI*2);g.fillStyle='#ffd166';g.fill();
+ }
+ if(tool==='scale'||tool==='free'){
+  const x=boxCenter.x-halfW,y=boxCenter.y-halfH,w=2*halfW,h=2*halfH;
+  g.strokeStyle=edge;g.lineWidth=5;g.strokeRect(x,y,w,h);
+  g.strokeStyle='#69d9ff';g.lineWidth=2;g.strokeRect(x,y,w,h);
+  for(const point of corners){
+   g.fillStyle=active==='scale'?'#fff0b5':'#a9eaff';g.fillRect(point.x-6,point.y-6,12,12);
+   g.strokeStyle=edge;g.lineWidth=2;g.strokeRect(point.x-6,point.y-6,12,12);
+  }
+ }
+ g.restore();
+}
+function captureSelectionTransform(item,W,S){
+ if(item.t==='b'){
+  const bone=byId(item.id),w=W[item.id],q=pose(bone,frame);
+  return {t:'b',object:bone,x:q.x,y:q.y,a:q.a,l:q.l,worldX:w.hx,worldY:w.hy,parentAngle:W[bone.p]?.wa||0};
+ }
+ const block=M.blocks.find(k=>k.id===item.id),info=blockInfo(block,W,S);
+ if(!info)return null;
+ const origin=info.independent?{x:info.w.hx,y:info.w.hy}:localToWorld(info.x0+info.width/2,info.cy,info.w);
+ return {t:'k',object:block,x:+block.x||0,y:+block.y||0,a:+block.a||0,ir:+block.ir||0,
+  ox:+block.ox||0,oy:+block.oy||0,sx:+block.sx||1,sy:+block.sy||1,width:info.width,
+  worldX:origin.x,worldY:origin.y,parentAngle:info.w.wa,attached:!info.independent};
+}
+function startSelectionTransform(operation,world,W,S,selection,pivot){
+ const roots=getFilteredMoveRoots(selection).map(item=>captureSelectionTransform(item,W,S)).filter(Boolean);
+ if(!roots.length)return false;
+ const rootBlocks=new Set(roots.filter(item=>item.t==='k').map(item=>item.object.id));
+ const scaleItems=operation==='scale'?selection.filter(item=>item.t==='b'||rootBlocks.has(item.id))
+  .map(item=>captureSelectionTransform(item,W,S)).filter(Boolean):[];
+ drag={type:'selectionTransform',operation,start:world,pivot,roots,scaleItems,
+  group:selection.length>1,startDist:Math.max(.01,Math.hypot(world.x-pivot.x,world.y-pivot.y)),
+  lastAngle:Math.atan2(world.y-pivot.y,world.x-pivot.x),angle:0};
+ return true;
+}
+function applySelectionTransform(world){
+ const {operation,start,pivot,roots,scaleItems,group}=drag;
+ let dx=world.x-start.x,dy=world.y-start.y,factor=1,angle=0;
+ if(operation==='moveX')dy=0;
+ if(operation==='moveY')dx=0;
+ if(operation==='rotate'){
+  const next=Math.atan2(world.y-pivot.y,world.x-pivot.x);
+  const delta=next-drag.lastAngle;
+  drag.angle+=Math.atan2(Math.sin(delta),Math.cos(delta));drag.lastAngle=next;
+  angle=drag.angle;
+ }
+ if(operation==='scale')factor=clamp(Math.hypot(world.x-pivot.x,world.y-pivot.y)/drag.startDist,.08,8);
+ const ca=Math.cos(angle),sa=Math.sin(angle),degrees=angle/D;
+ for(const item of roots){
+  const object=item.object;
+  let mx=dx,my=dy;
+  if(operation==='rotate'||operation==='scale'){
+   const x=item.worldX-pivot.x,y=item.worldY-pivot.y;
+   mx=group?(x*ca-y*sa)*factor-x:0;my=group?(x*sa+y*ca)*factor-y:0;
+  }
+  const local=parentDeltaToLocal(mx,my,item.parentAngle);
+  if(item.t==='b'){
+   if(operation==='rotate')setB(object,{x:r2(item.x+local.x),y:r2(item.y+local.y),a:r2(item.a+degrees)});
+   else if(operation!=='scale'||group)setB(object,{x:r2(item.x+local.x),y:r2(item.y+local.y)});
+  }else if(item.attached){
+   object.ox=r2(item.ox+local.x);object.oy=r2(item.oy+local.y);
+   if(operation==='rotate')object.ir=r2(item.ir+degrees);
+  }else{
+   object.x=r2(item.x+mx);object.y=r2(item.y+my);
+   if(operation==='rotate')object.a=r2(item.a+degrees);
+  }
+ }
+ for(const item of scaleItems){
+  if(item.t==='b')setB(item.object,{l:r2(Math.max(2,item.l*factor))});
+  else{
+   const object=item.object;
+   object.sx=r2(Math.max(.05,item.sx*factor));object.sy=r2(Math.max(.05,item.sy*factor));
+   if(item.attached)object.ox=r2(object.ox+(item.width-item.width*object.sx/item.sx)/2);
+  }
+ }
+}
+function startMultiTransformDrag(world,W,S){
+ const selection=getSelection();
+ if(selection.length<=1||!['move','rotate','scale'].includes(tool))return false;
+ const bounds=getSelectionBoundsAndPivot(W,S,selection);
+ return !!bounds&&startSelectionTransform(tool==='move'?'moveBoth':tool,world,W,S,selection,{x:bounds.px,y:bounds.py});
 }
 
 let canvasObjectPress=null;
 function canvasObjectAt(point){
  const world=toW(point.x,point.y),W=solve(),S=segs(W);
- const bones=showBones?M.bones.map(b=>{
+ const bones=showBones&&!selectionLocked('b')?M.bones.map(b=>{
   const w=W[b.id];
   if(!w)return null;
   const head=Math.hypot(world.x-w.hx,world.y-w.hy);
@@ -2009,7 +2161,7 @@ function canvasObjectAt(point){
    .sort((a,b)=>Math.min(a.head,a.line)-Math.min(b.head,b.line)):[];
  const bone=bones.length?{t:'b',id:bones[0].id}:null;
  if(bone&&(tool==='rotate'||tool==='ik'))return bone;
- if(showImages){
+ if(showImages&&!selectionLocked('k')){
   const blocks=[...M.blocks].filter(k=>(!k.b||byId(k.b))&&blockVis(k)).sort((a,b)=>blockZ(b)-blockZ(a));
   const block=blocks.find(k=>blockHit(world,k,W,S));
   if(block)return {t:'k',id:block.id};
@@ -2032,20 +2184,23 @@ function canvasDown(e){
   pinchState={distance:Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y),mid:{x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2}};
   return;
  }
- const target=canvasObjectAt(p);
- if(target||e.pointerType==='touch'){
-  const press={id:e.pointerId,event:e,point:p,target,touch:e.pointerType==='touch',held:false};
-  canvasObjectPress=press;
-  if(press.touch){
-   press.timer=setTimeout(()=>{
-    if(canvasObjectPress!==press||activePointers.size!==1)return;
-    press.held=true;clearObjectTap();drag=null;marqueeRect=null;
-    showContextMenu(e,target?.t,target?.id);
-   },HOLD_MS);
-   return;
-  }
- }else clearObjectTap();
- startCanvasInteraction(e,p);
+ const gizmo=getTransformGizmo(),handle=transformHandleAt(p,gizmo);
+ const target=handle?(sel||gizmo.selection.at(-1)):canvasObjectAt(p);
+ const press={id:e.pointerId,event:e,point:p,target,touch:e.pointerType==='touch',held:false,gizmo:!!handle};
+ canvasObjectPress=press;
+ if(handle){
+  const W=solve(),S=segs(W);
+  startSelectionTransform(handle,toW(p.x,p.y),W,S,gizmo.selection,gizmo.pivot);
+ }
+ if(press.touch){
+  press.timer=setTimeout(()=>{
+   if(canvasObjectPress!==press||activePointers.size!==1)return;
+   press.held=true;clearObjectTap();drag=null;marqueeRect=null;
+   showContextMenu(e,target?.t,target?.id);
+  },HOLD_MS);
+  return;
+ }
+ if(!handle)startCanvasInteraction(e,p);
 }
 function startCanvasInteraction(e,p){
  const world=toW(p.x,p.y),W=solve(),S=segs(W),radius=14/cam.z;
@@ -2057,21 +2212,17 @@ function startCanvasInteraction(e,p){
  }
 
  // Ưu tiên kéo 4 góc lưới ảnh (Mesh FFD) hoặc Scale góc của Block đang chọn
- if(showImages&&mode==='rig'&&(tool==='scale'||meshSkewEnabled)&&sel&&sel.t==='k'){
-  const k=cur(),info=blockInfo(k,W,S),corner=info&&nearestCorner(world,k,info,Math.max(radius,18/cam.z));
+ if(showImages&&!selectionLocked('k')&&meshSkewEnabled&&sel?.t==='k'){
+  const k=cur(),info=k&&blockInfo(k,W,S),corner=info&&nearestCorner(world,k,info,Math.max(radius,18/cam.z));
   if(corner){
-   if(meshSkewEnabled){
-    if(!Array.isArray(k.mesh)||k.mesh.length!==4)k.mesh=[{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0}];
-    drag={type:'blockMeshCorner',k,idx:corner.idx,info,startLocal:worldToLocal(world,info.w),origDx:k.mesh[corner.idx].dx||0,origDy:k.mesh[corner.idx].dy||0};
-   }else{
-    drag={type:'blockResize',k,corner:corner.name,info};
-   }
+   if(!Array.isArray(k.mesh)||k.mesh.length!==4)k.mesh=[{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0},{dx:0,dy:0}];
+   drag={type:'blockMeshCorner',k,idx:corner.idx,info,startLocal:worldToLocal(world,info.w),origDx:k.mesh[corner.idx].dx||0,origDy:k.mesh[corner.idx].dy||0};
    return;
   }
  }
 
  // Công cụ 2-Bone IK: bấm chọn hoặc kéo đầu mút xương / khớp xương con
- if(tool==='ik'&&showBones){
+ if(tool==='ik'&&showBones&&!selectionLocked('b')){
   const ikHits=M.bones
    .map(b=>({b,w:W[b.id],tipDist:Math.hypot(world.x-W[b.id].tx,world.y-W[b.id].ty),headDist:Math.hypot(world.x-W[b.id].hx,world.y-W[b.id].hy),inTri:pointInBoneTriangle(world,W[b.id])}))
    .filter(v=>v.w&&(v.tipDist<radius*1.4||v.headDist<radius*1.3||v.inTri))
@@ -2091,7 +2242,7 @@ function startCanvasInteraction(e,p){
  }
 
  // Tay nắm xoay xương luôn được ưu tiên trước block
- if((mode==='rig'||mode==='anim')&&tool==='rotate'&&showBones){
+ if(tool==='rotate'&&showBones&&!selectionLocked('b')){
   const rotationHits=M.bones
    .map(b=>({b,w:W[b.id],tipDistance:Math.hypot(world.x-W[b.id].tx,world.y-W[b.id].ty)}))
    .filter(v=>v.w&&pointInBoneTriangle(world,v.w))
@@ -2113,17 +2264,17 @@ function startCanvasInteraction(e,p){
  }
 
  // Kiểm tra chọn/kéo Block khi công tắc Ảnh đang bật
- for(const k of (showImages&&mode==='rig'?[...M.blocks].filter(k=>(!k.b||byId(k.b))&&blockVis(k)).sort((a,b)=>blockZ(b)-blockZ(a)):[])){
+ for(const k of (showImages&&!selectionLocked('k')?[...M.blocks].filter(k=>(!k.b||byId(k.b))&&blockVis(k)).sort((a,b)=>blockZ(b)-blockZ(a)):[])){
   if(!blockHit(world,k,W,S))continue;
   if(e.shiftKey||e.ctrlKey||e.metaKey){pick('k',k.id,e);return;}
   if(!isSelected('k',k.id)){sel={t:'k',id:k.id};multiSel=[{t:'k',id:k.id}];ksel=null;renderAll();}
   if(getSelection().length>1&&startMultiTransformDrag(world,W,S))return;
-  if(tool==='scale')return;
+  if(tool==='scale'||tool==='free')return;
   startBlockDrag(k,world,W,S);return;
  }
 
  // Tìm xương gần điểm chạm nhất
- const boneHits=M.bones.map(b=>({b,w:W[b.id],head:Math.hypot(world.x-W[b.id].hx,world.y-W[b.id].hy),line:pointSegmentDistance(world,{x:W[b.id].hx,y:W[b.id].hy},{x:W[b.id].tx,y:W[b.id].ty})}))
+ const boneHits=(showBones&&!selectionLocked('b')?M.bones:[]).map(b=>({b,w:W[b.id],head:Math.hypot(world.x-W[b.id].hx,world.y-W[b.id].hy),line:pointSegmentDistance(world,{x:W[b.id].hx,y:W[b.id].hy},{x:W[b.id].tx,y:W[b.id].ty})}))
   .filter(v=>v.head<radius||v.line<9/cam.z).sort((a,b)=>Math.min(a.head,a.line)-Math.min(b.head,b.line));
  if(boneHits.length){
   const hit=boneHits[0],b=hit.b;
@@ -2135,7 +2286,7 @@ function startCanvasInteraction(e,p){
    else{const parent=b.p&&W[b.p]?W[b.p]:{wa:0};drag={type:'boneMove',b,start:world,startX:pose(b,frame).x,startY:pose(b,frame).y,parentAngle:parent.wa}}
   }else if(tool==='rotate'){
    drag=null;
-  }else drag={type:'boneScale',b};
+  }else if(tool==='scale')drag={type:'boneScale',b};
   return;
  }
 
@@ -2154,7 +2305,7 @@ function canvasMove(e){
   const distance=Math.hypot(e.clientX-press.event.clientX,e.clientY-press.event.clientY);
   if(distance<=(press.touch?TAP_RADIUS:3))return;
   clearCanvasObjectPress();clearObjectTap();
-  if(press.touch)startCanvasInteraction(press.event,press.point);
+  if(press.touch&&!press.gizmo)startCanvasInteraction(press.event,press.point);
  }
  if(activePointers.size>=2&&pinchState){
   const pts=[...activePointers.values()],mid={x:(pts[0].x+pts[1].x)/2,y:(pts[0].y+pts[1].y)/2},distance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
@@ -2174,58 +2325,7 @@ function canvasMove(e){
    solveTwoBoneIK(drag.b,world.x,world.y,ikBendDir);
    break;
   }
-  case'multiMove':{
-   // Lọc thông minh cha - con: chỉ dịch chuyển các đối tượng gốc trong danh sách chọn
-   const dx=world.x-drag.start.x,dy=world.y-drag.start.y;
-   drag.roots.forEach(item=>{
-    if(item.t==='b'){
-     setHead(item.b,item.hx+dx,item.hy+dy);
-    }else if(mode==='rig'){
-     if(!item.k.b){item.k.x=r2(item.x+dx);item.k.y=r2(item.y+dy);}
-     else{const w=W[item.k.b],local=parentDeltaToLocal(dx,dy,w?.wa||0);item.k.ox=r2(item.ox+local.x);item.k.oy=r2(item.oy+local.y);}
-    }
-   });
-   break;
-  }
-  case'multiRotate':{
-   // Xoay toàn bộ nhóm được chọn quanh Tâm biến đổi chung (Shared Pivot)
-   const angle=Math.atan2(world.y-drag.pivot.y,world.x-drag.pivot.x)-drag.startAngle;
-   const deg=angle/D,ca=Math.cos(angle),sa=Math.sin(angle);
-   drag.roots.forEach(item=>{
-    if(item.t==='b'){
-     const rx=item.hx-drag.pivot.x,ry=item.hy-drag.pivot.y;
-     setHead(item.b,drag.pivot.x+rx*ca-ry*sa,drag.pivot.y+rx*sa+ry*ca);
-     setB(item.b,{a:r2(item.a+deg)});
-    }else if(mode==='rig'){
-     const rx=item.cx-drag.pivot.x,ry=item.cy-drag.pivot.y;
-     const nx=drag.pivot.x+rx*ca-ry*sa,ny=drag.pivot.y+rx*sa+ry*ca;
-     if(!item.k.b){item.k.x=r2(nx);item.k.y=r2(ny);item.k.a=r2(item.a+deg);}
-     else{const w=W[item.k.b],local=parentDeltaToLocal(nx-item.cx,ny-item.cy,w?.wa||0);item.k.ox=r2(item.ox+local.x);item.k.oy=r2(item.oy+local.y);item.k.ir=r2(item.ir+deg);}
-    }
-   });
-   break;
-  }
-  case'multiScale':{
-   // Thu phóng toàn bộ nhóm được chọn quanh Tâm biến đổi chung (Shared Pivot)
-   const dist=Math.max(2,Math.hypot(world.x-drag.pivot.x,world.y-drag.pivot.y));
-   const factor=clamp(dist/drag.startDist,0.1,6);
-   drag.roots.forEach(item=>{
-    if(item.t==='b'){
-     const rx=item.hx-drag.pivot.x,ry=item.hy-drag.pivot.y;
-     setHead(item.b,drag.pivot.x+rx*factor,drag.pivot.y+ry*factor);
-    }else if(mode==='rig'){
-     const rx=item.cx-drag.pivot.x,ry=item.cy-drag.pivot.y;
-     const nx=drag.pivot.x+rx*factor,ny=drag.pivot.y+ry*factor;
-     if(!item.k.b){item.k.x=r2(nx);item.k.y=r2(ny);}
-     else{const w=W[item.k.b],local=parentDeltaToLocal(nx-item.cx,ny-item.cy,w?.wa||0);item.k.ox=r2(item.ox+local.x);item.k.oy=r2(item.oy+local.y);}
-    }
-   });
-   drag.all.forEach(item=>{
-    if(item.t==='b')setB(item.b,{l:r2(Math.max(4,item.l*factor))});
-    else if(mode==='rig'){item.k.sx=r2(Math.max(0.05,item.sx*factor));item.k.sy=r2(Math.max(0.05,item.sy*factor));}
-   });
-   break;
-  }
+  case'selectionTransform':applySelectionTransform(world);break;
   case'boneHead':setHead(drag.b,world.x,world.y);break;
   case'boneRotate':{
    let delta=(Math.atan2(world.y-drag.anchor.y,world.x-drag.anchor.x)-drag.pointerStartAngle)/D;
@@ -2258,20 +2358,6 @@ function canvasMove(e){
    };
    break;
   }
-  case'blockResize':{
-   const info=blockInfo(drag.k,W,segs(W)),local=worldToLocal(world,info.w),corner=drag.corner;
-   const anchorX=corner.endsWith('l')?info.x0+info.width:info.x0;
-   const anchorY=corner.startsWith('t')?info.cy+info.height/2:info.cy-info.height/2;
-   const left=Math.min(anchorX,local.x),right=Math.max(anchorX,local.x),top=Math.min(anchorY,local.y),bottom=Math.max(anchorY,local.y);
-   const width=Math.max(4,right-left),height=Math.max(4,bottom-top),segmentLength=Math.max(1,info.s.len),bone=byId(drag.k.b);
-   const fullBone=drag.k.s<=0.001&&drag.k.e>=0.999;
-   if(fullBone&&bone){
-    const angle=info.w.wa*D,anchored=localToWorld(anchorX,(top+bottom)/2,info.w);
-    if(corner.endsWith('l'))setHead(bone,anchored.x-width*Math.cos(angle),anchored.y-width*Math.sin(angle));
-    setB(bone,{l:width});drag.k.sx=1;drag.k.ox=0;
-   }else{drag.k.sx=width/segmentLength;drag.k.ox=left-info.s.u;}
-   drag.k.sy=height/Math.max(1,drag.k.h);drag.k.oy=(top+bottom)/2;break;
-  }
  }
  if(sel)renderProps();
  draw();
@@ -2280,9 +2366,9 @@ function canvasUp(e){
  const press=canvasObjectPress?.id===e.pointerId?canvasObjectPress:null;
  if(press){
   clearCanvasObjectPress();
-  if(press.target&&e.type==='pointerup'&&!press.held&&Math.hypot(e.clientX-press.event.clientX,e.clientY-press.event.clientY)<=TAP_RADIUS){
+  if(e.type==='pointerup'&&!press.held&&Math.hypot(e.clientX-press.event.clientX,e.clientY-press.event.clientY)<=TAP_RADIUS){
    const focused=recordObjectTap('canvas',press.target,e);
-   if(!focused&&press.touch){
+   if(!focused&&press.touch&&objectCanBeSelected(press.target)){
     sel={t:press.target.t,id:press.target.id};multiSel=[sel];ksel=null;
     renderAll();draw();
    }
@@ -2298,7 +2384,7 @@ function canvasUp(e){
   const W=solve(),S=segs(W);
   const found=marqueeRect.additive?[...multiSel]:[];
   const addItem=(t,id)=>{if(!found.some(x=>x.t===t&&x.id===id))found.push({t,id});};
-  if(showBones){
+  if(showBones&&!selectionLocked('b')){
    M.bones.forEach(b=>{
     const w=W[b.id];if(!w)return;
     const mx=(w.hx+w.tx)/2,my=(w.hy+w.ty)/2;
@@ -2307,7 +2393,7 @@ function canvasUp(e){
     }
    });
   }
-  if(showImages&&mode==='rig'){
+  if(showImages&&!selectionLocked('k')){
    M.blocks.filter(k=>(!k.b||byId(k.b))&&blockVis(k)).forEach(k=>{
     const info=blockInfo(k,W,S);if(!info)return;
     const center=localToWorld(info.x0+info.width/2,info.cy,info.w);
@@ -2326,7 +2412,8 @@ cv.addEventListener('wheel',e=>{e.preventDefault();const p=canvasPoint(e);zoomAt
 cv.addEventListener('contextmenu',e=>{
  e.preventDefault();
  if(canvasObjectPress?.touch||e.pointerType==='touch')return;
- const target=canvasObjectAt(canvasPoint(e));
+ const point=canvasPoint(e);
+ const target=transformHandleAt(point)?sel:canvasObjectAt(point);
  showContextMenu(e,target?.t,target?.id);
 });
 cv.addEventListener('lostpointercapture',e=>{
@@ -2361,7 +2448,9 @@ function drawTL(){
 function timelineFrame(e){const rect=tl.getBoundingClientRect(),x=(e.clientX-rect.left)*tl.width/rect.width,frames=A().frames,fw=(tl.width-LW-12)/Math.max(1,frames-1);return clamp(Math.round((x-LW)/fw),0,frames-1)}
 function timelineDown(e){
  if(!activeSet())return;e.preventDefault();tl.setPointerCapture?.(e.pointerId);
- const f=timelineFrame(e),rect=tl.getBoundingClientRect(),x=(e.clientX-rect.left)*tl.width/rect.width,y=(e.clientY-rect.top)*tl.height/rect.height,fw=(tl.width-LW-12)/Math.max(1,A().frames-1),playheadX=LW+frame*fw;
+ const f=timelineFrame(e);
+ if(lockBoneSelection){ksel=null;frame=f;drag={type:'scrub'};renderProps();draw();return;}
+ const rect=tl.getBoundingClientRect(),x=(e.clientX-rect.left)*tl.width/rect.width,y=(e.clientY-rect.top)*tl.height/rect.height,fw=(tl.width-LW-12)/Math.max(1,A().frames-1),playheadX=LW+frame*fw;
  if(Math.abs(x-playheadX)<=Math.max(8,8*tl.width/rect.width)){
   const selBones=selectedBoneIds();
   ksel=null;drag={type:'frameDrag',from:Math.round(frame),bones:selBones.length>1?selBones:M.bones.map(b=>b.id)};return;
@@ -2464,8 +2553,10 @@ function delKey(){
  draw();renderProps();
 }
 function setMode(next){
- mode=next==='anim'?'anim':'rig';
- if(mode==='anim'&&sel?.t==='k'&&!cur()?.effectId)sel=null;
+ const target=next==='anim'?'anim':'rig';
+ if(target==='anim'&&mode!=='anim')lockAnimBlocks=true;
+ mode=target;
+ discardLockedSelection();syncSelectionLockInputs();
  $('mode').textContent=mode==='rig'?'Chế độ: RIG':'Chế độ: ANIM';
  $('mode').classList.toggle('active',mode==='anim');
  renderList();renderProps();draw();
@@ -2599,8 +2690,7 @@ function setEffectLoop(loop){
 function pasteEffectBlock(){
  const effect=findEffect($('effectPasteSelect').value);if(!effect||editedEffectId)return;
  checkpointUndo();
- addBlock();
- const block=cur();
+ const block=addBlock();
  Object.assign(block,{name:effect.name,effectId:effect.id,previewOnly:true,visible:false,demo:false});
  renderAll();draw();
 }
@@ -2612,7 +2702,7 @@ function setEffectDemoKey(visible){
  const item=map[index].find(k=>String(k.blockId)===String(block.id));
  if(item)item.visible=visible;
  else map[index].push({blockId:block.id,visible,image:''});
- mode='anim';$('mode').textContent='Chế độ: ANIM';$('mode').classList.add('active');renderAll();draw();
+ setMode('anim');renderAll();draw();
 }
 function effectStartFrame(block){
  let visible=block.visible!==false,start=visible?0:null;
@@ -3590,7 +3680,7 @@ async function exportSpriteSheet(){
 let undoStack=[],redoStack=[],undoLastSnapshot=null,undoRestoring=false;
 function undoSnapshot(){
  flushEffectWorkspace();if(!editedEffectId)saveActiveRig();
- return JSON.stringify({model:projectModel(),editedEffectId,characterView,sideTab:activeSideTab,frame,mode,tool,selection:sel,multiSelection:multiSel,keySelection:ksel,sessionFiles:[...selectedSessionModelIds],activeSessionModelId,projectName:$('mn').value});
+ return JSON.stringify({model:projectModel(),editedEffectId,characterView,sideTab:activeSideTab,frame,mode,tool,selection:sel,multiSelection:multiSel,keySelection:ksel,sessionFiles:[...selectedSessionModelIds],activeSessionModelId,projectName:$('mn').value,locks:[lockBoneSelection,lockRigBlocks,lockAnimBlocks]});
 }
 function updateUndoButton(){const undo=$('undoBtn'),redo=$('redoBtn');if(undo)undo.disabled=!undoStack.length;if(redo)redo.disabled=!redoStack.length;}
 function checkpointUndo(){
@@ -3611,7 +3701,9 @@ function restoreUndoSnapshot(snap){
   activeSideTab=state.sideTab||'skeleton';
   if(state.editedEffectId&&enterEffectWorkspace(state.editedEffectId))characterView=state.characterView;
   frame=clamp(+state.frame||0,0,lastFrame());
-  mode=state.mode==='anim'?'anim':'rig';tool=['select','move','rotate','scale','ik'].includes(state.tool)?state.tool:'move';
+  mode=state.mode==='anim'?'anim':'rig';
+  if(state.locks){[lockBoneSelection,lockRigBlocks,lockAnimBlocks]=state.locks;}
+  tool=['select','move','rotate','scale','free','ik'].includes(state.tool)?state.tool:'move';
   sel=state.selection||null;multiSel=Array.isArray(state.multiSelection)?state.multiSelection:(sel?[sel]:[]);ksel=state.keySelection||null;
   if(sel?.t==='b'&&!byId(sel.id))sel=null;
   if(sel?.t==='k'&&!M.blocks.some(k=>k.id===sel.id))sel=null;
