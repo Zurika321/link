@@ -410,6 +410,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <label class="visibility-toggle selection-lock" title="Block tự khóa khi vào ANIM. Mở khóa để chọn và chỉnh hình học gốc của Block."><input id="lockBlocks" type="checkbox" onchange="setSelectionLock('k',this.checked)"> Khóa Block</label>
   <label class="visibility-toggle"><input id="showBones" type="checkbox" checked> Xương</label>
   <label class="visibility-toggle"><input id="showImages" type="checkbox" checked> Ảnh</label>
+  <label class="visibility-toggle" title="Bật/tắt Dùng ảnh cho mọi Block ở cả bốn hướng và tất cả Effect"><input id="useAllImages" type="checkbox" aria-label="UAI — Dùng ảnh cho tất cả Block" onchange="setAllBlockImages(this.checked)"> UAI</label>
   </div>
 </nav>
 
@@ -1255,7 +1256,7 @@ function setTool(next){
  if($('ikFlipBtn'))$('ikFlipBtn').hidden=(tool!=='ik');
  draw();
 }
-function renderAll(){discardLockedSelection();syncMenuBarInputs();renderList();renderProps();renderImageAssets();renderGroupBlock();}
+function renderAll(){discardLockedSelection();syncMenuBarInputs();syncAllBlockImages();renderList();renderProps();renderImageAssets();renderGroupBlock();}
 function renderList(){
  const active=(type,id)=>{
   if(sel&&sel.t===type&&sel.id===id)return' s';
@@ -1553,6 +1554,33 @@ function setObjectDemo(enabled){
  const object=cur();if(!object||object.effectId)return;
  checkpointUndo();object.previewOnly=!!enabled;renderList();renderProps();draw();
 }
+function projectImageBlocks(){
+ const project=projectModel();
+ const rigs=[project];
+ for(const [direction,rig] of Object.entries(project.rigsByDir||{}))
+  if(direction!==project.dir)rigs.push(rig);
+ for(const effect of project.effects||[])
+  rigs.push(effect.id===editedEffectId?M:effect.rig);
+ return rigs.flatMap(rig=>rig.blocks).filter(block=>!block.effectId);
+}
+function syncAllBlockImages(blocks=projectImageBlocks()){
+ const input=$('useAllImages'),enabled=blocks.filter(block=>block.demo!==false).length;
+ input.disabled=blocks.length===0;
+ input.checked=enabled>0&&enabled===blocks.length;
+ input.indeterminate=enabled>0&&enabled<blocks.length;
+}
+function setAllBlockImages(enabled){
+ const blocks=projectImageBlocks();
+ if(blocks.some(block=>(block.demo!==false)!==enabled)){
+  checkpointUndo();
+  for(const block of blocks)block.demo=enabled;
+  saveActiveRig(projectModel());
+  flushEffectWorkspace();
+  renderProps();
+  draw();
+ }
+ syncAllBlockImages(blocks);
+}
 function setP(key,value){
  const o=cur();if(!o)return;
  if(key==='demo')value=!!value;
@@ -1566,6 +1594,7 @@ function setP(key,value){
   else{o[key]=value;if(key==='rank')o.rank=Math.max(1,o.rank);if(key==='sx'||key==='sy')o[key]=Math.max(.05,o[key]);}
  }
  if(['skewX','skewY'].includes(key))syncMenuBarInputs();
+ if(key==='demo')syncAllBlockImages();
  if(['name','p','b','z','vis','demo'].includes(key)){renderList();if(key!=='name')renderProps();}draw();
 }
 function setMeshCorner(idx,axis,val){
@@ -1687,7 +1716,7 @@ function drawBlockWithDeformation(g,k,info,image,measure){
 }
 
 /* Animation có tên, mỗi animation có bốn hướng */
-function saveActiveRig(){if(!M.rigsByDir)M.rigsByDir={};M.rigsByDir[M.dir]={bones:cloneData(M.bones),blocks:cloneData(M.blocks)};}
+function saveActiveRig(model=M){if(!model.rigsByDir)model.rigsByDir={};model.rigsByDir[model.dir]={bones:cloneData(model.bones),blocks:cloneData(model.blocks)};}
 function syncRigDirectionTabs(){document.querySelectorAll('[data-rig-dir]').forEach(b=>b.classList.toggle('active',b.dataset.rigDir===M.dir));}
 function setDir(direction){
  if(editedEffectId&&direction!=='down')return;
@@ -2907,7 +2936,7 @@ function useImg(name){
  const block=cur();
  if(!block||sel.t!=='k'||block.effectId){alert('Chọn một Block ảnh trước');return;}
  if(!block.img)block.ir=block.b?90:0;
- block.img=name;block.demo=true;renderProps();draw();
+ block.img=name;block.demo=true;syncAllBlockImages();renderProps();draw();
 }
 function rmImg(event,name){event?.preventDefault?.();deleteImageByName(name);return false;}
 $('up').onchange=async e=>{const files=[...e.target.files];await addFiles(files,true);e.target.value='';};
