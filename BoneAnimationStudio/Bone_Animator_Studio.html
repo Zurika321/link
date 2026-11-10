@@ -261,6 +261,9 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
     font-size: 12px;
     cursor: pointer;
 }
+.tree-row .demo-label{color:#ff8989}
+.tree-row.s .demo-label{color:#681819}
+.tree-row .tree-z{flex:none;font-size:10px;font-variant-numeric:tabular-nums}
 
 
 .unity-export-modal{position:fixed;inset:0;z-index:1400;background:#080a0def;display:flex;align-items:center;justify-content:center;padding:12px}
@@ -421,9 +424,6 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <div class="row"><button onclick="renameEffectPackage()">Đổi tên</button><button onclick="deleteEffectPackage()">Xóa</button><label><input id="effectLoop" type="checkbox" onchange="setEffectLoop(this.checked)"> Lặp</label></div>
   <p id="effectHint" class="status"></p>
  </div>
- <div id="characterEffectControls" hidden>
-  <div class="row"><select id="effectPasteSelect" aria-label="Effect để dán"></select><button onclick="pasteEffectBlock()">＋ Dán Effect</button></div>
- </div>
  <section id="skeletonPane" class="side-pane">
   <div class="rig-direction-tabs" aria-label="Hướng bộ xương">
    <button data-rig-dir="up" onclick="setDir('up')">⬆ Top</button><button data-rig-dir="down" onclick="setDir('down')">⬇ Down</button><button data-rig-dir="left" onclick="setDir('left')">⬅ Left</button><button data-rig-dir="right" onclick="setDir('right')">➡ Right</button>
@@ -436,7 +436,16 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
     <button onclick="loadR15Preset()" title="Nạp mẫu R15">🦴 Mẫu R15</button>
    </div>
 
-  <div id="list"></div>
+  <div id="list">
+   <div id="rigTree"></div>
+   <section id="effectBlockSection" class="tree-section block-section" hidden>
+    <h4 class="tree-section-title"><span>BLOCK EFFECT (<span id="effectBlockCount">0</span>)</span></h4>
+    <div id="characterEffectControls" hidden>
+     <div class="row"><select id="effectPasteSelect" aria-label="Effect để dán"></select><button onclick="pasteEffectBlock()">＋ Dán Effect</button></div>
+    </div>
+    <div id="effectBlockRows"></div>
+   </section>
+  </div>
   <p class="status">Nhập/xuất model và xuất sprite sheet bằng nút công cụ nổi ở góc trên.</p>
  </section>
  <section id="imagePane" class="side-pane" hidden>
@@ -1265,15 +1274,18 @@ function renderList(){
  };
  const boneRows=[];
  const boneRow=(b,depth)=>{
-  boneRows.push(`<div class="it tree-row${active('b',b.id)}${selectionLocked('b')?' selection-locked':''}" data-type="b" data-id="${b.id}" draggable="true" style="padding-left:${6+depth*12}px" ondragstart="treeDragStart(event,'b',${b.id})" ondragover="treeDragOver(event)" ondragleave="treeDragLeave(event)" ondrop="treeDrop(event,'b',${b.id})"><span class="tree-label">🦴 ${esc(b.name)}${b.previewOnly?' <small>· Demo</small>':''}</span></div>`);
+  boneRows.push(`<div class="it tree-row${active('b',b.id)}${selectionLocked('b')?' selection-locked':''}" data-type="b" data-id="${b.id}" draggable="true" style="padding-left:${6+depth*12}px" ondragstart="treeDragStart(event,'b',${b.id})" ondragover="treeDragOver(event)" ondragleave="treeDragLeave(event)" ondrop="treeDrop(event,'b',${b.id})"><span class="tree-label${b.previewOnly?' demo-label':''}">🦴 ${esc(b.name)}${b.previewOnly?' <small>· Demo</small>':''}</span></div>`);
   kids(b.id).forEach(child=>boneRow(child,depth+1));
  };
  M.bones.filter(b=>!b.p||!byId(b.p)).forEach(b=>boneRow(b,0));
- const blocks=[...M.blocks].sort((a,b)=>String(a.name).localeCompare(String(b.name))).map(k=>{
+ const blockRows=[],effectRows=[];
+ for(const k of [...M.blocks].sort((a,b)=>String(a.name).localeCompare(String(b.name)))){
   const parent=byId(k.b),kind=parent?`<small>· Gắn vào ${esc(parent.name)}</small>`:'<small>· Block độc lập</small>';
-  return `<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}${selectionLocked('k')?' selection-locked':''}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn block" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label">${k.effectId?'✦':'▣'} ${esc(k.name)} ${kind}${k.previewOnly||k.effectId?' <small>· Demo</small>':''}</span></div>`;
- }).join('');
- $('list').innerHTML=`
+  const demo=k.previewOnly||k.effectId;
+  const row=`<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}${selectionLocked('k')?' selection-locked':''}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn ${k.effectId?'Effect':'block'}" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label${demo?' demo-label':''}">${k.effectId?'✦':'▣'} ${esc(k.name)} ${kind}${demo?' <small>· Demo</small>':''}</span><small class="tree-z" title="Lớp Z trong Properties">Z: ${+k.z||0}</small></div>`;
+  (k.effectId?effectRows:blockRows).push(row);
+ }
+ $('rigTree').innerHTML=`
 <section class="tree-section">
     <h4 class="tree-section-title">
         <span>XƯƠNG (${M.bones.length})</span>
@@ -1284,11 +1296,13 @@ function renderList(){
 
 <section class="tree-section block-section">
     <h4 class="tree-section-title">
-        <span>BLOCK (${M.blocks.length})</span>
+        <span>BLOCK (${blockRows.length})</span>
         <button onclick="addBlock()">＋</button>
     </h4>
-    ${blocks||'<div class="status">Chưa có block.</div>'}
+    ${blockRows.join('')||'<div class="status">Chưa có block.</div>'}
 </section>`;
+ $('effectBlockCount').textContent=effectRows.length;
+ $('effectBlockRows').innerHTML=effectRows.join('')||'<div class="status">Chưa gắn Effect nào.</div>';
 }
 
 
@@ -2714,6 +2728,7 @@ function refreshEffectWorkspaceUI(){
  const options=effects.map(effect=>`<option value="${esc(effect.id)}">${esc(effect.name)}</option>`).join('');
  const isEffect=activeSideTab==='effect',isCharacter=activeSideTab==='skeleton';
  $('effectControls').hidden=!isEffect;
+ $('effectBlockSection').hidden=!isCharacter;
  $('characterEffectControls').hidden=!isCharacter||!effects.length;
  $('imagePane').hidden=activeSideTab!=='image';
  $('skeletonPane').hidden=!isCharacter&&!(isEffect&&editedEffectId);
