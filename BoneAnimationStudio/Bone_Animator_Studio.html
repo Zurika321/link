@@ -2,7 +2,8 @@
 <html lang="vi">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Bone Animator Studio v17</title>
+<title>Bone Animator Studio v20</title>
+<meta name="bone-animator-build" content="v20-audio-shortcuts-timeline-right-pan">
 <style>
 :root{--bg:#1c2027;--p:#252a33;--l:#373e4a;--t:#e4e8ee;--m:#8c97a6;--a:#3fb8af;--orange:#ff7a59}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}
@@ -358,8 +359,6 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
 body.effect-workspace .rig-direction-tabs,
 body.effect-workspace .preset-actions button:not(:first-child),
 body.effect-workspace #directionSelect,
-body.effect-workspace .animation-setup .anim-crud-button,
-body.effect-workspace #animationName,
 body.effect-workspace #timelineControls [data-character-only]{display:none!important}
 body.effect-workspace .animation-setup #animationSelect{width:100%}
 .session-models-title{margin-top:14px!important}
@@ -380,6 +379,30 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 @media(pointer:coarse){#treeContext button{min-height:40px}.tree-row{-webkit-user-drag:none}}
 .selection-lock:has(input:checked){color:#ffd166;font-weight:650}
 .tree-row.selection-locked .tree-label{opacity:.52}
+
+.bone-adjustment{margin:12px 0;padding:10px;border:1px solid var(--a);border-radius:8px;min-width:0}
+.bone-adjustment h4{margin:0 0 8px;color:var(--a)}
+.bone-adjustment .adjust-context{margin:5px 0;overflow-wrap:anywhere;line-height:1.5}
+.bone-adjustment .row{flex-wrap:wrap;gap:6px}
+.bone-adjustment .row input,.bone-adjustment .row select{min-width:0;max-width:100%}
+.bone-adjustment .adjust-action{display:block;width:100%;min-height:44px;white-space:normal;overflow-wrap:anywhere;line-height:1.4;margin-top:8px}
+.bone-adjustment .adjust-result{white-space:pre-line;overflow-wrap:anywhere;line-height:1.5}
+
+.side-tabs{flex-wrap:wrap}.side-tabs button{min-width:0}
+#audioPane .row{flex-wrap:wrap}#audioPane .row input,#audioPane .row select{min-width:0;max-width:100%}
+#audioWaveform{display:block;width:100%;height:100px;touch-action:none;border:1px solid var(--l);border-radius:6px}
+.audio-key-list{display:flex;flex-direction:column;gap:4px;max-height:240px;overflow:auto}.audio-key-list button{white-space:normal;text-align:left;overflow-wrap:anywhere}
+#tw{overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}#tls{max-width:none;min-height:0}
+.timeline-navigation{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:12px;padding-bottom:4px}.timeline-navigation label{display:flex;align-items:center;gap:5px}.timeline-navigation input{width:95px}.timeline-navigation button{padding:4px 7px;min-height:30px}
+#customQuickActions{position:absolute;left:8px;bottom:8px;z-index:81;display:flex;flex-wrap:wrap;gap:5px;max-width:calc(100% - 180px);max-height:45%;overflow:auto}#customQuickActions button{min-height:40px;white-space:normal;max-width:125px;font-size:12px}
+.shortcut-dialog{width:min(760px,94vw);max-height:90dvh;overflow:auto}.shortcut-dialog .row{flex-wrap:wrap}.shortcut-dialog input{min-width:0}.shortcut-table{display:flex;flex-direction:column;gap:4px}.shortcut-row,.shortcut-heading{display:grid;grid-template-columns:minmax(120px,1fr) minmax(85px,.6fr) 60px;align-items:center;gap:8px;padding:5px}.shortcut-row input[type=text]{width:100%;min-width:0}.shortcut-row:nth-child(even){background:#ffffff08}.shortcut-heading{position:sticky;top:0;background:var(--p)}#shortcutStatus{color:#ffd166}
+@media(max-width:600px){.canvas-floating-tools{gap:3px}.canvas-floating-tools button.canvas-tool-button{width:38px;height:38px}.shortcut-row,.shortcut-heading{grid-template-columns:minmax(100px,1fr) minmax(70px,.65fr) 44px;font-size:12px;gap:4px}#customQuickActions{max-width:calc(100% - 150px)}}
+
+.modal-backdrop-close{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:transparent;cursor:pointer;z-index:0}
+.modal-backdrop-close:hover,.modal-backdrop-close:active{background:transparent}
+.modal-backdrop-close~[role="dialog"]{position:relative;z-index:1}
+#customQuickActions [data-quick-action]{touch-action:none;user-select:none;min-width:34px}
+#shortcutModal .shortcut-dialog>.row:first-child{position:sticky;top:-16px;z-index:3;background:var(--p);padding-block:10px}
 </style>
 </head>
 <body>
@@ -431,7 +454,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
  <div class="side-tabs"><button id="tabSkeleton" class="active" onclick="showSideTab('skeleton')">Character</button><button id="tabEffect" onclick="showSideTab('effect')">Effect</button></div>
  <div id="effectControls" hidden>
   <div class="row"><select id="effectEditSelect" aria-label="Effect đang chỉnh" onchange="selectEffectEditor(this.value)"></select><button onclick="createEffectPackage()">＋ Effect</button></div>
-  <div class="row"><button onclick="renameEffectPackage()">Đổi tên</button><button onclick="deleteEffectPackage()">Xóa</button><label><input id="effectLoop" type="checkbox" onchange="setEffectLoop(this.checked)"> Lặp</label></div>
+  <div class="row"><button onclick="renameEffectPackage()">Đổi tên</button><button onclick="deleteEffectPackage()">Xóa</button><label title="Lặp animation Effect đang chọn"><input id="effectLoop" type="checkbox" onchange="setEffectLoop(this.checked)"> Lặp clip</label></div>
   <p id="effectHint" class="status"></p>
  </div>
  <section id="skeletonPane" class="side-pane">
@@ -463,12 +486,14 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 <div id="C">
  <canvas id="cvs"></canvas>
  <div id="hint">Quét chọn: công cụ ⬚ hoặc Shift+Kéo · Tự do: kéo thân Block để di chuyển, kéo ô vuông để xoay và thu phóng · 🦾 IK 2-Xương: kéo khớp cổ chân/cổ tay · Skew/Mesh: kéo 4 góc tím</div>
+ <div id="customQuickActions" aria-label="Thao tác nhanh tùy chỉnh"></div>
  <div class="canvas-floating-tools">
+  <button type="button" id="settingsButton" class="canvas-tool-button" onclick="openShortcutSettings()" title="Settings · Phím tắt và thao tác nhanh" aria-label="Settings">⚙</button>
   <button type="button" id="hintToggleBtn" class="canvas-tool-button" onclick="toggleCanvasHint()" aria-label="Bật/tắt hướng dẫn trên Canvas" title="Bật/tắt hướng dẫn trên Canvas">?</button>
   <div id="quickTools">
    <button type="button" id="quickToolsButton" class="canvas-tool-button" title="Công cụ dự án" aria-label="Công cụ dự án" aria-controls="quickToolsPanel" aria-expanded="false" onclick="toggleQuickTools()">⋯</button>
    <div id="quickToolsPanel" class="quick-tools-panel" hidden>
-    <h3>Công cụ dự án · v17</h3>
+    <h3>Công cụ dự án · v20</h3>
     <div class="row"><label for="mn">Tên model</label><input id="mn" value="BoneAnimatorModel" placeholder="Tên model"></div>
     <div class="quick-tools-actions">
      <button type="button" id="saveModelJson" onclick="saveM()">⬇ Xuất JSON</button>
@@ -488,7 +513,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 </div>
 <div id="resizeRight" class="resize-handle resize-vertical" role="separator" aria-orientation="vertical" aria-label="Resize bảng phải"></div>
 <div id="R" class="pn">
- <div class="side-tabs"><button id="tabProperties" class="active" onclick="showRightTab('properties')">Properties</button><button id="tabImage" onclick="showRightTab('image')">Image</button><button id="tabGroupBlock" onclick="showRightTab('group')">GroupBlock</button></div>
+ <div class="side-tabs"><button id="tabProperties" class="active" onclick="showRightTab('properties')">Properties</button><button id="tabAudio" onclick="showRightTab('audio')">Audio</button><button id="tabImage" onclick="showRightTab('image')">Image</button><button id="tabGroupBlock" onclick="showRightTab('group')">GroupBlock</button></div>
  <section id="rightPropertiesPane" class="side-pane"><div id="props"></div></section>
  <section id="imagePane" class="side-pane" hidden>
   <strong id="imageTarget" aria-live="polite">Đích thả ảnh · Character</strong>
@@ -498,6 +523,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <p id="imageCanvasHint" class="status"></p>
   <div id="imageAssets" class="image-assets"></div>
  </section>
+ <section id="audioPane" class="side-pane" hidden><div class="row"><button onclick="$('audioImport').click()">＋ Audio</button><button onclick="stopAudioVoices()">■ Dừng tất cả</button></div><input id="audioImport" type="file" accept="audio/*,.wav,.mp3,.ogg,.m4a" multiple hidden><div class="row"><label>Audio demo</label><input id="audioEnabled" type="checkbox" checked onchange="setDemoAudioEnabled(this.checked)"></div><p id="audioStatus" class="status" role="status"></p><div id="audioPanel"></div></section>
  <section id="rightGroupPane" class="side-pane group-section" hidden><div id="groupBlockPanel"></div></section>
 </div>
 <div id="resizeBottom" class="resize-handle resize-horizontal" role="separator" aria-orientation="horizontal" aria-label="Resize bảng animation"></div>
@@ -520,6 +546,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   </div>
  </div>
  <div id="timelinePanel">
+  <div class="timeline-navigation"><label>Zoom timeline <input id="timelineZoom" type="range" min="25" max="800" step="5" value="100" oninput="setTimelineZoom(this.value/100)"></label><span id="timelineZoomLabel">100%</span><button onclick="setTimelineZoom(timelineZoom/1.25)">−</button><button onclick="setTimelineZoom(timelineZoom*1.25)">＋</button><button onclick="fitTimelineView()">Vừa khung</button><button id="timelinePan" onclick="toggleTimelinePan()">↔↕ Cuộn</button></div>
   <div id="tw"><canvas id="tls"></canvas></div>
   <div id="noAnimationHint" class="status">Chọn hoặc tạo một animation để hiển thị timeline và điều khiển frame.</div>
  </div>
@@ -527,6 +554,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 
 
 </div>
+<div id="shortcutModal" class="sprite-modal" hidden><section class="sprite-dialog shortcut-dialog" role="dialog" aria-modal="true" aria-labelledby="shortcutTitle"><div class="row"><h3 id="shortcutTitle">Settings · Phím tắt / thao tác nhanh</h3><button onclick="closeShortcutSettings()">Đóng</button></div><div id="shortcutSettings"></div></section></div>
 <div id="spriteExportModal" class="sprite-modal" hidden>
  <section class="sprite-dialog" role="dialog" aria-modal="true" aria-labelledby="spriteExportTitle">
   <h3 id="spriteExportTitle">Xuất Sprite Sheet</h3>
@@ -659,7 +687,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <header class="unity-export-head"><div><strong id="unityExportTitle">Xuất Unity JSON — Smooth 2D Rig</strong><div class="crop-subtitle">Thiết lập loop và chia pha âm thanh cho từng animation.</div></div><button type="button" onclick="closeUnityExportSettings()">Đóng ✕</button></header>
   <div class="unity-export-body">
    <div class="row"><label style="width:125px">Pixels Per Unit</label><input id="unityPpu" type="number" min="1" max="2048" step="1" value="100"></div>
-   <p class="unity-export-note">Unity JSON dùng schema v3 khi có Block Effect đã tắt Demo. Hãy dùng bộ script Unity v4 để đọc schema 1–3. GroupBlock, Block Keyframe, Easing và Skew/Mesh đều được xuất. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết. Tên SFX và dropdown RegistryId được cấu hình trong Inspector của CharacterAnimation.</p>
+   <p class="unity-export-note">Để phát Block Effect theo clip và khoảng frame đã đặt, dùng bộ script Unity v5. Mỗi Block Effect chọn clip riêng theo animation Character và dừng tại cuối Character. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết.</p>
    <div class="unity-animation-row" style="font-size:11px;color:#9da8b7;font-weight:700"><span>ANIMATION</span><span>LOOP</span><span>ATTACK / SKILL</span><span>CAST START</span><span>CAST END</span></div>
    <div id="unityAnimationSettings"></div>
    <label class="web-json-option"><input id="unityIncludeWebJson" type="checkbox"> Xuất kèm JSON chỉnh sửa (Web)</label>
@@ -704,7 +732,7 @@ let rightTab='properties',selectedGroupIndex=0,spriteVariantOverride=null;
 let activeSideTab='skeleton',characterWorkspace=null,editedEffectId='',selectedEffectId='',characterView=null;
 const projectModel=()=>characterWorkspace||M;
 const findEffect=id=>(projectModel().effects||[]).find(effect=>effect.id===id);
-function normalizeDirs(source){const dirs=emptyDirections();if(source&&typeof source==='object')['down','up','left','right'].forEach(d=>{const a=source[d];if(a&&typeof a==='object')dirs[d]={fps:+a.fps||12,frames:+a.frames||24,keys:a.keys||{},blockKeys:a.blockKeys&&typeof a.blockKeys==='object'?a.blockKeys:{}};});return dirs;}
+function normalizeDirs(source){const dirs=emptyDirections();if(source&&typeof source==='object')['down','up','left','right'].forEach(d=>{const a=source[d];if(a&&typeof a==='object')dirs[d]={fps:+a.fps||12,frames:+a.frames||24,keys:a.keys||{},blockKeys:a.blockKeys&&typeof a.blockKeys==='object'?a.blockKeys:{},...(a.effectTracks&&typeof a.effectTracks==='object'?{effectTracks:cloneData(a.effectTracks)}:{}),...(a.audioKeys&&typeof a.audioKeys==='object'?{audioKeys:normalizeAudioKeys(a.audioKeys,a.frames)}:{})};});return dirs;}
 function cloneData(value){return JSON.parse(JSON.stringify(value??null));}
 function inferUnityCombat(name){return /(attack|atk|skill|dive)/i.test(String(name||''));}
 function inferUnityLoop(name){return !/(attack|atk|skill|hurt|hit|die|death|cast|stun|gather|dive)/i.test(String(name||''));}
@@ -817,7 +845,7 @@ function normalizeModel(m){
  m.nid=+m.nid||1;m.bones=Array.isArray(m.bones)?m.bones:[];m.blocks=Array.isArray(m.blocks)?m.blocks:[];m.dir=['down','up','left','right'].includes(m.dir)?m.dir:'down';
  let sets=Array.isArray(m.animationSets)?m.animationSets:[];
  if(!sets.length){const oldDirs=m.anims?normalizeDirs(m.anims):emptyDirections();if(m.anim&&!m.anims)oldDirs.down={fps:+m.anim.fps||12,frames:+m.anim.frames||24,keys:m.anim.keys||{}};sets=[{name:'Default',dirs:oldDirs}];}
- m.animationSets=sets.map((set,i)=>({name:String(set.name||('Animation '+(i+1))),dirs:normalizeDirs(set.dirs||set.anims||{}),unity:normalizeUnityMeta(set)}));
+ m.animationSets=sets.map((set,i)=>({...(typeof set.id==='string'?{id:set.id}:{}),name:String(set.name||('Animation '+(i+1))),dirs:normalizeDirs(set.dirs||set.anims||{}),unity:normalizeUnityMeta(set)}));
  if(!m.animationSets.length)m.animationSets=[{name:'Default',dirs:emptyDirections()}];
  m.activeAnimation=m.animationSets.some(a=>a.name===m.activeAnimation)?m.activeAnimation:m.animationSets[0].name;
  const baseRig={bones:cloneData(m.bones),blocks:cloneData(m.blocks)},saved=m.rigsByDir&&typeof m.rigsByDir==='object'?m.rigsByDir:{};
@@ -831,15 +859,13 @@ function normalizeModel(m){
 }
 
 function activeSet(){return M.animationSets.find(a=>a.name===M.activeAnimation)||M.animationSets[0]||null;}
-function seedAnimationSet(set,bones=M.bones){
+function seedAnimationSet(set){
+ // Empty tracks intentionally follow the rig. Opening/selecting a clip must not recreate keys.
  if(!set)return;
  for(const dir of ['down','up','left','right']){
   const anim=set.dirs[dir]||(set.dirs[dir]=emptyAnim());
-  const directionBones=dir===M.dir?bones:(M.rigsByDir?.[dir]?.bones||[]);
-  for(const b of directionBones){
-   const keys=anim.keys[b.id]||(anim.keys[b.id]={});
-   if(!Object.keys(keys).length)keys[0]={x:b.x,y:b.y,a:b.a,l:b.l};
-  }
+  if(!anim.keys||typeof anim.keys!=='object')anim.keys={};
+  if(!anim.blockKeys||typeof anim.blockKeys!=='object')anim.blockKeys={};
  }
 }
 function refreshAnimationState(){
@@ -850,6 +876,7 @@ function refreshAnimationState(){
  $('deleteAnimationBtn').disabled=M.animationSets.length<=1;
  $('animationSelect').innerHTML=M.animationSets.map(a=>`<option value="${esc(a.name)}" ${a.name===M.activeAnimation?'selected':''}>${esc(a.name)}</option>`).join('');
  $('animationSelect').value=M.activeAnimation;$('directionSelect').value=M.dir;syncAnim();
+ if(editedEffectId){flushEffectWorkspace();refreshEffectWorkspaceUI();}
 }
 const A=()=>{const set=activeSet();return set?set.dirs[M.dir]:(emptyAnim());};
 const byId=id=>M.bones.find(b=>b.id==id),kids=id=>M.bones.filter(b=>b.p==id);
@@ -1130,6 +1157,9 @@ function blockStateAt(k,f=frame){
   if(typeof item.visible==='boolean')state.visible=item.visible;
   if(typeof item.image==='string')state.image=item.image||baseImage;
  }
+ const track=k.effectId&&A().effectTracks?.[k.id];
+ if(track)state.visible=k.visible!==false&&f>=track.startFrame&&(track.endFrame==null||f<track.endFrame);
+ if(k.effectId&&(f<0||f>=Math.max(1,+A().frames||1)))state.visible=false;
  return state;
 }
 function animatedBlockImage(k,f=frame){return blockStateAt(k,f).image;}
@@ -1512,7 +1542,7 @@ function renderRigGuide(){
             <p>Thêm block:	Nhấn Thêm block</p>
             <p>Chọn xương/block: Nhấn vào danh sách hoặc canvas</p>
             <p>Nhấn đúp xương/block để focus. Nhấn đúp chỗ trống để bỏ chọn.</p>
-            <p>Menu thao tác: chuột phải trên PC, nhấn giữ trên điện thoại.</p>
+            <p>PC: giữ chuột phải rồi kéo để pan canvas; chuột trái chọn/chỉnh đối tượng. Chuột phải trong danh sách mở menu; điện thoại nhấn giữ để mở menu.</p>
             <p>Di chuyển: Chọn xương hoặc Block, kéo ô vuông hoặc một mũi tên</p>
             <p>Di chuyển đầu xương:	Kéo đầu xương</p>
             <p>Xoay: Chọn Xoay, kéo vòng vàng</p>
@@ -1546,11 +1576,102 @@ function renderAnimGuide(){
             <p>Sao chép key:	Chọn key rồi Copy	Sao chép keyframe</p>
             <p>Cắt key:	Chọn key rồi Cut	Cắt keyframe</p>
             <p>Dán key:	Chọn frame rồi Paste</p>
-            <p>Xóa key:	Chọn key rồi Delete</p>
+            <p>Xóa key:	Chọn key rồi Delete. Track trống dùng pose RIG và không tự sinh lại key 0.</p>
+            <p>Chỉnh tổng thể: Chọn xương → Properties → Chỉnh tổng thể animation. Kiểm tra tên clip, hướng và phạm vi trước khi áp dụng.</p>
             <p>Sao chép Down sang Up:	Nhấn Copy Down to Up</p>
         </section>
     `;
 }
+/* Bone-wide animation adjustment. Draft UI state is never written to project JSON. */
+let boneAnimationAdjustment=null;
+function boneAdjustmentContext(bone=cur()){
+ if(sel?.t!=='b'||!bone||!activeSet())return null;
+ return JSON.stringify([editedEffectId||'Character',M.activeAnimation,M.dir,bone.id]);
+}
+function boneAdjustmentDraft(bone){
+ const context=boneAdjustmentContext(bone);
+ if(!context)return null;
+ if(boneAnimationAdjustment?.context!==context)
+  boneAnimationAdjustment={context,scope:'current',x:0,y:0,a:0,message:''};
+ return boneAnimationAdjustment;
+}
+function boneAdjustmentScopeLabel(state=boneAnimationAdjustment){
+ const dir={down:'Down',up:'Up',left:'Left',right:'Right'}[M.dir]||M.dir;
+ return state?.scope==='all'?'tất cả '+M.animationSets.length+' animation · '+dir:'“'+M.activeAnimation+'” · '+dir;
+}
+function renderBoneAnimationAdjustment(bone){
+ const state=boneAdjustmentDraft(bone);if(!state)return '';
+ const count=Object.keys(A().keys[bone.id]||{}).length;
+ const effect=editedEffectId?findEffect(editedEffectId):null;
+ return `<section class="bone-adjustment" aria-label="Chỉnh tổng thể animation">
+  <h4>Chỉnh tổng thể animation</h4>
+  <div class="adjust-context" aria-live="polite"><strong>Animation:</strong> <span id="boneAdjustAnimation">${esc(M.activeAnimation)}</span><br>
+   <strong>Hướng:</strong> ${{down:'Down',up:'Up',left:'Left',right:'Right'}[M.dir]||esc(M.dir)}${effect?' · Effect: '+esc(effect.name):' · Character'}<br>
+   <strong>Xương:</strong> <span id="boneAdjustBone">${esc(bone.name)}</span> (#${bone.id})</div>
+  <div class="row"><label for="boneAdjustScope">Phạm vi</label><select id="boneAdjustScope" onchange="setBoneAnimationAdjustment('scope',this.value)">
+   <option value="current" ${state.scope==='current'?'selected':''}>Animation hiện tại</option>
+   <option value="all" ${state.scope==='all'?'selected':''}>Mọi animation · ${{down:'Down',up:'Up',left:'Left',right:'Right'}[M.dir]||esc(M.dir)}</option>
+  </select></div>
+  ${[['Bù X (local)','x'],['Bù Y (local)','y'],['Bù góc (độ)','a']].map(([label,key])=>`<div class="row"><label for="boneAdjust${key}">${label}</label><input id="boneAdjust${key}" type="number" step="any" value="${state[key]}" oninput="setBoneAnimationAdjustment('${key}',this.value)"></div>`).join('')}
+  <p class="status">Cộng cùng một lượng vào mọi key của riêng xương này; giữ chuyển động, thời điểm key và pose RIG. Xương con đi theo cha. Track trống được tạo một key bù ở frame 0.</p>
+  <button type="button" id="boneAdjustApply" class="adjust-action" onclick="applyBoneAnimationAdjustment()" ${![state.x,state.y,state.a].every(Number.isFinite)||![state.x,state.y,state.a].some(n=>n!==0)?'disabled':''}>Áp dụng cho ${esc(boneAdjustmentScopeLabel(state))}</button>
+  <button type="button" id="boneAdjustClear" class="adjust-action" onclick="clearBoneAnimationTrack()" ${count?'':'disabled'}>Xóa ${count} key của xương · ${esc(M.activeAnimation)}</button>
+  <p class="status">Xóa hết key: xương dùng pose RIG trong clip này. Có thể Undo / Redo.</p>
+  <div id="boneAdjustResult" class="status adjust-result" role="status">${esc(state.message||'Chưa áp dụng thay đổi.')}</div>
+ </section>`;
+}
+function setBoneAnimationAdjustment(key,value){
+ const bone=cur(),state=boneAnimationAdjustment;
+ if(!state||state.context!==boneAdjustmentContext(bone)){renderProps();return;}
+ if(key==='scope'){
+  state.scope=value==='all'?'all':'current';state.message='';renderProps();return;
+ }
+ if(!['x','y','a'].includes(key))return;
+ state[key]=value.trim()===''?0:Number(value);
+ const button=$('boneAdjustApply');
+ if(button)button.disabled=![state.x,state.y,state.a].every(Number.isFinite)||![state.x,state.y,state.a].some(n=>n!==0);
+}
+function applyBoneAnimationAdjustment(){
+ const bone=cur(),state=boneAnimationAdjustment;
+ if(!state||state.context!==boneAdjustmentContext(bone)){renderProps();return;}
+ if(![state.x,state.y,state.a].every(Number.isFinite)||![state.x,state.y,state.a].some(n=>n!==0))return;
+ const targets=state.scope==='all'?M.animationSets:[activeSet()],plans=[];
+ let changedKeys=0,createdTracks=0;
+ for(const set of targets){
+  const anim=set.dirs[M.dir];if(!anim)continue;
+  const source=anim.keys[bone.id]||{},entries=Object.entries(source);
+  if(!entries.length){entries.push(['0',{x:bone.x,y:bone.y,a:bone.a,l:bone.l}]);createdTracks++;}
+  const keys={};
+  for(const [f,key] of entries){
+   const pose={...key};
+   for(const axis of ['x','y','a']){
+    const base=Number.isFinite(+key[axis])?+key[axis]:+bone[axis];
+    pose[axis]=base+state[axis];
+    if(!Number.isFinite(pose[axis])){state.message='Giá trị bù quá lớn hoặc pose không hợp lệ. Chưa thay đổi dữ liệu.';renderProps();return;}
+   }
+   keys[f]=pose;changedKeys++;
+  }
+  plans.push({anim,keys});
+ }
+ if(!plans.length)return;
+ const label=boneAdjustmentScopeLabel(state);
+ checkpointUndo();
+ for(const {anim,keys} of plans)anim.keys[bone.id]=keys;
+ state.x=state.y=state.a=0;
+ state.message='Đã chỉnh '+changedKeys+' key của “'+bone.name+'” trong '+label+'.'+(createdTracks?' Tạo '+createdTracks+' track từ pose RIG.':'');
+ playing=false;$('pb').textContent='▶';
+ flushEffectWorkspace();setMode('anim');renderAll();draw();
+}
+function clearBoneAnimationTrack(){
+ const bone=cur(),state=boneAnimationAdjustment;
+ if(!state||state.context!==boneAdjustmentContext(bone)){renderProps();return;}
+ const count=Object.keys(A().keys[bone.id]||{}).length;if(!count)return;
+ checkpointUndo();delete A().keys[bone.id];
+ state.message='Đã xóa '+count+' key của “'+bone.name+'” trong “'+M.activeAnimation+'” · '+M.dir+'. Xương dùng pose RIG.';
+ playing=false;$('pb').textContent='▶';ksel=null;
+ flushEffectWorkspace();setMode('anim');renderAll();draw();
+}
+
 /* Inspector */
 function renderProps(){
      const o = cur(), P = $('props');
@@ -1568,14 +1689,20 @@ function renderProps(){
 
  const isBone=sel.t==='b',W=solve(),w=isBone&&W[o.id],q=isBone&&pose(o,frame);
  const field=(label,key,value,type='number',extra='')=>`<div class="row"><label>${label}</label><input type="${type}" ${extra} value="${esc(value)}" oninput="setP('${key}',this.value)"></div>`;
- let html=`<h4>${isBone?'XƯƠNG':'BLOCK'}${mode==='anim'&&isBone?' · key frame '+Math.round(frame):''}</h4>`+field('Tên','name',o.name,'text');
+ let html=`<h4>${isBone?'XƯƠNG':o.effectId?'BLOCK EFFECT':'BLOCK'}${mode==='anim'&&isBone?(A().keys[o.id]?.[Math.round(frame)]?' · key frame '+Math.round(frame):Object.keys(A().keys[o.id]||{}).length?' · frame '+Math.round(frame)+' (nội suy)':' · dùng pose RIG'):''}</h4>`+field('Tên','name',o.name,'text');
  html+=`<div class="row"><label for="objectDemo">Demo</label><input id="objectDemo" type="checkbox" ${o.previewOnly?'checked':''} onchange="setObjectDemo(this.checked)"></div>`;
  if(o.effectId){
+  const effect=findEffect(o.effectId),config=effectPlaybackConfig(o),clips=effectAnimations(effect);
+  const selected=resolveEffectAnimation(effect,config.animationId);
   html+=`<div class="status">Effect: ${esc(findEffect(o.effectId)?.name||'Đã bị xóa')} · Timeline riêng</div>
+    <div class="row"><label>Animation Effect</label><select onchange="setEffectPlayback('animationId',this.value)">${clips.map(clip=>`<option value="${esc(clip.id)}" ${clip===selected?'selected':''}>${esc(clip.name)}</option>`).join('')}</select></div>
+    <div class="row"><label>Frame xuất hiện</label><input type="number" min="0" max="${lastFrame()}" step="1" value="${config.startFrame}" onchange="setEffectPlayback('startFrame',this.value)"></div>
+    <div class="row"><label>Frame tắt</label><input type="number" min="${config.startFrame}" max="${lastFrame()}" step="1" value="${config.endFrame??''}" placeholder="Hết Character" onchange="setEffectPlayback('endFrame',this.value)"></div>
+    <p class="status">${selected?.loop?'Loop đến frame tắt hoặc hết Character.':'Chạy một lần rồi giữ frame cuối đến frame tắt hoặc hết Character.'} Thiết lập cho ${esc(M.activeAnimation)} / ${esc(M.dir)}.</p>
     <div class="row"><label>Gắn vào xương</label><select onchange="setP('b',this.value)"><option value="0">— Độc lập —</option>${M.bones.map(b=>`<option value="${b.id}" ${b.id===o.b?'selected':''}>${esc(b.name)}</option>`).join('')}</select></div>`
     +(o.b?field('Offset X','ox',o.ox)+field('Offset Y','oy',o.oy)+field('Góc','ir',o.ir):field('X','x',o.x)+field('Y','y',o.y)+field('Góc','a',o.a))
     +field('Scale X','sx',o.sx)+field('Scale Y','sy',o.sy)+field('Thứ tự','z',o.z)
-    +`<div class="row"><button onclick="setEffectDemoKey(true)">Bật từ frame này</button><button onclick="setEffectDemoKey(false)">Tắt từ frame này</button></div>`;
+    +`<div class="row"><button onclick="setEffectDemoKey(true)">Bật từ frame này</button><button onclick="setEffectDemoKey(false)">Tắt từ frame này</button><button onclick="setEffectPlayback('endFrame','')">Đến hết Character</button></div>`;
   P.innerHTML=html+renderBlockKeyframeProperties();
   return;
  }
@@ -1585,6 +1712,7 @@ function renderProps(){
   html+=`<div class="status" style="color:#8ee2cb;margin-bottom:6px">Đang chọn <strong>${selList.length}</strong> đối tượng · Tâm chung: (${bp?r2(bp.px):0}, ${bp?r2(bp.py):0})</div>`;
  }
  if(isBone){
+  html+=renderBoneAnimationAdjustment(o);
   const kf=ksel&&ksel.b===o.id?ksel.f:Math.round(frame);
   const keyEase=A().keys[o.id]?.[kf]?.ease||q.ease||currentEasing||'linear';
   html+=`<div class="row"><label>Xương cha</label><select onchange="setP('p',this.value)"><option value="0">— gốc —</option>${M.bones.filter(b=>b.id!==o.id&&!desc(o.id).includes(b.id)).map(b=>`<option value="${b.id}" ${b.id==o.p?'selected':''}>${esc(b.name)}</option>`).join('')}</select></div>`
@@ -1664,6 +1792,7 @@ function setP(key,value){
  }
  if(['skewX','skewY'].includes(key))syncMenuBarInputs();
  if(key==='demo')syncAllBlockImages();
+ if(key==='name'&&sel.t==='b'&&$('boneAdjustBone'))$('boneAdjustBone').textContent=o.name;
  if(['name','p','b','z','vis','demo'].includes(key)){renderList();if(key!=='name')renderProps();}draw();
 }
 function setMeshCorner(idx,axis,val){
@@ -1807,13 +1936,11 @@ function syncRigToAllDirections(){
  alert('Đã đồng bộ cấu trúc xương và block từ hướng '+M.dir.toUpperCase()+' sang cả 4 hướng. Bạn có thể thay ảnh và chỉnh khớp riêng từng hướng.');
 }
 function createAnimation(){
- if(editedEffectId)return;
  const name=$('animationName').value.trim();if(!name)return alert('Nhập tên animation trước khi tạo.');
  if(M.animationSets.some(a=>a.name.toLowerCase()===name.toLowerCase()))return alert('Tên animation đã tồn tại.');
- const set={name,dirs:emptyDirections()};set.unity=normalizeUnityMeta(set);seedAnimationSet(set);M.animationSets.push(set);M.activeAnimation=name;M.anims=set.dirs;M.anim=set.dirs[M.dir];$('animationName').value='';frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();setMode('anim');renderAll();draw();
+ const set={name,dirs:emptyDirections()};if(editedEffectId)set.id=newEffectAnimationId();set.unity=normalizeUnityMeta(set);if(editedEffectId)set.unity.loop=false;seedAnimationSet(set);M.animationSets.push(set);M.activeAnimation=name;M.anims=set.dirs;M.anim=set.dirs[M.dir];$('animationName').value='';frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();setMode('anim');renderAll();draw();
 }
 function duplicateAnimation(){
- if(editedEffectId)return;
  const source=activeSet();
  if(!source)return alert('Hãy chọn animation cần nhân bản.');
  const base=source.name+'_copy';
@@ -1822,6 +1949,7 @@ function duplicateAnimation(){
   name=base+suffix++;
  }
  const copy={name,dirs:cloneData(source.dirs),unity:cloneData(ensureUnityMeta(source))};
+ if(editedEffectId)copy.id=newEffectAnimationId();
  M.animationSets.push(copy);
  M.activeAnimation=name;
  M.anims=copy.dirs;
@@ -1840,7 +1968,6 @@ function selectAnimation(name){
  M.activeAnimation=name;M.anims=activeSet().dirs;M.anim=M.anims[M.dir];seedAnimationSet(activeSet());frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();setMode('anim');renderAll();draw();
 }
 function renameAnimation(){
- if(editedEffectId)return;
  const set=activeSet();if(!set)return alert('Hãy chọn animation cần đổi tên.');
  const name=$('animationName').value.trim();
  if(!name)return alert('Nhập tên mới vào ô tên animation.');
@@ -1849,16 +1976,16 @@ function renameAnimation(){
  $('animationName').value='';refreshAnimationState();renderAll();draw();
 }
 function deleteAnimation(){
- if(editedEffectId)return;
  const set=activeSet();if(!set)return;
  if(M.animationSets.length<=1)return alert('Phải giữ lại ít nhất một animation.');
- if(!confirm('Xoá animation "'+set.name+'"?'))return;
+ if(!confirm('Xoá animation "'+set.name+'"?'+(editedEffectId?' Các Block đang dùng clip này sẽ chuyển về clip còn lại.':'')))return;
+ if(editedEffectId)replaceEffectAnimationReferences(editedEffectId,set.id,M.animationSets.find(item=>item!==set).id);
  M.animationSets=M.animationSets.filter(a=>a!==set);M.activeAnimation=M.animationSets[0].name;M.anims=activeSet().dirs;M.anim=M.anims[M.dir];frame=0;ksel=null;playing=false;$('pb').textContent='▶';refreshAnimationState();renderAll();draw();
 }
 function copyDownToUp(){
  if(!activeSet())return alert('Hãy tạo hoặc chọn animation trước.');
  checkpointUndo();
- const source=activeSet().dirs.down,target=activeSet().dirs.up;target.fps=source.fps;target.frames=source.frames;target.keys={};
+ const source=activeSet().dirs.down,target=activeSet().dirs.up;target.fps=source.fps;target.frames=source.frames;target.keys={};target.audioKeys=cloneData(source.audioKeys||{});
  M.bones.forEach(b=>{const keys=source.keys[b.id];if(!keys)return;target.keys[b.id]={};Object.keys(keys).forEach(f=>{const pose=keys[f],deltaLength=pose.l-b.l,deltaX=pose.x-b.x;target.keys[b.id][f]={x:b.p?b.x-deltaX:pose.x,y:pose.y,a:-pose.a,l:Math.max(4,b.l-deltaLength),ease:pose.ease||'linear'}})});
  setDir('up');setMode('anim');
 }
@@ -1938,7 +2065,7 @@ function mirrorAnimationDirection(srcDir,dstDir){
  const pairs=findLeftRightBonePairs(srcBones);
  const partnerMap=new Map();
  pairs.forEach(([a,b])=>{partnerMap.set(a.id,b.id);partnerMap.set(b.id,a.id);});
- target.fps=source.fps;target.frames=source.frames;target.keys={};
+ target.fps=source.fps;target.frames=source.frames;target.keys={};target.audioKeys=cloneData(source.audioKeys||{});
  dstBones.forEach(dstB=>{
   const srcBoneId=partnerMap.get(dstB.id)||dstB.id;
   const srcB=srcBones.find(b=>b.id===srcBoneId)||dstB;
@@ -2353,7 +2480,14 @@ function startMultiTransformDrag(world,W,S,dragTool=tool){
  return !!bounds&&startSelectionTransform(dragTool==='move'?'moveBoth':dragTool,world,W,S,selection,{x:bounds.px,y:bounds.py});
 }
 
-let canvasObjectPress=null;
+let canvasObjectPress=null,canvasRightPanPointer=null,canvasPanCursor='';
+function endRightCanvasPan(){
+ if(canvasRightPanPointer===null)return;
+ canvasRightPanPointer=null;
+ if(drag?.rightMouse)drag=null;
+ cv.style.cursor=canvasPanCursor;
+}
+
 function canvasObjectAt(point){
  const world=toW(point.x,point.y),W=solve(),S=segs(W);
  const bones=showBones&&!selectionLocked('b')?M.bones.map(b=>{
@@ -2378,6 +2512,13 @@ function clearCanvasObjectPress(){
  clearTimeout(canvasObjectPress.timer);canvasObjectPress=null;
 }
 function canvasDown(e){
+ if(canvasRightPanPointer!==null)return;
+ if(e.button===2&&e.pointerType!=='touch'){
+  e.preventDefault();clearCanvasObjectPress();clearObjectTap();hideContextMenu();marqueeRect=null;activePointers.clear();pinchState=null;
+  canvasRightPanPointer=e.pointerId;canvasPanCursor=cv.style.cursor||'';cv.style.cursor='grabbing';
+  drag={type:'pan',last:canvasPoint(e),rightMouse:true,pointerId:e.pointerId};
+  cv.setPointerCapture?.(e.pointerId);return;
+ }
  if(e.button!==0)return;
  e.preventDefault();cv.setPointerCapture?.(e.pointerId);
  const p=canvasPoint(e);
@@ -2504,9 +2645,14 @@ function startCanvasInteraction(e,p){
   marqueeRect={x0:world.x,y0:world.y,x1:world.x,y1:world.y,additive:true};
   drag={type:'marquee'};return;
  }
- drag={type:'pan',last:p};
+ drag=e.pointerType==='touch'?{type:'pan',last:p}:null;
 }
 function canvasMove(e){
+ if(canvasRightPanPointer!==null){
+  if(e.pointerId!==canvasRightPanPointer||!drag?.rightMouse)return;
+  if(e.buttons!=null&&!(e.buttons&2)){endRightCanvasPan();return;}
+  const p=canvasPoint(e);cam.x+=p.x-drag.last.x;cam.y+=p.y-drag.last.y;drag.last=p;draw();return;
+ }
  const p=canvasPoint(e);if(activePointers.has(e.pointerId))activePointers.set(e.pointerId,p);
  const press=canvasObjectPress;
  if(press?.id===e.pointerId){
@@ -2572,6 +2718,7 @@ function canvasMove(e){
  draw();
 }
 function canvasUp(e){
+ if(canvasRightPanPointer!==null){if(e.pointerId===canvasRightPanPointer)endRightCanvasPan();return;}
  const press=canvasObjectPress?.id===e.pointerId?canvasObjectPress:null;
  if(press){
   clearCanvasObjectPress();
@@ -2618,14 +2765,9 @@ function canvasUp(e){
 }
 cv.addEventListener('pointerdown',canvasDown);cv.addEventListener('pointermove',canvasMove);cv.addEventListener('pointerup',canvasUp);cv.addEventListener('pointercancel',canvasUp);
 cv.addEventListener('wheel',e=>{e.preventDefault();const p=canvasPoint(e);zoomAt(p.x,p.y,e.deltaY<0?1.1:.9)},{passive:false});
-cv.addEventListener('contextmenu',e=>{
- e.preventDefault();
- if(canvasObjectPress?.touch||e.pointerType==='touch')return;
- const point=canvasPoint(e);
- const target=transformHandleAt(point)?sel:canvasObjectAt(point);
- showContextMenu(e,target?.t,target?.id);
-});
+cv.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('lostpointercapture',e=>{
+ if(e.pointerId===canvasRightPanPointer){endRightCanvasPan();return;}
  if(activePointers.has(e.pointerId))canvasUp({type:'pointercancel',pointerId:e.pointerId});
 });
 
@@ -2806,33 +2948,75 @@ function refreshEffectWorkspaceUI(){
  else if(findEffect(selectedEffectId))$('effectPasteSelect').value=selectedEffectId;
  const effect=findEffect(editedEffectId);
  $('imageTarget').textContent=isCharacter?'Đích thả ảnh · Character':effect?'Đích thả ảnh · Effect / '+effect.name:'Đích thả ảnh · Chọn hoặc tạo Effect';
- $('effectLoop').checked=effect?.loop===true;
+ $('effectLoop').checked=!!effect&&activeSet()?.unity?.loop===true;
  $('effectLoop').disabled=!effect;
- $('effectHint').textContent=effect?'Một rig, một timeline. Tâm Effect ở giao điểm hai trục.':'Bấm ＋ Effect để bắt đầu.';
+ $('effectHint').textContent=effect?'Một rig, nhiều animation. Chọn hoặc tạo clip ở timeline bên dưới. Tâm Effect ở giao điểm hai trục.':'Bấm ＋ Effect để bắt đầu.';
+}
+function newEffectAnimationId(){return 'clip-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,9);}
+function effectAnimations(effect){
+ if(!effect)return [];
+ return effect.animations?.length?effect.animations:[{id:'default',name:'Default',loop:effect.loop===true,animation:effect.animation||emptyAnim()}];
+}
+function resolveEffectAnimation(effect,id){const clips=effectAnimations(effect);return clips.find(clip=>clip.id===id)||clips[0];}
+function effectClipId(effect,clip){return clip===effectAnimations(effect)[0]||clip.id===effectAnimations(effect)[0]?.id?effect.id:effect.id+'::'+clip.id;}
+function exportEffectClips(effects){
+ return effects.flatMap(effect=>effectAnimations(effect).map(clip=>({
+  id:effectClipId(effect,clip),name:effectAnimations(effect).length>1?effect.name+' / '+clip.name:effect.name,
+  rig:effect.rig,loop:clip.loop,animation:clip.animation
+ })));
+}
+function effectTimelines(effects){return effects.flatMap(effect=>effectAnimations(effect).map(clip=>clip.animation));}
+function replaceEffectAnimationReferences(effectId,oldId,newId){
+ const project=projectModel();
+ for(const set of project.animationSets)for(const [dir,anim] of Object.entries(set.dirs)){
+  const rig=dir===project.dir?project:project.rigsByDir[dir];
+  for(const block of rig.blocks){
+   const track=anim.effectTracks?.[block.id];
+   if(block.effectId===effectId&&track?.animationId===oldId)track.animationId=newId;
+  }
+ }
 }
 function normalizeEffectPackages(model){
  const used=new Set();
  model.effects=(Array.isArray(model.effects)?model.effects:[]).filter(e=>{
   if(!e||typeof e.id!=='string'||!e.id||used.has(e.id))return false;
   used.add(e.id);return true;
- }).map(e=>({
-  id:e.id,name:String(e.name||'Effect'),loop:e.loop===true,nextId:Math.max(1,+e.nextId||1),
-  rig:{bones:Array.isArray(e.rig?.bones)?e.rig.bones:[],blocks:(Array.isArray(e.rig?.blocks)?e.rig.blocks:[]).filter(b=>!b.effectId).map(b=>normalizeBlockImage(b,'down'))},
-  animation:normalizeDirs({down:e.animation}).down
- }));
+ }).map(e=>{
+  const ids=new Set(),names=new Set();
+  const animations=effectAnimations(e).map((clip,index)=>{
+   let id=typeof clip.id==='string'&&clip.id?clip.id:index===0?'default':newEffectAnimationId();
+   while(ids.has(id))id=newEffectAnimationId();ids.add(id);
+   const base=String(clip.name||('Animation '+(index+1)));let name=base;
+   for(let n=2;names.has(name.toLowerCase());n++)name=base+' '+n;
+   names.add(name.toLowerCase());
+   return {id,name,loop:clip.loop===true,animation:normalizeDirs({down:clip.animation}).down};
+  });
+  return {
+   id:e.id,name:String(e.name||'Effect'),nextId:Math.max(1,+e.nextId||1),
+   rig:{bones:Array.isArray(e.rig?.bones)?e.rig.bones:[],blocks:(Array.isArray(e.rig?.blocks)?e.rig.blocks:[]).filter(b=>!b.effectId).map(b=>normalizeBlockImage(b,'down'))},
+   animations,activeAnimationId:animations.some(clip=>clip.id===e.activeAnimationId)?e.activeAnimationId:animations[0].id,
+   animation:animations[0].animation,loop:animations[0].loop
+  };
+ });
 }
 function flushEffectWorkspace(){
  const effect=findEffect(editedEffectId);
  if(!characterWorkspace||!effect)return;
- effect.rig={bones:M.bones,blocks:M.blocks};effect.animation=A();effect.nextId=M.nid;
+ effect.rig={bones:M.bones,blocks:M.blocks};effect.nextId=M.nid;
+ effect.animations=M.animationSets.map(set=>({id:set.id||newEffectAnimationId(),name:set.name,loop:!!set.unity.loop,animation:set.dirs.down}));
+ effect.activeAnimationId=activeSet().id;
+ effect.animation=effect.animations[0].animation;effect.loop=effect.animations[0].loop;
 }
 function makeEffectWorkspace(effect){
- const dirs=emptyDirections();dirs.down=effect.animation;
+ const clips=effectAnimations(effect),sets=clips.map(clip=>{
+  const dirs=emptyDirections();dirs.down=clip.animation;
+  return {id:clip.id,name:clip.name,dirs,unity:{loop:clip.loop}};
+ });
  return normalizeModel({
   nid:Math.max(effect.nextId,1+Math.max(0,...effect.rig.bones.map(b=>+b.id||0),...effect.rig.blocks.map(b=>+b.id||0))),
   dir:'down',bones:effect.rig.bones,blocks:effect.rig.blocks,
   rigsByDir:{down:effect.rig,up:{bones:[],blocks:[]},left:{bones:[],blocks:[]},right:{bones:[],blocks:[]}},
-  animationSets:[{name:'Effect',dirs}],activeAnimation:'Effect',groupBlocks:[]
+  animationSets:sets,activeAnimation:clips.find(clip=>clip.id===effect.activeAnimationId)?.name||clips[0].name,groupBlocks:[]
  });
 }
 function enterEffectWorkspace(id){
@@ -2894,26 +3078,49 @@ function deleteEffectPackage(){
 }
 function setEffectLoop(loop){
  const effect=findEffect(editedEffectId);if(!effect)return;
- checkpointUndo();effect.loop=!!loop;draw();
+ checkpointUndo();activeSet().unity.loop=!!loop;flushEffectWorkspace();draw();
 }
 function pasteEffectBlock(){
  const effect=findEffect($('effectPasteSelect').value);if(!effect||editedEffectId)return;
  checkpointUndo();
  const block=addBlock();
- Object.assign(block,{name:effect.name,effectId:effect.id,previewOnly:true,visible:false,demo:false});
+ Object.assign(block,{name:effect.name,effectId:effect.id,previewOnly:true,visible:true,demo:false});
+ (A().effectTracks??={})[block.id]={animationId:effectAnimations(effect)[0].id,startFrame:Math.round(frame),endFrame:null};
  renderAll();draw();
 }
 function setEffectDemoKey(visible){
  const block=cur();if(!block?.effectId)return;
+ if(visible)setEffectPlayback('startFrame',Math.round(frame));
+ else setEffectPlayback('endFrame',Math.round(frame));
+}
+function effectPlaybackConfig(block){
+ const stored=A().effectTracks?.[block.id];
+ if(stored)return stored;
+ let visible=block.visible!==false,start=visible?0:null,end=null;
+ for(const f of Object.keys(blockKeyMap()).map(Number).sort((a,b)=>a-b)){
+  const state=blockKeyMap()[f].find(item=>String(item.blockId)===String(block.id));
+  if(typeof state?.visible!=='boolean')continue;
+  if(start===null&&state.visible){start=f;visible=true;}
+  else if(start!==null&&!state.visible&&visible){end=Math.max(start,f);break;}
+ }
+ return {animationId:effectAnimations(findEffect(block.effectId))[0]?.id||'',startFrame:start??0,endFrame:end};
+}
+function setEffectPlayback(key,value){
+ const block=cur();if(!block?.effectId)return;
  checkpointUndo();
- const index=clamp(Math.round(frame),0,lastFrame()),map=blockKeyMap();
- map[index]??=[];
- const item=map[index].find(k=>String(k.blockId)===String(block.id));
- if(item)item.visible=visible;
- else map[index].push({blockId:block.id,visible,image:''});
- setMode('anim');renderAll();draw();
+ const config={...effectPlaybackConfig(block)};
+ if(key==='animationId')config.animationId=value;
+ else if(key==='startFrame'){
+  config.startFrame=clamp(Math.round(+value||0),0,lastFrame());
+  if(config.endFrame!==null&&config.endFrame<config.startFrame)config.endFrame=config.startFrame;
+ }else config.endFrame=value===''||value==null?null:clamp(Math.round(+value||0),config.startFrame,lastFrame());
+ (A().effectTracks??={})[block.id]=config;
+ block.visible=true;
+ renderAll();draw();
 }
 function effectStartFrame(block){
+ const track=A().effectTracks?.[block.id];
+ if(track)return block.visible!==false&&frame>=track.startFrame&&(track.endFrame==null||frame<track.endFrame)?track.startFrame:null;
  let visible=block.visible!==false,start=visible?0:null;
  const keys=blockKeyMap();
  for(const f of Object.keys(keys).map(Number).filter(n=>n<=frame).sort((a,b)=>a-b)){
@@ -2938,9 +3145,9 @@ function keptRig(rig){
   blocks:rig.blocks.filter(k=>!k.previewOnly&&!demoBones.has(String(k.b)))
  };
 }
-function withEffectFrame(effect,index,callback){
+function withEffectFrame(effect,index,callback,clip=effectAnimations(effect)[0]){
  const previous={model:M,frame,mode};
- const set={name:'Effect',dirs:{down:effect.animation}};
+ const set={name:clip.name,dirs:{down:clip.animation}};
  M={dir:'down',bones:effect.rig.bones,blocks:effect.rig.blocks,activeAnimation:set.name,animationSets:[set],groupBlocks:[]};
  frame=index;mode='anim';
  try{return callback();}
@@ -2962,17 +3169,17 @@ function paintRigBlocks(g,includeDemo,measure,allowEffects=true){
 function drawEffectDemo(g,block,info,measure,includeDemo=true){
  const effect=findEffect(block.effectId),start=effectStartFrame(block);
  if(!effect||start===null)return;
- const count=Math.max(1,Math.round(+effect.animation.frames||1));
- const localFrame=Math.max(0,(frame-start)/Math.max(1,+A().fps||1)*(+effect.animation.fps||12));
- if(!effect.loop&&localFrame>=count)return;
- const sample=effect.loop?localFrame%count:localFrame;
+ const clip=resolveEffectAnimation(effect,A().effectTracks?.[block.id]?.animationId);
+ const count=Math.max(1,Math.round(+clip.animation.frames||1));
+ const localFrame=Math.max(0,(frame-start)/Math.max(1,+A().fps||1)*(+clip.animation.fps||12));
+ const sample=clip.loop?localFrame%count:Math.min(localFrame,count-1);
  g.save();
  try{
   g.translate(info.w.hx,info.w.hy);g.rotate(info.w.wa*D);
   g.translate(info.independent?0:info.x0+info.width/2,info.cy);
   if(!info.independent)g.rotate((+block.ir||0)*D);
   g.scale(info.xScale,info.yScale);
-  withEffectFrame(effect,sample,()=>paintRigBlocks(g,includeDemo,measure,false));
+  withEffectFrame(effect,sample,()=>paintRigBlocks(g,includeDemo,measure,false),clip);
  }finally{g.restore();}
 }
 /* Quản lý ảnh thuần trình duyệt: file chỉ tồn tại trong bộ nhớ phiên. */
@@ -3134,7 +3341,7 @@ function replaceProjectImageReferences(oldName,newName){
  flushEffectWorkspace();
  const project=projectModel();
  const rigs=[project,...Object.values(project.rigsByDir||{}),...(project.effects||[]).map(e=>e.rig)];
- const clips=project.animationSets.flatMap(set=>Object.values(set.dirs)).concat((project.effects||[]).map(e=>e.animation));
+ const clips=project.animationSets.flatMap(set=>Object.values(set.dirs)).concat(effectTimelines(project.effects||[]));
  for(const rig of rigs)
   for(const block of rig.blocks)
    if(block.img===oldName)block.img=newName;
@@ -3340,6 +3547,15 @@ function unityValidateModel(){
      if(item.image&&!imageData[item.image])errors.push(`Animation '${set.name}' (${dir}): thiếu ảnh thay thế '${item.image}'.`);
     }
    });
+   for(const [id,track] of Object.entries(anim.effectTracks||{})){
+    const block=kept.blocks.find(item=>String(item.id)===id);
+    if(!block)continue;
+    const effect=findEffect(block.effectId);
+    if(!effect||!effectAnimations(effect).some(clip=>clip.id===track.animationId))
+     errors.push(`Animation '${set.name}' (${dir}): clip Effect của Block ${id} không tồn tại.`);
+    if(!Number.isInteger(track.startFrame)||track.startFrame<0||track.endFrame!=null&&(!Number.isInteger(track.endFrame)||track.endFrame<track.startFrame))
+     errors.push(`Animation '${set.name}' (${dir}): khoảng frame Effect của Block ${id} không hợp lệ.`);
+   }
   }
  }
  return {errors:[...new Set(errors)],warnings:[...new Set(warnings)]};
@@ -3362,14 +3578,20 @@ function unityBuildPayload(){
    (rig.bones||[]).forEach(b=>{
     const source=anim.keys?.[b.id]||anim.keys?.[String(b.id)]||{};
     const keys=Object.entries(source).map(([frame,value])=>({frame:+frame,x:Number.isFinite(+value.x)?+value.x:+b.x||0,y:Number.isFinite(+value.y)?+value.y:+b.y||0,angle:Number.isFinite(+value.a)?+value.a:+b.a||0,length:Number.isFinite(+value.l)?+value.l:+b.l||0,easing:['linear','easeIn','easeOut','easeInOut','step'].includes(value.ease)?value.ease:'linear'})).filter(k=>Number.isFinite(k.frame)).sort((a,b)=>a.frame-b.frame);
-    if(!keys.some(k=>k.frame===0))keys.unshift({frame:0,x:+b.x||0,y:+b.y||0,angle:+b.a||0,length:+b.l||0,easing:'linear'});
+    if(!keys.some(k=>k.frame===0))keys.unshift(keys.length?{...keys[0],frame:0}:{frame:0,x:+b.x||0,y:+b.y||0,angle:+b.a||0,length:+b.l||0,easing:'linear'});
     boneTracks.push({boneId:+b.id,keyframes:keys});
    });
    const keptBlocks=new Set(rig.blocks.map(k=>String(k.id)));
    const blockKeyframes=Object.entries(anim.blockKeys||{}).map(([frame,items])=>({
     frame:+frame,states:(items||[]).filter(item=>keptBlocks.has(String(item.blockId))).map(item=>({blockId:+item.blockId,visible:item.visible!==false,imageName:String(item.image||'')}))
    })).filter(key=>key.states.length).sort((a,b)=>a.frame-b.frame);
-   return {name:dir,frameRate:Math.max(1,+anim.fps||12),frameCount:Math.max(1,Math.round(+anim.frames||24)),boneTracks,blockKeyframes};
+   const effectTracks=Object.entries(anim.effectTracks||{}).flatMap(([id,track])=>{
+    const block=rig.blocks.find(item=>String(item.id)===id);
+    if(!block?.effectId)return [];
+    const effect=findEffect(block.effectId),clip=resolveEffectAnimation(effect,track.animationId);
+    return [{blockId:+id,effectId:effectClipId(effect,clip),startFrame:track.startFrame,endFrame:track.endFrame??-1}];
+   });
+   return {name:dir,frameRate:Math.max(1,+anim.fps||12),frameCount:Math.max(1,Math.round(+anim.frames||24)),boneTracks,blockKeyframes,...(audioEntries(anim).length?{audioEvents:audioEntries(anim).map(e=>({frame:e.frame,...e.cue}))}:{}),...(effectTracks.length?{effectTracks}:{})};
   });
   const frameCount=Math.max(1,...animDirs.map(d=>d.frameCount));
   return {name:set.name,loop:!!meta.loop,isCombat:!!meta.isCombat,castStartFrame:Math.round(meta.castStartFrame),castEndFrame:Math.round(meta.castEndFrame),frameCount,directions:animDirs};
@@ -3380,7 +3602,7 @@ function unityBuildPayload(){
  const assets=[...assetNames].sort().map(name=>({name,dataUrl:imageData[name]||''}));
  const keptIds=new Set(directionData.flatMap(d=>d.blocks.map(k=>k.id)));
  const groupBlocks=M.groupBlocks.map(g=>({name:g.name,defaultVariant:g.defaultVariant,variants:g.variants.map(v=>({name:v.name,blockIds:v.blockIds.filter(id=>keptIds.has(id))}))}));
- const schemaVersion=directionData.some(dir=>dir.blocks.some(block=>block.effectId))?3:2;
+ const schemaVersion=animations.some(anim=>anim.directions.some(dir=>dir.effectTracks?.length))?4:directionData.some(dir=>dir.blocks.some(block=>block.effectId))?3:2;
  return {format:'BoneAnimatorUnity',schemaVersion,groupBlocks,modelName:String($('mn').value.trim()||'Character'),pixelsPerUnit:Math.max(1,Math.min(2048,Math.round(+$('unityPpu').value||100))),coordinateSystem:'BoneAnimatorCanvasYDown_ConvertedToUnityYUp',directions:directionData,animations,assets};
 }
 function prepareImage(name){
@@ -3400,7 +3622,7 @@ function effectAssetNames(effect){
   if(k.demo===false)continue;
   ids.add(String(k.id));if(k.img)names.add(k.img);
  }
- for(const states of Object.values(effect.animation.blockKeys||{}))
+ for(const clip of effectAnimations(effect))for(const states of Object.values(clip.animation.blockKeys||{}))
   for(const state of states)if(ids.has(String(state.blockId))&&state.image)names.add(state.image);
  return names;
 }
@@ -3449,7 +3671,7 @@ function bakeEffectClip(effect,assetName){
  canvas.width=canvas.height=0;
  if(!dataUrl.startsWith('data:image/png;base64,'))throw new Error('Không tạo được atlas Effect '+effect.name+'.');
  return {
-  clip:{id:effect.id,name:effect.name,loop:!!effect.loop,frameRate:+effect.animation.fps,asset:assetName,...layout},
+  clip:{id:effect.id,name:effect.name,loop:!!effect.loop,frameRate:+effect.animation.fps,asset:assetName,...layout,...(audioEntries(effect.animation).length?{audioEvents:audioEntries(effect.animation).map(e=>({frame:e.frame,...e.cue}))}:{})},
   asset:{name:assetName,dataUrl}
  };
 }
@@ -3463,8 +3685,11 @@ async function exportUnityJson(){
  try{
   const validation=unityValidateModel();
   if(validation.errors.length)throw new Error(validation.errors.join('\n• '));
-  const payload=unityBuildPayload(),effects=cloneData(M.effects||[]);
-  const attachedEffects=new Set(payload.directions.flatMap(dir=>dir.blocks.map(block=>block.effectId).filter(Boolean)));
+  const payload=unityBuildPayload(),effects=exportEffectClips(cloneData(M.effects||[]));
+  const attachedEffects=new Set([
+   ...payload.directions.flatMap(dir=>dir.blocks.map(block=>block.effectId).filter(Boolean)),
+   ...payload.animations.flatMap(anim=>anim.directions.flatMap(dir=>(dir.effectTracks||[]).map(track=>track.effectId)))
+  ]);
   const name=String($('mn').value.trim()||'Character').replace(/[^a-z0-9_-]+/gi,'_');
   const editable=$('unityIncludeWebJson').checked?modelPackage():null;
   status.textContent='Đang tạo các clip Effect…';
@@ -3642,7 +3867,7 @@ function loadPackage(pack,options={}){
  const incoming=parseSessionPackage(pack),next=incoming.model;
  installPackageAssets(incoming.assets,
   [...Object.values(next.rigsByDir),...next.effects.map(effect=>effect.rig)],
-  [...characterTimelines(next),...next.effects.map(effect=>effect.animation)],true);
+  [...characterTimelines(next),...effectTimelines(next.effects)],true);
  syncActiveRigFromDirections(next);
  if(!options.keepHistory){
   undoStack=[];redoStack=[];undoLastSnapshot=null;
@@ -3654,6 +3879,7 @@ function syncActiveRigFromDirections(model){
  const rig=model.rigsByDir[model.dir];model.bones=cloneData(rig.bones);model.blocks=cloneData(rig.blocks);
 }
 function showImportedProject(next,nextFrame,name){
+ boneAnimationAdjustment=null;
  characterWorkspace=null;editedEffectId=selectedEffectId='';characterView=null;
  M=next;activeSideTab='skeleton';sel=ksel=null;multiSel=[];frame=nextFrame;
  $('mn').value=name;
@@ -3707,7 +3933,13 @@ function replaceCharacterRig(current,incoming){
    }
    if(kept.length)blockKeys[frame]=kept;
   }
+  const effectTracks={};
+  for(const [id,track] of Object.entries(clip.effectTracks||{})){
+   if(map.blocks.has(id))effectTracks[map.blocks.get(id)]=track;
+   else skipped++;
+  }
   clip.keys=keys;clip.blockKeys=blockKeys;
+  if(clip.effectTracks)clip.effectTracks=effectTracks;
  }
  current.rigsByDir=incoming.rigsByDir;
  current.groupBlocks=incoming.groupBlocks;
@@ -3719,7 +3951,7 @@ function replaceCharacterRig(current,incoming){
  current.nid=nextId;syncActiveRigFromDirections(current);
  return skipped;
 }
-function effectSignature(effect){return JSON.stringify([effect.loop,effect.rig,effect.animation]);}
+function effectSignature(effect){return JSON.stringify([effect.rig,effectAnimations(effect)]);}
 function addImportedEffects(target,source){
  const ids=new Set(target.map(effect=>effect.id)),names=new Set(target.map(effect=>effect.name.toLowerCase()));
  let added=0;
@@ -3757,7 +3989,7 @@ function applySessionFile(item,choice){
    }else if(choice==='effects'){
     flushEffectWorkspace();
     const effects=incoming.effects;
-    installPackageAssets(pack.assets,effects.map(e=>e.rig),effects.map(e=>e.animation));
+    installPackageAssets(pack.assets,effects.map(e=>e.rig),effectTimelines(effects));
     const added=addImportedEffects(projectModel().effects,effects);
     refreshEffectWorkspaceUI();renderAll();draw();
     setSessionStatus(added?'Đã thêm '+added+' Effect.':'Không có Effect mới trong file này.');
@@ -3817,7 +4049,7 @@ let effectSequences=[],activeEffectSequence=0,nextEffectSequence=1,effectDownloa
 function effectExportChoices(){return [...$('effectExportList').querySelectorAll('input[type="checkbox"]')];}
 function renderEffectSequenceOrder(){
  const sequence=effectSequences[activeEffectSequence];
- const names=new Map((projectModel().effects||[]).map(effect=>[effect.id,effect.name]));
+ const names=new Map(exportEffectClips(projectModel().effects||[]).map(effect=>[effect.id,effect.name]));
  $('effectSequenceOrder').innerHTML=sequence.ids.map((id,index)=>`<li><span>${index+1}. ${esc(names.get(id)||id)}</span>
   <button type="button" aria-label="Đưa lên" onclick="moveEffectInSequence(${index},-1)" ${index===0||exportingEffects?'disabled':''}>↑</button>
   <button type="button" aria-label="Đưa xuống" onclick="moveEffectInSequence(${index},1)" ${index===sequence.ids.length-1||exportingEffects?'disabled':''}>↓</button></li>`).join('');
@@ -3884,7 +4116,7 @@ $('effectExportList').addEventListener('change',updateEffectSequenceChecks);
 function openEffectExport(mode){
  if(exportingEffects)return;
  effectExportMode=mode;
- const unity=mode==='unity',effects=projectModel().effects||[];
+ const unity=mode==='unity',effects=exportEffectClips(projectModel().effects||[]);
  $('effectExportTitle').textContent=unity?'Xuất Effect Unity JSON':'Xuất Sprite Sheet Effect';
  $('effectExportHelp').textContent=unity
   ?'Gán file _effect_unity.json vào ObjectAnimation trong Unity. File chứa atlas PNG, FPS, tâm và chế độ lặp của từng Effect.'
@@ -3933,7 +4165,7 @@ async function exportSelectedEffects(){
  const sequences=unity?[]:cloneData(effectSequences);
  const ids=new Set(unity?effectExportChoices().filter(input=>input.checked).map(input=>input.value):sequences.flatMap(sequence=>sequence.ids));
  flushEffectWorkspace();
- const effects=cloneData((projectModel().effects||[]).filter(effect=>ids.has(effect.id)));
+ const effects=exportEffectClips(cloneData(projectModel().effects||[])).filter(effect=>ids.has(effect.id));
  if(!effects.length)return;
  const base=fileStem($('mn').value.trim()||'BoneAnimatorModel');
  const ppu=clamp(Math.round(+$('effectExportPpu').value||100),1,2048);
@@ -4167,6 +4399,7 @@ function checkpointUndo(){
  redoStack=[];undoLastSnapshot=snap;updateUndoButton();
 }
 function restoreUndoSnapshot(snap){
+ boneAnimationAdjustment=null;
  undoRestoring=true;
  try{
   const state=JSON.parse(snap);
@@ -4246,43 +4479,405 @@ function installPanelResizers(){
 }
 
 /* Phím tắt / vòng lặp */
-window.addEventListener('keydown',e=>{
- if(!$('modelNameModal').hidden){if(e.key==='Escape'){e.preventDefault();closeModelNameDialog();}return;}
- if(!$('effectDownloadModal').hidden){if(e.key==='Escape'){e.preventDefault();closeEffectDownloads();}return;}
- if(!$('effectExportModal').hidden){if(e.key==='Escape'){e.preventDefault();closeEffectExport();}return;}
- if(!$('sessionImportDialog').hidden){if(e.key==='Escape'){e.preventDefault();closeSessionChoice();}return;}
- const textEditing=e.target.tagName==='TEXTAREA'||(e.target.tagName==='INPUT'&&['text','search','email','url','password'].includes((e.target.type||'').toLowerCase()));
- if((e.ctrlKey||e.metaKey)&&!textEditing&&$('imgModal').hidden){
-  const key=e.key.toLowerCase();
-  if(key==='z'){e.preventDefault();if(e.shiftKey)redoAction();else undoAction();return;}
-  if(key==='y'){e.preventDefault();redoAction();return;}
- }
- if(textEditing||/SELECT/.test(e.target.tagName)||!$('imgModal').hidden)return;
- if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();if(ksel)delKey();else if(sel)del()}
- if(e.key==='Escape')closeLibrary();
-});
+window.addEventListener('keydown',e=>handleConfiguredShortcut(e));
 $('imgModal').addEventListener('pointerdown',e=>{if(e.target===$('imgModal'))closeLibrary()});
 function fit(canvas){if(canvas.width!==canvas.clientWidth||canvas.height!==canvas.clientHeight){canvas.width=canvas.clientWidth;canvas.height=canvas.clientHeight}}
 function fitTimeline(){
  const view=$('tw');if(!view)return;
- const contentHeight=Math.max(view.clientHeight,HH+(M.bones.length+1)*RH+12);
- tl.style.height=contentHeight+'px';
- if(tl.width!==tl.clientWidth||tl.height!==contentHeight){tl.width=tl.clientWidth;tl.height=contentHeight;}
+ const contentHeight=Math.max(view.clientHeight,HH+(M.bones.length+2)*RH+12);
+ const contentWidth=Math.min(16384,Math.max(view.clientWidth,LW+12+(view.clientWidth-LW-12)*timelineZoom));
+ tl.style.width=contentWidth+'px';tl.style.height=contentHeight+'px';
+ if(tl.width!==Math.round(contentWidth)||tl.height!==contentHeight){tl.width=Math.round(contentWidth);tl.height=contentHeight;}
 }
 function loop(time){
- const dt=Math.min(.1,(time-last)/1000);last=time;
+ tickHeldQuickAction(time);
+ const dt=Math.min(.1,(time-last)/1000);last=time;const previousAudioFrame=frame;
  if(playing&&activeSet()){
   frame+=dt*A().fps;
   const total=Math.max(1,A().frames);
   if(frame>=total){
-   if(editedEffectId&&!findEffect(editedEffectId)?.loop){frame=lastFrame();playing=false;$('pb').textContent='▶';}
+   if(editedEffectId&&!activeSet().unity.loop){frame=lastFrame();playing=false;$('pb').textContent='▶';}
    else frame%=total;
   }
  }
+ tickTimelineAudio(frame<previousAudioFrame);
  fit(cv);fitTimeline();draw();
  if(document.activeElement!==$('fr'))$('fr').value=clamp(Math.round(frame),0,lastFrame());
  requestAnimationFrame(loop);
 }
+
+/* Web v20: session audio buffers, persisted ID-only cues. No audio bytes enter M/LIB. */
+const sessionAudio=new Map(),audioIdAliases=new Map(),audioVoices=new Set();
+function findSessionAudio(id){const seen=new Set();while(!sessionAudio.has(id)&&audioIdAliases.has(id)&&!seen.has(id)){seen.add(id);id=audioIdAliases.get(id);}return sessionAudio.get(id);}
+function setDemoAudioEnabled(on){demoAudioEnabled=!!on;stopAudioVoices();if(playing){stopTimelineAudio();if(on)resumeTimelineAudio();}}
+let demoAudioContext=null,selectedSoundId='',selectedAudioCue=null,audioStatus='',demoAudioEnabled=true,audioEpoch=0,audioTransport=null;
+function audioContextKey(){return JSON.stringify([editedEffectId||'Character',M.activeAnimation,M.dir]);}
+function normalizeAudioKeys(raw,frames){
+ const map={};if(!raw||typeof raw!=='object')return map;
+ for(const [f,items] of Object.entries(raw)){
+  if(!/^\d+$/.test(f)||+f>=Math.max(1,+frames||24)||!Array.isArray(items))continue;
+  const list=items.filter(c=>c&&typeof c==='object').map(c=>({soundId:String(c.soundId||'').trim(),action:['play','stop','stopAll'].includes(c.action)?c.action:'play',loop:c.loop===true,start:Number.isFinite(+c.start)?Math.max(0,+c.start):0,end:c.end==null||!Number.isFinite(+c.end)?null:Math.max(0,+c.end),rate:clamp(Number.isFinite(+c.rate)?+c.rate:1,.1,4),volume:clamp(c.volume==null||!Number.isFinite(+c.volume)?1:+c.volume,0,1)}));
+  if(list.length)map[String(+f)]=list;
+ }
+ return map;
+}
+function audioKeyMap(anim=A()){if(!anim.audioKeys||typeof anim.audioKeys!=='object')anim.audioKeys={};return anim.audioKeys;}
+function audioEntries(anim){return Object.entries(anim.audioKeys||{}).flatMap(([f,items])=>Array.isArray(items)?items.map((cue,index)=>({frame:+f,index,cue})):[]).filter(e=>Number.isFinite(e.frame)&&e.frame>=0&&e.frame<anim.frames).sort((a,b)=>a.frame-b.frame||a.index-b.index);}
+function ensureDemoAudio(){const Type=window.AudioContext||window.webkitAudioContext;if(!Type)throw Error('Trình duyệt chưa hỗ trợ Web Audio.');return demoAudioContext??=new Type();}
+function audioMessage(text){audioStatus=text;const node=$('audioStatus');if(node)node.textContent=text;}
+function stopAudioVoices(test=()=>true){for(const voice of [...audioVoices])if(test(voice)){audioVoices.delete(voice);try{voice.source.stop();voice.source.disconnect();voice.gain.disconnect();}catch{}}}
+function stopTimelineAudio(){audioEpoch++;audioTransport=null;stopAudioVoices(v=>v.scope!=='preview');}
+function pauseForAudioEdit(){if(playing){playing=false;$('pb').textContent='▶';}stopTimelineAudio();}
+function audioClipSettings(cue,asset){const start=clamp(Number.isFinite(+cue.start)?+cue.start:0,0,asset.duration);const end=cue.end==null||!Number.isFinite(+cue.end)?asset.duration:clamp(+cue.end,start,asset.duration);return {start,end,rate:clamp(Number.isFinite(+cue.rate)?+cue.rate:1,.1,4),volume:clamp(cue.volume==null||!Number.isFinite(+cue.volume)?1:+cue.volume,0,1)};}
+function playAudioCue(cue,scope,elapsed=0){
+ if(!demoAudioEnabled)return;
+ if(cue.action==='stopAll'){stopAudioVoices(v=>v.scope===scope);return;}
+ if(cue.action==='stop'){stopAudioVoices(v=>v.scope===scope&&v.soundId===cue.soundId);return;}
+ const asset=findSessionAudio(cue.soundId);
+ if(!asset){audioMessage('Thiếu audio trong phiên: '+cue.soundId+'. Nhập lại file và dùng đúng ID.');return;}
+ const ctx=ensureDemoAudio(),p=audioClipSettings(cue,asset),length=p.end-p.start;if(length<=.001)return;
+ let passed=Math.max(0,elapsed)*p.rate;
+ if(cue.loop)passed%=length;else if(passed>=length)return;
+ if(cue.loop)stopAudioVoices(v=>v.scope===scope&&v.soundId===cue.soundId&&v.loop);
+ const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=asset.buffer;source.playbackRate.value=p.rate;gain.gain.value=p.volume;
+ source.loop=!!cue.loop;source.loopStart=p.start;source.loopEnd=p.end;source.connect(gain);gain.connect(ctx.destination);
+ const voice={source,gain,scope,soundId:cue.soundId,loop:!!cue.loop};audioVoices.add(voice);
+ source.onended=()=>{audioVoices.delete(voice);try{source.disconnect();gain.disconnect();}catch{}};
+ if(cue.loop)source.start(0,p.start+passed);else source.start(0,p.start+passed,length-passed);
+}
+function restoreAudioAt(anim,pos,scope){
+ const candidates=[];
+ for(const e of audioEntries(anim)){
+  if(e.frame>pos)break;
+  if(e.cue.action==='stopAll')candidates.length=0;
+  else if(e.cue.action==='stop'){for(let i=candidates.length-1;i>=0;i--)if(candidates[i].cue.soundId===e.cue.soundId)candidates.splice(i,1);}
+  else{if(e.cue.loop)for(let i=candidates.length-1;i>=0;i--)if(candidates[i].cue.loop&&candidates[i].cue.soundId===e.cue.soundId)candidates.splice(i,1);candidates.push(e);}
+ }
+ for(const e of candidates)playAudioCue(e.cue,scope,(pos-e.frame)/Math.max(1,anim.fps));
+}
+function dispatchAudioRange(anim,from,to,scope){for(const e of audioEntries(anim))if(e.frame>from&&e.frame<=to)playAudioCue(e.cue,scope,(to-e.frame)/Math.max(1,anim.fps));}
+function currentAudioRoutes(){
+ const routes=new Map([['main',{anim:A(),pos:frame,absolute:frame,loop:false}]]);
+ if(!editedEffectId)for(const block of M.blocks){
+  if(!block.effectId||!blockVis(block))continue;
+  const effect=findEffect(block.effectId),start=effectStartFrame(block);if(!effect||start==null)continue;
+  const clip=resolveEffectAnimation(effect,A().effectTracks?.[block.id]?.animationId),count=Math.max(1,clip.animation.frames);
+  const absolute=Math.max(0,(frame-start)/Math.max(1,A().fps)*clip.animation.fps);
+  routes.set('effect:'+block.id,{anim:clip.animation,pos:clip.loop?absolute%count:Math.min(absolute,count-1),absolute,loop:clip.loop,count});
+ }
+ return routes;
+}
+function startAudioTransport(){const routes=currentAudioRoutes();audioTransport={key:audioContextKey(),routes};for(const [scope,r] of routes)restoreAudioAt(r.anim,r.pos,scope);}
+async function resumeTimelineAudio(){const epoch=++audioEpoch,key=audioContextKey();try{await ensureDemoAudio().resume();if(playing&&epoch===audioEpoch&&key===audioContextKey())startAudioTransport();}catch(e){audioMessage(e.message);}}
+function tickTimelineAudio(wrapped){
+ if(!playing){if(audioTransport)stopTimelineAudio();return;}
+ if(!audioTransport)return;
+ if(wrapped||audioTransport.key!==audioContextKey()){if(wrapped)for(const [scope,r] of audioTransport.routes)dispatchAudioRange(r.anim,r.pos,r.anim.frames,scope);stopAudioVoices(v=>v.scope!=='preview');startAudioTransport();return;}
+ const next=currentAudioRoutes();
+ for(const scope of audioTransport.routes.keys())if(!next.has(scope))stopAudioVoices(v=>v.scope===scope);
+ for(const [scope,r] of next){const old=audioTransport.routes.get(scope);
+  if(!old){restoreAudioAt(r.anim,r.pos,scope);continue;}
+  if(r.loop&&Math.floor(r.absolute/r.count)!==Math.floor(old.absolute/r.count)){
+   dispatchAudioRange(r.anim,old.pos,r.count,scope);stopAudioVoices(v=>v.scope===scope);restoreAudioAt(r.anim,r.pos,scope);
+  }else if(r.pos>=old.pos)dispatchAudioRange(r.anim,old.pos,r.pos,scope);
+  else{stopAudioVoices(v=>v.scope===scope);restoreAudioAt(r.anim,r.pos,scope);}
+ }
+ audioTransport.routes=next;
+}
+async function importDemoAudio(files){
+ for(const file of files){try{
+  const ctx=ensureDemoAudio(),buffer=await ctx.decodeAudioData(await file.arrayBuffer());
+  let base=file.name.replace(/\.[^.]+$/,'').trim()||'audio',id=base;for(let n=2;sessionAudio.has(id);n++)id=base+'_'+n;
+  sessionAudio.set(id,{id,name:file.name,buffer,duration:buffer.duration,start:0,end:buffer.duration,rate:1,volume:1});selectedSoundId=id;
+  audioMessage('Đã nhập '+file.name+' · ID '+id+'. Chỉ giữ file trong phiên hiện tại.');
+ }catch(e){audioMessage('Không đọc được '+file.name+': '+e.message);}}
+ $('audioImport').value='';renderAudioPanel();
+}
+function selectSessionAudio(id){selectedSoundId=id;renderAudioPanel();}
+function updateSessionAudio(key,value){const a=sessionAudio.get(selectedSoundId);if(!a)return;const n=+value;if(!Number.isFinite(n))return;
+ if(key==='start')a.start=clamp(n,0,Math.max(0,a.end-.005));
+ if(key==='end')a.end=clamp(n,a.start+.005,a.duration);
+ if(key==='rate')a.rate=clamp(n,.1,4);if(key==='volume')a.volume=clamp(n,0,1);
+ for(const k of ['start','end'])if($('audioTrim'+k))$('audioTrim'+k).value=r2(a[k]);
+ stopAudioVoices(v=>v.scope==='preview');drawAudioWaveform();
+}
+function renameSessionAudio(value){const a=sessionAudio.get(selectedSoundId),id=String(value).trim();if(!a)return;
+ if(!id||id===a.id){renderAudioPanel();return;}
+ if(sessionAudio.has(id)){audioMessage('ID đã tồn tại.');renderAudioPanel();return;}
+ checkpointUndo();flushEffectWorkspace();const old=a.id;
+ const project=projectModel(),timelines=[...characterTimelines(project),...effectTimelines(project.effects||[])];if(editedEffectId)timelines.push(...M.animationSets.map(s=>s.dirs.down));
+ for(const anim of timelines)for(const e of audioEntries(anim))if(e.cue.soundId===old)e.cue.soundId=id;
+ stopAudioVoices(v=>v.soundId===old);audioIdAliases.set(old,id);sessionAudio.delete(old);a.id=id;sessionAudio.set(id,a);selectedSoundId=id;
+ audioMessage('Đã đổi ID và cập nhật các key audio trong dự án.');renderAudioPanel();
+}
+function removeSessionAudio(){const id=selectedSoundId,asset=sessionAudio.get(id);if(!id)return;stopAudioVoices(v=>findSessionAudio(v.soundId)===asset);sessionAudio.delete(id);selectedSoundId=sessionAudio.keys().next().value||'';audioMessage('Đã bỏ file khỏi phiên. Các key gọi ID '+id+' vẫn được giữ.');renderAudioPanel();}
+async function previewSessionAudio(loop=false){if(!demoAudioEnabled){audioMessage('Audio demo đang tắt.');return;}const a=sessionAudio.get(selectedSoundId);if(!a)return;try{await ensureDemoAudio().resume();stopAudioVoices(v=>v.scope==='preview');playAudioCue({...a,soundId:a.id,action:'play',loop},'preview');audioMessage('Nghe thử '+a.id+(loop?' · loop đoạn đã cắt':' · đoạn đã cắt'));}catch(e){audioMessage(e.message);}}
+function selectedAudioEvent(){if(!selectedAudioCue||selectedAudioCue.context!==audioContextKey())return null;return audioKeyMap()[selectedAudioCue.frame]?.[selectedAudioCue.index]||null;}
+function addAudioKey(action='play'){
+ if(!activeSet())return;
+ const a=sessionAudio.get(selectedSoundId);if(action!=='stopAll'&&!a){audioMessage('Nhập/chọn một audio trước khi thêm key.');return;}
+ pauseForAudioEdit();checkpointUndo();const f=String(clamp(Math.round(frame),0,lastFrame())),items=audioKeyMap()[f]??=[];
+ items.push({soundId:a?.id||'',action,loop:false,start:a?.start||0,end:a?.end??null,rate:a?.rate||1,volume:a?.volume??1});
+ selectedAudioCue={context:audioContextKey(),frame:+f,index:items.length-1};ksel=null;showRightTab('audio');draw();
+}
+function selectAudioKey(f,index=0){selectedAudioCue={context:audioContextKey(),frame:+f,index};ksel=null;frame=+f;showRightTab('audio');draw();}
+function updateAudioKey(key,value){
+ const cue=selectedAudioEvent();if(!cue)return;
+ let parsed=value;
+ if(key==='loop')parsed=!!value;
+ else if(['start','end','rate','volume','frame'].includes(key)){parsed=value===''&&key==='end'?null:+value;if(parsed!==null&&!Number.isFinite(parsed))return;}
+ if(key==='action'&&!['play','stop','stopAll'].includes(value))return;
+ if(key==='soundId'&&!String(value).trim()&&cue.action!=='stopAll')return audioMessage('Sound ID không được để trống.');
+ if(key==='start'&&(parsed<0||cue.end!=null&&parsed>=cue.end))return audioMessage('Điểm bắt đầu phải nhỏ hơn điểm kết thúc.');
+ if(key==='end'&&parsed!=null&&parsed<=cue.start)return audioMessage('Điểm kết thúc phải lớn hơn điểm bắt đầu.');
+ pauseForAudioEdit();checkpointUndo();
+ if(key==='frame'){
+  const to=clamp(Math.round(parsed),0,lastFrame()),old=selectedAudioCue.frame;if(to===old)return;
+  const items=audioKeyMap()[old];items.splice(selectedAudioCue.index,1);if(!items.length)delete audioKeyMap()[old];
+  const dest=audioKeyMap()[to]??=[];dest.push(cue);selectedAudioCue.frame=to;selectedAudioCue.index=dest.length-1;frame=to;
+ }else cue[key]=key==='rate'?clamp(parsed,.1,4):key==='volume'?clamp(parsed,0,1):parsed;
+ renderAudioPanel();draw();
+}
+function deleteAudioKey(){const cue=selectedAudioEvent();if(!cue)return;pauseForAudioEdit();checkpointUndo();const {frame:f,index}=selectedAudioCue,items=audioKeyMap()[f];items.splice(index,1);if(!items.length)delete audioKeyMap()[f];selectedAudioCue=null;renderAudioPanel();draw();}
+function renderAudioPanel(){
+ const host=$('audioPanel');if(!host)return;
+ if(!sessionAudio.has(selectedSoundId))selectedSoundId=sessionAudio.keys().next().value||'';
+ const a=sessionAudio.get(selectedSoundId),cue=selectedAudioEvent();
+ const input=(label,key,v,extra='')=>`<div class="row"><label>${label}</label><input type="number" step="0.01" ${extra} value="${v??''}" onchange="updateAudioKey('${key}',this.value)"></div>`;
+ host.innerHTML=`<p class="status">File audio chỉ ở phiên hiện tại. JSON chỉ lưu ID, mốc key và lệnh phát; nhập lại file cùng ID để nghe sau khi mở lại. Unity hiện cần bộ đọc audioEvents riêng.</p>
+ <div class="row"><label>Audio trong phiên</label><select id="sessionAudioSelect" onchange="selectSessionAudio(this.value)"><option value="">— Chọn audio —</option>${[...sessionAudio.values()].map(x=>`<option value="${esc(x.id)}" ${x.id===selectedSoundId?'selected':''}>${esc(x.id)} · ${x.duration.toFixed(2)}s</option>`).join('')}</select></div>
+ ${a?`<h4>File · ${esc(a.name)}</h4><div class="row"><label>ID dùng chung</label><input value="${esc(a.id)}" onchange="renameSessionAudio(this.value)"></div>
+ <canvas id="audioWaveform" width="500" height="100" aria-label="Dạng sóng; kéo gần mép trái/phải để cắt đoạn"></canvas>
+ <p class="status">Kéo trên dạng sóng để đổi mép cắt gần nhất. Thời gian tính theo giây của file gốc. Thiết lập ở đây dùng cho nghe thử/key mới; key đã đặt chỉnh riêng bên dưới.</p>
+ <div class="row"><label>Cắt từ (s)</label><input id="audioTrimstart" type="number" min="0" max="${a.duration}" step="0.01" value="${r2(a.start)}" oninput="updateSessionAudio('start',this.value)"></div>
+ <div class="row"><label>Đến (s)</label><input id="audioTrimend" type="number" min="0" max="${a.duration}" step="0.01" value="${r2(a.end)}" oninput="updateSessionAudio('end',this.value)"></div>
+ <div class="row"><label>Tốc độ (×)</label><input type="number" min="0.1" max="4" step="0.05" value="${a.rate}" onchange="updateSessionAudio('rate',this.value)"></div>
+ <div class="row"><label>Âm lượng</label><input type="range" min="0" max="1" step="0.01" value="${a.volume}" oninput="updateSessionAudio('volume',this.value)"></div>
+ <div class="row"><button onclick="previewSessionAudio(false)">▶ Nghe đoạn</button><button onclick="previewSessionAudio(true)">↻ Loop đoạn</button><button onclick="stopAudioVoices(v=>v.scope==='preview')">■ Dừng nghe</button><button onclick="removeSessionAudio()">Bỏ file</button></div>`:'<p class="status">Chưa có file âm thanh. Bấm ＋ Audio để nhập WAV/MP3/OGG/M4A mà trình duyệt đọc được.</p>'}
+ <div class="row"><button onclick="addAudioKey('play')">＋ Key phát</button><button onclick="addAudioKey('stop')">＋ Key dừng ID</button><button onclick="addAudioKey('stopAll')">＋ Dừng tất cả</button></div>
+ <h4>Key audio · ${esc(M.activeAnimation)} / ${esc(M.dir)}${editedEffectId?' · Effect':''}</h4>
+ <div class="audio-key-list">${audioEntries(A()).map(e=>`<button class="${selectedAudioCue?.frame===e.frame&&selectedAudioCue?.index===e.index&&cue?'active':''}" onclick="selectAudioKey(${e.frame},${e.index})">F${e.frame} · ${esc(e.cue.soundId||'Tất cả')} · ${esc(e.cue.action)}${e.cue.loop?' ↻':''}${e.cue.soundId&&!findSessionAudio(e.cue.soundId)?' · thiếu file':''}</button>`).join('')||'<p class="status">Chưa có key audio.</p>'}</div>
+ ${cue?`<h4>Đang sửa key F${selectedAudioCue.frame}</h4>${input('Frame','frame',selectedAudioCue.frame,'min="0" max="'+lastFrame()+'"')}
+ <div class="row"><label>Sound ID</label><input value="${esc(cue.soundId)}" onchange="updateAudioKey('soundId',this.value.trim())"></div>
+ <div class="row"><label>Lệnh</label><select onchange="updateAudioKey('action',this.value)">${[['play','Phát'],['stop','Dừng ID'],['stopAll','Dừng tất cả trên track']].map(([v,n])=>`<option value="${v}" ${cue.action===v?'selected':''}>${n}</option>`).join('')}</select></div>
+ <div class="row"><label>Loop đoạn</label><input type="checkbox" ${cue.loop?'checked':''} ${cue.action==='play'?'':'disabled'} onchange="updateAudioKey('loop',this.checked)"></div>
+ ${cue.action==='play'?input('Từ (s)','start',cue.start,'min="0"')+input('Đến (s)','end',cue.end,'min="0" placeholder="Hết file"')+input('Tốc độ (×)','rate',cue.rate,'min="0.1" max="4"')+input('Âm lượng','volume',cue.volume,'min="0" max="1"'):''}
+ <button onclick="deleteAudioKey()">Xóa key audio này</button>`:''}`;
+ drawAudioWaveform();
+ const wave=$('audioWaveform');if(wave&&a){let edge=null;
+  const move=e=>{const rect=wave.getBoundingClientRect(),time=clamp((e.clientX-rect.left)/rect.width,0,1)*a.duration;updateSessionAudio(edge,time);};
+  wave.onpointerdown=e=>{e.preventDefault();const rect=wave.getBoundingClientRect(),time=(e.clientX-rect.left)/rect.width*a.duration;edge=Math.abs(time-a.start)<Math.abs(time-a.end)?'start':'end';wave.setPointerCapture?.(e.pointerId);move(e);};
+  wave.onpointermove=e=>{if(edge)move(e);};wave.onpointerup=wave.onpointercancel=()=>{edge=null;};
+ }
+}
+function drawAudioWaveform(){const c=$('audioWaveform'),a=sessionAudio.get(selectedSoundId);if(!c||!a)return;const g=c.getContext('2d'),data=a.buffer.getChannelData(0),w=c.width,h=c.height;g.fillStyle='#171c24';g.fillRect(0,0,w,h);g.strokeStyle='#6ca8d8';g.beginPath();for(let x=0;x<w;x++){let low=0,high=0;const from=Math.floor(x*data.length/w),end=Math.max(from+1,Math.floor((x+1)*data.length/w));for(let i=from;i<end;i++){low=Math.min(low,data[i]||0);high=Math.max(high,data[i]||0);}g.moveTo(x,h/2+low*h*.45);g.lineTo(x,h/2+high*h*.45);}g.stroke();g.fillStyle='#3fb8af44';g.fillRect(a.start/a.duration*w,0,(a.end-a.start)/a.duration*w,h);g.fillStyle='#ffd166';g.fillRect(a.start/a.duration*w,0,3,h);g.fillRect(a.end/a.duration*w-3,0,3,h);}
+
+/* v20 shortcut catalog: UI preferences only, never project JSON. */
+const quickActionCatalog=[
+ ['play','Phát / tạm dừng','Space'],['previous','Frame trước','Ctrl+ArrowLeft'],['next','Frame sau','Ctrl+ArrowRight'],['first','Frame đầu','Home'],['last','Frame cuối','End'],
+ ['key','Đặt key xương','K'],['delete','Xóa đối tượng / key đang chọn','Delete'],['copy','Copy key','Ctrl+C'],['cut','Cut key','Ctrl+X'],['paste','Paste key','Ctrl+V'],['undo','Undo','Ctrl+Z'],['redo','Redo','Ctrl+Shift+Z'],
+ ['select','Công cụ quét chọn','V'],['move','Công cụ di chuyển','W'],['rotate','Công cụ xoay','E'],['scale','Công cụ thu phóng','S'],['free','Công cụ tự do','T'],['ik','IK 2 xương','I'],
+ ['rotateStep','Xoay nhanh theo bước','R'],['zUp','Tăng Z Block','Z'],['zDown','Giảm Z Block','Shift+Z'],
+ ['leftStep','Dịch nhanh sang trái','ArrowLeft'],['rightStep','Dịch nhanh sang phải','ArrowRight'],['upStep','Dịch nhanh lên','ArrowUp'],['downStep','Dịch nhanh xuống','ArrowDown'],
+ ['zoomIn','Phóng canvas','+'],['zoomOut','Thu canvas','-'],['timelineIn','Phóng timeline',']'],['timelineOut','Thu timeline','['],['audioStop','Dừng âm thanh đang phát','Shift+S']
+];
+const shortcutDefaults=()=>({bindings:Object.fromEntries(quickActionCatalog.map(([id,,key])=>[id,key])),schemaVersion:2,quick:['rotateStep','leftStep','upStep','downStep','rightStep','zUp','zDown'],rotateStep:45,zStep:1,moveStep:1,zoomFactor:1.1,holdDelay:250,holdInterval:90});
+let shortcutPreferences=shortcutDefaults(),shortcutStatus='';
+function normalizeChord(raw){
+ let s=String(raw).trim();if(!s)return '';if(s==='+')return '+';
+ const bits=s.split('+').map(x=>x.trim()).filter(Boolean),mods=new Set(),keys=[];
+ for(const b of bits){if(/^(ctrl|control|cmd|meta)$/i.test(b))mods.add('Ctrl');else if(/^shift$/i.test(b))mods.add('Shift');else if(/^alt$/i.test(b))mods.add('Alt');else keys.push(b);}
+ if(keys.length!==1)return null;
+ const aliases={space:'Space',spacebar:'Space',left:'ArrowLeft',right:'ArrowRight',up:'ArrowUp',down:'ArrowDown',delete:'Delete',backspace:'Backspace',escape:'Escape',enter:'Enter',home:'Home',end:'End',arrowleft:'ArrowLeft',arrowright:'ArrowRight',arrowup:'ArrowUp',arrowdown:'ArrowDown'};
+ const key=aliases[keys[0].toLowerCase()]||(keys[0].length===1?keys[0].toUpperCase():null);if(!key)return null;
+ return [...['Ctrl','Alt','Shift'].filter(m=>mods.has(m)),key].join('+');
+}
+function eventChord(e){let key=e.key===' '?'Space':e.key.length===1?e.key.toUpperCase():e.key;return [...(e.ctrlKey||e.metaKey?['Ctrl']:[]),...(e.altKey?['Alt']:[]),...(e.shiftKey&&key!=='+'?['Shift']:[]),key].join('+');}
+function persistShortcuts(){try{localStorage.setItem('BoneAnimatorStudio.shortcuts.v20',JSON.stringify(shortcutPreferences));}catch{}}
+function loadShortcuts(){try{const saved=JSON.parse(localStorage.getItem('BoneAnimatorStudio.shortcuts.v20')||'null');if(!saved)return;migrateShortcutDefaults(saved);
+ const seen=new Set();for(const [id] of quickActionCatalog){const key=normalizeChord(saved.bindings?.[id]??shortcutPreferences.bindings[id]);if(key!==null&&!seen.has(key)){shortcutPreferences.bindings[id]=key;if(key)seen.add(key);}else shortcutPreferences.bindings[id]='';}
+ shortcutPreferences.quick=Array.isArray(saved.quick)?saved.quick.filter(id=>quickActionCatalog.some(a=>a[0]===id)):shortcutPreferences.quick;
+ for(const [key,min,max] of [['rotateStep',.1,3600],['zStep',1,1000],['moveStep',.01,10000],['zoomFactor',1.01,3],['holdDelay',100,2000],['holdInterval',30,1000]])if(Number.isFinite(+saved[key]))shortcutPreferences[key]=clamp(+saved[key],min,max);
+ }catch{}}
+function setShortcutBinding(id,value){const key=normalizeChord(value);if(key===null){shortcutStatus='Phím không hợp lệ. Ví dụ R, Shift+R, Ctrl+K hoặc để trống để bỏ gán.';renderShortcutSettings();return;}
+ const conflict=quickActionCatalog.find(([other])=>other!==id&&key&&shortcutPreferences.bindings[other]===key);
+ if(conflict){shortcutStatus='Phím '+key+' đang dùng cho '+conflict[1]+'. Bỏ gán phím cũ trước.';renderShortcutSettings();return;}
+ shortcutPreferences.bindings[id]=key;shortcutStatus='Đã lưu phím tắt trong trình duyệt.';persistShortcuts();renderShortcutSettings();renderQuickActions();
+}
+function setQuickButton(id,on){shortcutPreferences.quick=shortcutPreferences.quick.filter(x=>x!==id);if(on)shortcutPreferences.quick.push(id);persistShortcuts();renderQuickActions();}
+function setQuickParameter(key,value){const limits={rotateStep:[.1,3600],zStep:[1,1000],moveStep:[.01,10000],zoomFactor:[1.01,3],holdDelay:[100,2000],holdInterval:[30,1000]};if(!limits[key]||!Number.isFinite(+value))return;shortcutPreferences[key]=clamp(+value,...limits[key]);if(key==='zStep')shortcutPreferences[key]=Math.round(shortcutPreferences[key]);persistShortcuts();renderQuickActions();}
+function resetShortcuts(){shortcutPreferences=shortcutDefaults();shortcutStatus='Đã khôi phục phím tắt mặc định.';persistShortcuts();renderShortcutSettings();renderQuickActions();}
+function renderShortcutSettings(){const host=$('shortcutSettings');if(!host)return;host.innerHTML=`<p class="status">Phím có thể sửa, để trống để bỏ gán. Không chạy khi đang gõ vào input hoặc mở hộp thoại. Ctrl trên Mac dùng Cmd. Settings lưu trong trình duyệt, không vào JSON. Giữ R để xoay liên tục; ↑ ↓ ← → dịch xương/block đang chọn. Ctrl + ←/→ chuyển frame. Giữ nút nổi cũng lặp thao tác; thả tay thì dừng.</p>
+ ${[['rotateStep','Góc xoay nhanh (độ)'],['zStep','Bước Z (số nguyên)'],['moveStep','Bước dịch (đơn vị canvas)'],['zoomFactor','Hệ số thu/phóng canvas'],['holdDelay','Chờ lặp khi giữ (ms)'],['holdInterval','Khoảng lặp khi giữ (ms)']].map(([id,label])=>`<div class="row"><label>${label}</label><input type="number" step="any" value="${shortcutPreferences[id]}" onchange="setQuickParameter('${id}',this.value)"></div>`).join('')}
+ <p id="shortcutStatus" role="status">${esc(shortcutStatus)}</p><div class="shortcut-table"><div class="shortcut-heading"><strong>Thao tác</strong><strong>Phím</strong><strong>Nút nổi</strong></div>
+ ${quickActionCatalog.map(([id,label])=>`<div class="shortcut-row"><label for="binding_${id}">${esc(label)}</label><input id="binding_${id}" type="text" aria-label="Phím ${esc(label)}" value="${esc(shortcutPreferences.bindings[id])}" onchange="setShortcutBinding('${id}',this.value)"><input type="checkbox" aria-label="Hiện nút ${esc(label)}" ${shortcutPreferences.quick.includes(id)?'checked':''} onchange="setQuickButton('${id}',this.checked)"></div>`).join('')}</div>
+ <h4>Thao tác chuột / cảm ứng</h4><ul><li>PC canvas: giữ chuột phải + kéo để pan; chuột trái chọn/chỉnh. Menu chuột phải dùng trong danh sách; cảm ứng nhấn giữ mở menu.</li><li>Nhấn đúp đối tượng: focus. Nhấn đúp canvas trống: bỏ chọn.</li><li>Shift/Ctrl/Cmd + chọn: chọn nhiều. Shift + kéo canvas: quét chọn.</li><li>Cuộn trên canvas: thu/phóng. Hai ngón: pan/zoom canvas.</li><li>Ctrl/Cmd + cuộn timeline: zoom. Shift + cuộn: ngang.</li><li>Timeline: chuột giữa hoặc bật Cuộn rồi kéo để cuộn hai chiều.</li><li>Escape: đóng menu/hộp thoại. Backspace: như Delete; Ctrl+Y: Redo khi chưa gán thao tác khác.</li></ul><button onclick="resetShortcuts()">Khôi phục mặc định</button>`;}
+function renderQuickActions(){
+ const host=$('customQuickActions');if(!host)return;
+ const arrows={leftStep:'←',rightStep:'→',upStep:'↑',downStep:'↓'};
+ host.innerHTML=shortcutPreferences.quick.map(id=>{
+  const entry=quickActionCatalog.find(a=>a[0]===id);if(!entry)return '';
+  const small=arrows[id]||(id==='rotateStep'?'↻ '+shortcutPreferences.rotateStep+'°':id==='zUp'?'Z+'+shortcutPreferences.zStep:id==='zDown'?'Z−'+shortcutPreferences.zStep:entry[1]);
+  return `<button type="button" data-quick-action="${id}" aria-label="${esc(entry[1])}" title="${esc(entry[1])} · ${esc(shortcutPreferences.bindings[id]||'chưa gán phím')}${repeatableQuickActions.has(id)?' · Giữ để lặp':''}" onclick="activateQuickButton(event,'${id}')">${esc(small)}</button>`;
+ }).join('');
+}
+function openShortcutSettings(){renderShortcutSettings();$('shortcutModal').hidden=false;}
+function closeShortcutSettings(){$('shortcutModal').hidden=true;}
+function quickTransform(kind,dx=0,dy=0,recordUndo=true){
+ const selection=getSelection(),selectedBones=new Set(selection.filter(x=>x.t==='b').map(x=>x.id));
+ const inherited=id=>{let b=byId(id),seen=new Set();while(b?.p&&!seen.has(b.p)){if(selectedBones.has(b.p))return true;seen.add(b.p);b=byId(b.p);}return false;};
+ const targets=selection.filter(x=>!selectionLocked(x.t)).filter(x=>x.t==='b'?!inherited(x.id):!selectedBones.has(M.blocks.find(k=>k.id===x.id)?.b)&&!inherited(M.blocks.find(k=>k.id===x.id)?.b));
+ if(!targets.length)return;if(recordUndo)checkpointUndo();const W=solve();
+ for(const item of targets){if(item.t==='b'){const b=byId(item.id),q=pose(b,frame);if(kind==='rotate')setB(b,{a:q.a+shortcutPreferences.rotateStep});else{const d=parentDeltaToLocal(dx,dy,b.p?W[b.p].wa:0);setB(b,{x:q.x+d.x,y:q.y+d.y});}}
+ else{const b=M.blocks.find(k=>k.id===item.id);if(kind==='rotate'){const k=b.b?'ir':'a';b[k]=(+b[k]||0)+shortcutPreferences.rotateStep;}else if(b.b){const d=parentDeltaToLocal(dx,dy,W[b.b].wa);b.ox=(+b.ox||0)+d.x;b.oy=(+b.oy||0)+d.y;}else{b.x=(+b.x||0)+dx;b.y=(+b.y||0)+dy;}}}
+ renderAll();draw();
+}
+function runQuickAction(id,recordUndo=true){
+ if(['select','move','rotate','scale','free','ik'].includes(id)){setTool(id);return;}
+ const step=shortcutPreferences.moveStep;
+ if(id==='rotateStep')return quickTransform('rotate',0,0,recordUndo);
+ if(['leftStep','rightStep','upStep','downStep'].includes(id))return quickTransform('move',id==='leftStep'?-step:id==='rightStep'?step:0,id==='upStep'?-step:id==='downStep'?step:0,recordUndo);
+ if(id==='zUp'||id==='zDown'){const blocks=getSelection().filter(i=>i.t==='k').map(i=>M.blocks.find(k=>k.id===i.id));if(!blocks.length)return;if(recordUndo)checkpointUndo();for(const b of blocks)b.z=(+b.z||0)+(id==='zUp'?1:-1)*shortcutPreferences.zStep;renderAll();draw();return;}
+ if(id==='play')return play();if(id==='key')return setKey();if(id==='copy')return copyKey();if(id==='cut')return cutKey();if(id==='paste')return pasteKey();if(id==='undo')return undoAction();if(id==='redo')return redoAction();
+ if(id==='delete'){if(selectedAudioEvent())deleteAudioKey();else if(ksel)delKey();else if(sel)del();return;}
+ if(id==='audioStop')return stopAudioVoices();
+ if(id==='zoomIn'||id==='zoomOut'){zoomAt(cv.width/2,cv.height/2,id==='zoomIn'?shortcutPreferences.zoomFactor:1/shortcutPreferences.zoomFactor);return;}
+ if(id==='timelineIn'||id==='timelineOut')return setTimelineZoom(timelineZoom*(id==='timelineIn'?1.25:.8));
+ if(['previous','next','first','last'].includes(id)){pauseForAudioEdit();frame=clamp(id==='first'?0:id==='last'?lastFrame():Math.round(frame)+(id==='next'?1:-1),0,lastFrame());$('fr').value=frame;renderProps();draw();}
+}
+const repeatableQuickActions=new Set(['rotateStep','leftStep','rightStep','upStep','downStep','zUp','zDown']);
+let heldQuickAction=null;
+function migrateShortcutDefaults(saved){
+ if(saved.schemaVersion>=2)return;
+ const bindings=saved.bindings??={};
+ const upgrades={previous:['ArrowLeft','Ctrl+ArrowLeft'],next:['ArrowRight','Ctrl+ArrowRight'],leftStep:['Alt+ArrowLeft','ArrowLeft'],rightStep:['Alt+ArrowRight','ArrowRight'],upStep:['Alt+ArrowUp','ArrowUp'],downStep:['Alt+ArrowDown','ArrowDown']};
+ for(const [id,[oldKey,newKey]] of Object.entries(upgrades))if(bindings[id]==null||bindings[id]===oldKey)bindings[id]=newKey;
+ if(JSON.stringify(saved.quick)===JSON.stringify(['rotateStep','zUp','zDown']))saved.quick=shortcutDefaults().quick;
+ saved.schemaVersion=2;
+}
+const dismissibleModals=()=>[
+ ['shortcutModal',closeShortcutSettings],['modelNameModal',closeModelNameDialog],['effectDownloadModal',closeEffectDownloads],
+ ['effectExportModal',closeEffectExport],['sessionImportDialog',closeSessionChoice],['spriteExportModal',closeSpriteExport],
+ ['unityExportModal',closeUnityExportSettings],['cropModal',cancelCrop],['imgModal',closeLibrary]
+];
+function activeShortcutModal(){return dismissibleModals().find(([id])=>!$(id).hidden);}
+function shortcutTextInput(target){return !!target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));}
+function stopQuickHold(){
+ const hold=heldQuickAction;heldQuickAction=null;
+ if(hold?.element?.hasPointerCapture?.(hold.pointerId))hold.element.releasePointerCapture(hold.pointerId);
+}
+function startQuickHold(id,key='',element=null,pointerId=null){
+ stopQuickHold();runQuickAction(id,true);
+ heldQuickAction={id,key,element,pointerId,nextAt:performance.now()+shortcutPreferences.holdDelay};
+}
+function tickHeldQuickAction(now){
+ if(!heldQuickAction)return;
+ if(document.hidden||activeShortcutModal()||shortcutTextInput(document.activeElement)){stopQuickHold();return;}
+ if(now>=heldQuickAction.nextAt){
+  const hold=heldQuickAction;hold.nextAt=now+shortcutPreferences.holdInterval;
+  runQuickAction(hold.id,false);
+ }
+}
+function activateQuickButton(e,id){
+ // Pointer gestures already execute on pointerdown; keyboard activation is a single step.
+ if(repeatableQuickActions.has(id)&&e.detail>0){e.preventDefault();return;}
+ runQuickAction(id);
+}
+function installQuickHoldControls(){
+ const host=$('customQuickActions');
+ host.addEventListener('pointerdown',e=>{
+  const button=e.target.closest('[data-quick-action]');
+  if(e.button!==0||!button||!repeatableQuickActions.has(button.dataset.quickAction))return;
+  e.preventDefault();button.setPointerCapture?.(e.pointerId);
+  startQuickHold(button.dataset.quickAction,'',button,e.pointerId);
+ });
+ window.addEventListener('keyup',e=>{
+  if(heldQuickAction?.key&&(heldQuickAction.key===(e.code||e.key)||['Shift','Alt','Control','Meta'].includes(e.key)))stopQuickHold();
+ });
+ for(const type of ['pointerup','pointercancel','lostpointercapture'])window.addEventListener(type,()=>{if(heldQuickAction?.element)stopQuickHold();});
+ window.addEventListener('blur',stopQuickHold);
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)stopQuickHold();});
+ document.addEventListener('focusin',e=>{if(shortcutTextInput(e.target))stopQuickHold();});
+ for(const [id,close] of dismissibleModals()){
+  const modal=$(id),backdrop=document.createElement('button');
+  backdrop.type='button';backdrop.className='modal-backdrop-close';backdrop.setAttribute('aria-label','Đóng bảng khi bấm ra ngoài');
+  backdrop.addEventListener('click',()=>{stopQuickHold();close();});modal.prepend(backdrop);
+ }
+}
+function handleConfiguredShortcut(e){
+ const modal=activeShortcutModal();
+ if(modal){stopQuickHold();if(e.key==='Escape'){e.preventDefault();modal[1]();}return;}
+ if(e.key==='Escape'){stopQuickHold();closeLibrary();hideContextMenu();return;}
+ if(e.isComposing||shortcutTextInput(e.target)||e.target.tagName==='BUTTON'&&[' ','Enter'].includes(e.key))return;
+ const chord=eventChord(e),action=quickActionCatalog.find(([id])=>shortcutPreferences.bindings[id]===chord);
+ if(action){
+  e.preventDefault();
+  if(repeatableQuickActions.has(action[0])){if(!e.repeat)startQuickHold(action[0],e.code||e.key);}
+  else{stopQuickHold();if(!e.repeat||!['play','undo','redo','delete'].includes(action[0]))runQuickAction(action[0]);}
+ }else if(chord==='Backspace'){e.preventDefault();runQuickAction('delete');}else if(chord==='Ctrl+Y'){e.preventDefault();redoAction();}
+}
+
+let timelineZoom=1,timelinePanMode=false;
+function timelinePixelsPerFrame(){return (tl.width-LW-12)/Math.max(1,A().frames-1);}
+function setTimelineZoom(value,anchorX){
+ const view=$('tw'),old=timelinePixelsPerFrame(),anchor=anchorX??view.clientWidth/2,at=(view.scrollLeft+anchor-LW)/Math.max(.001,old);
+ timelineZoom=clamp(+value||1,.25,8);fitTimeline();view.scrollLeft=Math.max(0,LW+at*timelinePixelsPerFrame()-anchor);
+ if($('timelineZoom'))$('timelineZoom').value=Math.round(timelineZoom*100);if($('timelineZoomLabel'))$('timelineZoomLabel').textContent=Math.round(timelineZoom*100)+'%';drawTL();
+}
+function fitTimelineView(){timelineZoom=1;fitTimeline();$('tw').scrollLeft=0;$('timelineZoom').value=100;$('timelineZoomLabel').textContent='100%';drawTL();}
+function toggleTimelinePan(){timelinePanMode=!timelinePanMode;$('timelinePan').classList.toggle('active',timelinePanMode);tl.style.cursor=timelinePanMode?'grab':'crosshair';}
+function audioLaneY(){return blockLaneY()+RH;}
+const drawTLBeforeAudio=drawTL;
+drawTL=function(){drawTLBeforeAudio();if(!activeSet())return;const g=tl.getContext('2d'),fw=timelinePixelsPerFrame(),y=audioLaneY();
+ g.fillStyle='#233d35';g.fillRect(0,y,tl.width,RH);g.fillStyle='#b7f7d5';g.fillText('♪ AUDIO',6,y+14);
+ for(const [f,items] of Object.entries(A().audioKeys||{})){if(!items?.length)continue;const x=LW+(+f)*fw;g.fillStyle=selectedAudioCue?.context===audioContextKey()&&selectedAudioCue.frame===+f?'#ffd166':'#86efac';g.beginPath();g.moveTo(x,y+2);g.lineTo(x+7,y+10);g.lineTo(x,y+18);g.lineTo(x-7,y+10);g.fill();}
+ g.fillStyle='#ff7a59';g.fillRect(LW+frame*fw,y,2,RH);
+ // Labels and ruler stay visible while their canvas is scrolled in either axis.
+ const view=$('tw'),sx=view.scrollLeft||0,sy=view.scrollTop||0;
+ g.fillStyle='#252a33';g.fillRect(sx,sy,LW,tl.height);g.fillRect(sx,sy,tl.width,HH);
+ g.save();g.beginPath();g.rect(sx,sy+HH,LW,Math.max(0,tl.height-HH));g.clip();g.fillStyle='#e4e8ee';
+ M.bones.forEach((b,i)=>g.fillText(b.name,sx+6,HH+i*RH+14));g.fillStyle='#d8b4fe';g.fillText('▣ BLOCK',sx+6,blockLaneY()+14);g.fillStyle='#b7f7d5';g.fillText('♪ AUDIO',sx+6,y+14);g.restore();
+ const step=Math.max(1,Math.ceil(36/fw));g.fillStyle='#aab4c4';for(let f=0;f<A().frames;f+=step){const x=LW+f*fw;if(x>sx+LW&&x<sx+view.clientWidth)g.fillText(f,x-3,sy+14);}
+};
+const timelineDownBeforeV20=timelineDown,timelineMoveBeforeV20=timelineMove,timelineUpBeforeV20=timelineUp;
+// The listeners are replaced during installation, so the new functions receive real pointer events.
+function timelineDownV20(e){
+ if(timelinePanMode||e.button===1||e.altKey){e.preventDefault();tl.setPointerCapture?.(e.pointerId);drag={type:'timelinePan',x:e.clientX,y:e.clientY,left:$('tw').scrollLeft,top:$('tw').scrollTop};return;}
+ pauseForAudioEdit();
+ const rect=tl.getBoundingClientRect(),x=(e.clientX-rect.left)*tl.width/rect.width,y=(e.clientY-rect.top)*tl.height/rect.height,sx=$('tw').scrollLeft||0,sy=$('tw').scrollTop||0;
+ if(y<sy+HH){e.preventDefault();tl.setPointerCapture?.(e.pointerId);selectedAudioCue=null;ksel=null;frame=timelineFrame(e);drag={type:'scrub'};renderProps();if(rightTab==='audio')renderAudioPanel();draw();return;}
+ if(x<sx+LW&&y>sy+HH){const bone=M.bones[Math.floor((y-HH)/RH)];if(bone)pick('b',bone.id);return;}
+ if(y>=audioLaneY()&&y<audioLaneY()+RH){e.preventDefault();tl.setPointerCapture?.(e.pointerId);const f=timelineFrame(e);if(A().audioKeys?.[f]?.length){selectAudioKey(f);checkpointUndo();drag={type:'audioKeyDrag',from:f};}else{selectedAudioCue=null;frame=f;drag={type:'scrub'};showRightTab('audio');draw();}return;}
+ selectedAudioCue=null;timelineDownBeforeV20(e);
+}
+function timelineMoveV20(e){
+ if(drag?.type==='timelinePan'){e.preventDefault();$('tw').scrollLeft=drag.left-(e.clientX-drag.x);$('tw').scrollTop=drag.top-(e.clientY-drag.y);drawTL();return;}
+ if(drag?.type==='audioKeyDrag'){const f=timelineFrame(e);if(f!==drag.from&&!audioKeyMap()[f]){audioKeyMap()[f]=audioKeyMap()[drag.from];delete audioKeyMap()[drag.from];drag.from=f;selectedAudioCue.frame=f;frame=f;renderAudioPanel();draw();}return;}
+ timelineMoveBeforeV20(e);
+}
+function installV20Timeline(){
+ tl.removeEventListener('pointerdown',timelineDownBeforeV20);tl.removeEventListener('pointermove',timelineMoveBeforeV20);tl.removeEventListener('pointerup',timelineUpBeforeV20);tl.removeEventListener('pointercancel',timelineUpBeforeV20);
+ tl.addEventListener('pointerdown',timelineDownV20);tl.addEventListener('pointermove',timelineMoveV20);tl.addEventListener('pointerup',timelineUpBeforeV20);tl.addEventListener('pointercancel',timelineUpBeforeV20);
+ $('tw').addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setTimelineZoom(timelineZoom*(e.deltaY<0?1.2:1/1.2),e.clientX-$('tw').getBoundingClientRect().left);}else if(e.shiftKey){e.preventDefault();$('tw').scrollLeft+=e.deltaY||e.deltaX;}},{passive:false});
+}
+
+
+const showRightTabBeforeV20=showRightTab;
+showRightTab=function(tab){if(tab==='audio'){rightTab='audio';for(const id of ['rightPropertiesPane','imagePane','rightGroupPane'])$(id).hidden=true;for(const id of ['tabProperties','tabImage','tabGroupBlock'])$(id).classList.remove('active');$('tabAudio').classList.add('active');$('audioPane').hidden=false;renderAudioPanel();return;}showRightTabBeforeV20(tab);$('audioPane').hidden=true;$('tabAudio').classList.remove('active');};
+const renderAllBeforeV20=renderAll;renderAll=function(){renderAllBeforeV20();if(rightTab==='audio')renderAudioPanel();};
+const playBeforeV20=play;play=function(){stopTimelineAudio();playBeforeV20();if(playing)resumeTimelineAudio();};
+const deleteKeyBeforeV20=delKey;delKey=function(){if(selectedAudioEvent())deleteAudioKey();else deleteKeyBeforeV20();};
+const selectAnimationBeforeV20=selectAnimation;selectAnimation=function(name){pauseForAudioEdit();selectedAudioCue=null;selectAnimationBeforeV20(name);if(rightTab==='audio')renderAudioPanel();};
+const pickBeforeV20=pick;pick=function(type,id,event){selectedAudioCue=null;pickBeforeV20(type,id,event);};
+cv.addEventListener('pointerdown',e=>{if(e.button!==0)return;selectedAudioCue=null;if(rightTab==='audio')renderAudioPanel();});
+const setDirBeforeV20=setDir;setDir=function(dir){if(dir!==M.dir){pauseForAudioEdit();selectedAudioCue=null;}setDirBeforeV20(dir);if(rightTab==='audio')renderAudioPanel();};
+const loadPackageBeforeV20=loadPackage;loadPackage=function(pack,options){pauseForAudioEdit();selectedAudioCue=null;loadPackageBeforeV20(pack,options);};
+const setFrameInputBeforeV20=$('fr').onchange;$('fr').onchange=e=>{pauseForAudioEdit();selectedAudioCue=null;setFrameInputBeforeV20(e);if(rightTab==='audio')renderAudioPanel();};
+const restoreUndoBeforeV20=restoreUndoSnapshot;restoreUndoSnapshot=function(snap){pauseForAudioEdit();selectedAudioCue=null;restoreUndoBeforeV20(snap);if(rightTab==='audio')renderAudioPanel();};
+$('audioImport').addEventListener('change',e=>importDemoAudio(e.target.files));
+window.addEventListener('blur',()=>{endRightCanvasPan();playing=false;$('pb').textContent='▶';stopTimelineAudio();stopAudioVoices();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){playing=false;$('pb').textContent='▶';stopTimelineAudio();stopAudioVoices();}});
+loadShortcuts();renderQuickActions();installV20Timeline();installQuickHoldControls();
 
 M=normalizeModel(M);normalizeEffectPackages(M);setTool('move');setMode('rig');refreshAnimationState();setDir('down');showSideTab('skeleton');
 syncRigDirectionTabs();refreshAnimationState();
