@@ -398,11 +398,25 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 .shortcut-dialog{width:min(760px,94vw);max-height:90dvh;overflow:auto}.shortcut-dialog .row{flex-wrap:wrap}.shortcut-dialog input{min-width:0}.shortcut-table{display:flex;flex-direction:column;gap:4px}.shortcut-row,.shortcut-heading{display:grid;grid-template-columns:minmax(120px,1fr) minmax(85px,.6fr) 60px;align-items:center;gap:8px;padding:5px}.shortcut-row input[type=text]{width:100%;min-width:0}.shortcut-row:nth-child(even){background:#ffffff08}.shortcut-heading{position:sticky;top:0;background:var(--p)}#shortcutStatus{color:#ffd166}
 @media(max-width:600px){.canvas-floating-tools{gap:3px}.canvas-floating-tools button.canvas-tool-button{width:38px;height:38px}.shortcut-row,.shortcut-heading{grid-template-columns:minmax(100px,1fr) minmax(70px,.65fr) 44px;font-size:12px;gap:4px}#customQuickActions{max-width:calc(100% - 150px)}}
 
-.modal-backdrop-close{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;border-radius:0;background:transparent;cursor:pointer;z-index:0}
-.modal-backdrop-close:hover,.modal-backdrop-close:active{background:transparent}
-.modal-backdrop-close~[role="dialog"]{position:relative;z-index:1}
-#customQuickActions [data-quick-action]{touch-action:none;user-select:none;min-width:34px}
-#shortcutModal .shortcut-dialog>.row:first-child{position:sticky;top:-16px;z-index:3;background:var(--p);padding-block:10px}
+/* v20 mobile scroll fix: explicit rails remain visible on touch browsers. */
+.timeline-navigation{flex:0 0 36px;min-height:36px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;white-space:nowrap;padding:0 5px;box-sizing:border-box}
+.timeline-navigation>*{flex-shrink:0}.timeline-navigation label{width:auto}
+#timelineViewport{display:grid;grid-template-columns:minmax(0,1fr) 24px;grid-template-rows:minmax(0,1fr) 24px;flex:1 1 auto;min-height:0;overflow:hidden}
+#tw{grid-column:1;grid-row:1;width:auto;height:auto;min-width:0;scrollbar-width:none;scrollbar-gutter:auto}
+#tw::-webkit-scrollbar{display:none}
+.timeline-scrollbar{position:relative;background:#141b23;border:1px solid #526173;border-radius:6px;touch-action:none;user-select:none;min-width:0;min-height:0;cursor:pointer}
+.timeline-scrollbar:focus-visible{outline:2px solid #ffd166;outline-offset:-2px}
+#timelineVScroll{grid-column:2;grid-row:1;margin-left:2px}
+#timelineHScroll{grid-column:1;grid-row:2;margin-top:2px}
+.timeline-scroll-thumb{position:absolute;display:block;background:#53c9be;border:2px solid #b5fff4;border-radius:5px;box-sizing:border-box;pointer-events:none}
+#timelineVThumb{left:2px;right:2px;min-height:32px}
+#timelineHThumb{top:2px;bottom:2px;min-width:32px}
+.timeline-scrollbar[aria-disabled="true"]{opacity:.45;cursor:default}
+.timeline-scrollbar[aria-disabled="true"] .timeline-scroll-thumb{background:#566373;border-color:#8594a6}
+.timeline-scroll-corner{grid-column:2;grid-row:2;display:grid;place-items:center;color:#a9c3cb;font-size:14px}
+@media(max-width:900px) and (orientation:portrait){:root{--timeline-height:clamp(270px,36dvh,360px)}#animBar{flex-basis:84px;height:84px;min-height:84px}}
+@media(max-width:900px) and (orientation:landscape){body{grid-template-rows:auto minmax(0,1fr) clamp(230px,52dvh,280px)}}
+
 </style>
 </head>
 <body>
@@ -547,7 +561,12 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
  </div>
  <div id="timelinePanel">
   <div class="timeline-navigation"><label>Zoom timeline <input id="timelineZoom" type="range" min="25" max="800" step="5" value="100" oninput="setTimelineZoom(this.value/100)"></label><span id="timelineZoomLabel">100%</span><button onclick="setTimelineZoom(timelineZoom/1.25)">−</button><button onclick="setTimelineZoom(timelineZoom*1.25)">＋</button><button onclick="fitTimelineView()">Vừa khung</button><button id="timelinePan" onclick="toggleTimelinePan()">↔↕ Cuộn</button></div>
-  <div id="tw"><canvas id="tls"></canvas></div>
+  <div id="timelineViewport">
+   <div id="tw"><canvas id="tls"></canvas></div>
+   <div id="timelineVScroll" class="timeline-scrollbar" role="scrollbar" tabindex="0" aria-label="Cuộn dọc timeline" aria-orientation="vertical" aria-controls="tw" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><span id="timelineVThumb" class="timeline-scroll-thumb"></span></div>
+   <div id="timelineHScroll" class="timeline-scrollbar" role="scrollbar" tabindex="0" aria-label="Cuộn ngang timeline" aria-orientation="horizontal" aria-controls="tw" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"><span id="timelineHThumb" class="timeline-scroll-thumb"></span></div>
+   <span class="timeline-scroll-corner" aria-hidden="true">↕</span>
+  </div>
   <div id="noAnimationHint" class="status">Chọn hoặc tạo một animation để hiển thị timeline và điều khiển frame.</div>
  </div>
 </div>
@@ -4488,9 +4507,9 @@ function fitTimeline(){
  const contentWidth=Math.min(16384,Math.max(view.clientWidth,LW+12+(view.clientWidth-LW-12)*timelineZoom));
  tl.style.width=contentWidth+'px';tl.style.height=contentHeight+'px';
  if(tl.width!==Math.round(contentWidth)||tl.height!==contentHeight){tl.width=Math.round(contentWidth);tl.height=contentHeight;}
+ syncTimelineScrollbars();
 }
 function loop(time){
- tickHeldQuickAction(time);
  const dt=Math.min(.1,(time-last)/1000);last=time;const previousAudioFrame=frame;
  if(playing&&activeSet()){
   frame+=dt*A().fps;
@@ -4674,14 +4693,14 @@ function drawAudioWaveform(){const c=$('audioWaveform'),a=sessionAudio.get(selec
 
 /* v20 shortcut catalog: UI preferences only, never project JSON. */
 const quickActionCatalog=[
- ['play','Phát / tạm dừng','Space'],['previous','Frame trước','Ctrl+ArrowLeft'],['next','Frame sau','Ctrl+ArrowRight'],['first','Frame đầu','Home'],['last','Frame cuối','End'],
+ ['play','Phát / tạm dừng','Space'],['previous','Frame trước','ArrowLeft'],['next','Frame sau','ArrowRight'],['first','Frame đầu','Home'],['last','Frame cuối','End'],
  ['key','Đặt key xương','K'],['delete','Xóa đối tượng / key đang chọn','Delete'],['copy','Copy key','Ctrl+C'],['cut','Cut key','Ctrl+X'],['paste','Paste key','Ctrl+V'],['undo','Undo','Ctrl+Z'],['redo','Redo','Ctrl+Shift+Z'],
  ['select','Công cụ quét chọn','V'],['move','Công cụ di chuyển','W'],['rotate','Công cụ xoay','E'],['scale','Công cụ thu phóng','S'],['free','Công cụ tự do','T'],['ik','IK 2 xương','I'],
  ['rotateStep','Xoay nhanh theo bước','R'],['zUp','Tăng Z Block','Z'],['zDown','Giảm Z Block','Shift+Z'],
- ['leftStep','Dịch nhanh sang trái','ArrowLeft'],['rightStep','Dịch nhanh sang phải','ArrowRight'],['upStep','Dịch nhanh lên','ArrowUp'],['downStep','Dịch nhanh xuống','ArrowDown'],
+ ['leftStep','Dịch nhanh sang trái','Alt+ArrowLeft'],['rightStep','Dịch nhanh sang phải','Alt+ArrowRight'],['upStep','Dịch nhanh lên','Alt+ArrowUp'],['downStep','Dịch nhanh xuống','Alt+ArrowDown'],
  ['zoomIn','Phóng canvas','+'],['zoomOut','Thu canvas','-'],['timelineIn','Phóng timeline',']'],['timelineOut','Thu timeline','['],['audioStop','Dừng âm thanh đang phát','Shift+S']
 ];
-const shortcutDefaults=()=>({bindings:Object.fromEntries(quickActionCatalog.map(([id,,key])=>[id,key])),schemaVersion:2,quick:['rotateStep','leftStep','upStep','downStep','rightStep','zUp','zDown'],rotateStep:45,zStep:1,moveStep:1,zoomFactor:1.1,holdDelay:250,holdInterval:90});
+const shortcutDefaults=()=>({bindings:Object.fromEntries(quickActionCatalog.map(([id,,key])=>[id,key])),quick:['rotateStep','zUp','zDown'],rotateStep:45,zStep:1,moveStep:1,zoomFactor:1.1});
 let shortcutPreferences=shortcutDefaults(),shortcutStatus='';
 function normalizeChord(raw){
  let s=String(raw).trim();if(!s)return '';if(s==='+')return '+';
@@ -4694,10 +4713,10 @@ function normalizeChord(raw){
 }
 function eventChord(e){let key=e.key===' '?'Space':e.key.length===1?e.key.toUpperCase():e.key;return [...(e.ctrlKey||e.metaKey?['Ctrl']:[]),...(e.altKey?['Alt']:[]),...(e.shiftKey&&key!=='+'?['Shift']:[]),key].join('+');}
 function persistShortcuts(){try{localStorage.setItem('BoneAnimatorStudio.shortcuts.v20',JSON.stringify(shortcutPreferences));}catch{}}
-function loadShortcuts(){try{const saved=JSON.parse(localStorage.getItem('BoneAnimatorStudio.shortcuts.v20')||'null');if(!saved)return;migrateShortcutDefaults(saved);
+function loadShortcuts(){try{const saved=JSON.parse(localStorage.getItem('BoneAnimatorStudio.shortcuts.v20')||'null');if(!saved)return;
  const seen=new Set();for(const [id] of quickActionCatalog){const key=normalizeChord(saved.bindings?.[id]??shortcutPreferences.bindings[id]);if(key!==null&&!seen.has(key)){shortcutPreferences.bindings[id]=key;if(key)seen.add(key);}else shortcutPreferences.bindings[id]='';}
  shortcutPreferences.quick=Array.isArray(saved.quick)?saved.quick.filter(id=>quickActionCatalog.some(a=>a[0]===id)):shortcutPreferences.quick;
- for(const [key,min,max] of [['rotateStep',.1,3600],['zStep',1,1000],['moveStep',.01,10000],['zoomFactor',1.01,3],['holdDelay',100,2000],['holdInterval',30,1000]])if(Number.isFinite(+saved[key]))shortcutPreferences[key]=clamp(+saved[key],min,max);
+ for(const [key,min,max] of [['rotateStep',.1,3600],['zStep',1,1000],['moveStep',.01,10000],['zoomFactor',1.01,3]])if(Number.isFinite(+saved[key]))shortcutPreferences[key]=clamp(+saved[key],min,max);
  }catch{}}
 function setShortcutBinding(id,value){const key=normalizeChord(value);if(key===null){shortcutStatus='Phím không hợp lệ. Ví dụ R, Shift+R, Ctrl+K hoặc để trống để bỏ gán.';renderShortcutSettings();return;}
  const conflict=quickActionCatalog.find(([other])=>other!==id&&key&&shortcutPreferences.bindings[other]===key);
@@ -4705,39 +4724,31 @@ function setShortcutBinding(id,value){const key=normalizeChord(value);if(key===n
  shortcutPreferences.bindings[id]=key;shortcutStatus='Đã lưu phím tắt trong trình duyệt.';persistShortcuts();renderShortcutSettings();renderQuickActions();
 }
 function setQuickButton(id,on){shortcutPreferences.quick=shortcutPreferences.quick.filter(x=>x!==id);if(on)shortcutPreferences.quick.push(id);persistShortcuts();renderQuickActions();}
-function setQuickParameter(key,value){const limits={rotateStep:[.1,3600],zStep:[1,1000],moveStep:[.01,10000],zoomFactor:[1.01,3],holdDelay:[100,2000],holdInterval:[30,1000]};if(!limits[key]||!Number.isFinite(+value))return;shortcutPreferences[key]=clamp(+value,...limits[key]);if(key==='zStep')shortcutPreferences[key]=Math.round(shortcutPreferences[key]);persistShortcuts();renderQuickActions();}
+function setQuickParameter(key,value){const limits={rotateStep:[.1,3600],zStep:[1,1000],moveStep:[.01,10000],zoomFactor:[1.01,3]};if(!limits[key]||!Number.isFinite(+value))return;shortcutPreferences[key]=clamp(+value,...limits[key]);if(key==='zStep')shortcutPreferences[key]=Math.round(shortcutPreferences[key]);persistShortcuts();renderQuickActions();}
 function resetShortcuts(){shortcutPreferences=shortcutDefaults();shortcutStatus='Đã khôi phục phím tắt mặc định.';persistShortcuts();renderShortcutSettings();renderQuickActions();}
-function renderShortcutSettings(){const host=$('shortcutSettings');if(!host)return;host.innerHTML=`<p class="status">Phím có thể sửa, để trống để bỏ gán. Không chạy khi đang gõ vào input hoặc mở hộp thoại. Ctrl trên Mac dùng Cmd. Settings lưu trong trình duyệt, không vào JSON. Giữ R để xoay liên tục; ↑ ↓ ← → dịch xương/block đang chọn. Ctrl + ←/→ chuyển frame. Giữ nút nổi cũng lặp thao tác; thả tay thì dừng.</p>
- ${[['rotateStep','Góc xoay nhanh (độ)'],['zStep','Bước Z (số nguyên)'],['moveStep','Bước dịch (đơn vị canvas)'],['zoomFactor','Hệ số thu/phóng canvas'],['holdDelay','Chờ lặp khi giữ (ms)'],['holdInterval','Khoảng lặp khi giữ (ms)']].map(([id,label])=>`<div class="row"><label>${label}</label><input type="number" step="any" value="${shortcutPreferences[id]}" onchange="setQuickParameter('${id}',this.value)"></div>`).join('')}
+function renderShortcutSettings(){const host=$('shortcutSettings');if(!host)return;host.innerHTML=`<p class="status">Phím có thể sửa, để trống để bỏ gán. Không chạy khi đang gõ vào input hoặc mở hộp thoại. Ctrl trên Mac dùng Cmd. Settings lưu trong trình duyệt, không vào JSON.</p>
+ ${[['rotateStep','Góc xoay nhanh (độ)'],['zStep','Bước Z (số nguyên)'],['moveStep','Bước dịch (đơn vị canvas)'],['zoomFactor','Hệ số thu/phóng canvas']].map(([id,label])=>`<div class="row"><label>${label}</label><input type="number" step="any" value="${shortcutPreferences[id]}" onchange="setQuickParameter('${id}',this.value)"></div>`).join('')}
  <p id="shortcutStatus" role="status">${esc(shortcutStatus)}</p><div class="shortcut-table"><div class="shortcut-heading"><strong>Thao tác</strong><strong>Phím</strong><strong>Nút nổi</strong></div>
  ${quickActionCatalog.map(([id,label])=>`<div class="shortcut-row"><label for="binding_${id}">${esc(label)}</label><input id="binding_${id}" type="text" aria-label="Phím ${esc(label)}" value="${esc(shortcutPreferences.bindings[id])}" onchange="setShortcutBinding('${id}',this.value)"><input type="checkbox" aria-label="Hiện nút ${esc(label)}" ${shortcutPreferences.quick.includes(id)?'checked':''} onchange="setQuickButton('${id}',this.checked)"></div>`).join('')}</div>
  <h4>Thao tác chuột / cảm ứng</h4><ul><li>PC canvas: giữ chuột phải + kéo để pan; chuột trái chọn/chỉnh. Menu chuột phải dùng trong danh sách; cảm ứng nhấn giữ mở menu.</li><li>Nhấn đúp đối tượng: focus. Nhấn đúp canvas trống: bỏ chọn.</li><li>Shift/Ctrl/Cmd + chọn: chọn nhiều. Shift + kéo canvas: quét chọn.</li><li>Cuộn trên canvas: thu/phóng. Hai ngón: pan/zoom canvas.</li><li>Ctrl/Cmd + cuộn timeline: zoom. Shift + cuộn: ngang.</li><li>Timeline: chuột giữa hoặc bật Cuộn rồi kéo để cuộn hai chiều.</li><li>Escape: đóng menu/hộp thoại. Backspace: như Delete; Ctrl+Y: Redo khi chưa gán thao tác khác.</li></ul><button onclick="resetShortcuts()">Khôi phục mặc định</button>`;}
-function renderQuickActions(){
- const host=$('customQuickActions');if(!host)return;
- const arrows={leftStep:'←',rightStep:'→',upStep:'↑',downStep:'↓'};
- host.innerHTML=shortcutPreferences.quick.map(id=>{
-  const entry=quickActionCatalog.find(a=>a[0]===id);if(!entry)return '';
-  const small=arrows[id]||(id==='rotateStep'?'↻ '+shortcutPreferences.rotateStep+'°':id==='zUp'?'Z+'+shortcutPreferences.zStep:id==='zDown'?'Z−'+shortcutPreferences.zStep:entry[1]);
-  return `<button type="button" data-quick-action="${id}" aria-label="${esc(entry[1])}" title="${esc(entry[1])} · ${esc(shortcutPreferences.bindings[id]||'chưa gán phím')}${repeatableQuickActions.has(id)?' · Giữ để lặp':''}" onclick="activateQuickButton(event,'${id}')">${esc(small)}</button>`;
- }).join('');
-}
+function renderQuickActions(){const host=$('customQuickActions');if(!host)return;host.innerHTML=shortcutPreferences.quick.map(id=>{const entry=quickActionCatalog.find(a=>a[0]===id);if(!entry)return '';const small=id==='rotateStep'?'↻ '+shortcutPreferences.rotateStep+'°':id==='zUp'?'Z+'+shortcutPreferences.zStep:id==='zDown'?'Z−'+shortcutPreferences.zStep:entry[1];return `<button type="button" title="${esc(entry[1])}" onclick="runQuickAction('${id}')">${esc(small)}</button>`;}).join('');}
 function openShortcutSettings(){renderShortcutSettings();$('shortcutModal').hidden=false;}
 function closeShortcutSettings(){$('shortcutModal').hidden=true;}
-function quickTransform(kind,dx=0,dy=0,recordUndo=true){
+function quickTransform(kind,dx=0,dy=0){
  const selection=getSelection(),selectedBones=new Set(selection.filter(x=>x.t==='b').map(x=>x.id));
  const inherited=id=>{let b=byId(id),seen=new Set();while(b?.p&&!seen.has(b.p)){if(selectedBones.has(b.p))return true;seen.add(b.p);b=byId(b.p);}return false;};
- const targets=selection.filter(x=>!selectionLocked(x.t)).filter(x=>x.t==='b'?!inherited(x.id):!selectedBones.has(M.blocks.find(k=>k.id===x.id)?.b)&&!inherited(M.blocks.find(k=>k.id===x.id)?.b));
- if(!targets.length)return;if(recordUndo)checkpointUndo();const W=solve();
+ const targets=selection.filter(x=>x.t==='b'?!inherited(x.id):!selectedBones.has(M.blocks.find(k=>k.id===x.id)?.b)&&!inherited(M.blocks.find(k=>k.id===x.id)?.b));
+ if(!targets.length)return;checkpointUndo();const W=solve();
  for(const item of targets){if(item.t==='b'){const b=byId(item.id),q=pose(b,frame);if(kind==='rotate')setB(b,{a:q.a+shortcutPreferences.rotateStep});else{const d=parentDeltaToLocal(dx,dy,b.p?W[b.p].wa:0);setB(b,{x:q.x+d.x,y:q.y+d.y});}}
  else{const b=M.blocks.find(k=>k.id===item.id);if(kind==='rotate'){const k=b.b?'ir':'a';b[k]=(+b[k]||0)+shortcutPreferences.rotateStep;}else if(b.b){const d=parentDeltaToLocal(dx,dy,W[b.b].wa);b.ox=(+b.ox||0)+d.x;b.oy=(+b.oy||0)+d.y;}else{b.x=(+b.x||0)+dx;b.y=(+b.y||0)+dy;}}}
  renderAll();draw();
 }
-function runQuickAction(id,recordUndo=true){
+function runQuickAction(id){
  if(['select','move','rotate','scale','free','ik'].includes(id)){setTool(id);return;}
  const step=shortcutPreferences.moveStep;
- if(id==='rotateStep')return quickTransform('rotate',0,0,recordUndo);
- if(['leftStep','rightStep','upStep','downStep'].includes(id))return quickTransform('move',id==='leftStep'?-step:id==='rightStep'?step:0,id==='upStep'?-step:id==='downStep'?step:0,recordUndo);
- if(id==='zUp'||id==='zDown'){const blocks=getSelection().filter(i=>i.t==='k').map(i=>M.blocks.find(k=>k.id===i.id));if(!blocks.length)return;if(recordUndo)checkpointUndo();for(const b of blocks)b.z=(+b.z||0)+(id==='zUp'?1:-1)*shortcutPreferences.zStep;renderAll();draw();return;}
+ if(id==='rotateStep')return quickTransform('rotate');
+ if(['leftStep','rightStep','upStep','downStep'].includes(id))return quickTransform('move',id==='leftStep'?-step:id==='rightStep'?step:0,id==='upStep'?-step:id==='downStep'?step:0);
+ if(id==='zUp'||id==='zDown'){const blocks=getSelection().filter(i=>i.t==='k').map(i=>M.blocks.find(k=>k.id===i.id));if(!blocks.length)return;checkpointUndo();for(const b of blocks)b.z=(+b.z||0)+(id==='zUp'?1:-1)*shortcutPreferences.zStep;renderAll();draw();return;}
  if(id==='play')return play();if(id==='key')return setKey();if(id==='copy')return copyKey();if(id==='cut')return cutKey();if(id==='paste')return pasteKey();if(id==='undo')return undoAction();if(id==='redo')return redoAction();
  if(id==='delete'){if(selectedAudioEvent())deleteAudioKey();else if(ksel)delKey();else if(sel)del();return;}
  if(id==='audioStop')return stopAudioVoices();
@@ -4745,76 +4756,14 @@ function runQuickAction(id,recordUndo=true){
  if(id==='timelineIn'||id==='timelineOut')return setTimelineZoom(timelineZoom*(id==='timelineIn'?1.25:.8));
  if(['previous','next','first','last'].includes(id)){pauseForAudioEdit();frame=clamp(id==='first'?0:id==='last'?lastFrame():Math.round(frame)+(id==='next'?1:-1),0,lastFrame());$('fr').value=frame;renderProps();draw();}
 }
-const repeatableQuickActions=new Set(['rotateStep','leftStep','rightStep','upStep','downStep','zUp','zDown']);
-let heldQuickAction=null;
-function migrateShortcutDefaults(saved){
- if(saved.schemaVersion>=2)return;
- const bindings=saved.bindings??={};
- const upgrades={previous:['ArrowLeft','Ctrl+ArrowLeft'],next:['ArrowRight','Ctrl+ArrowRight'],leftStep:['Alt+ArrowLeft','ArrowLeft'],rightStep:['Alt+ArrowRight','ArrowRight'],upStep:['Alt+ArrowUp','ArrowUp'],downStep:['Alt+ArrowDown','ArrowDown']};
- for(const [id,[oldKey,newKey]] of Object.entries(upgrades))if(bindings[id]==null||bindings[id]===oldKey)bindings[id]=newKey;
- if(JSON.stringify(saved.quick)===JSON.stringify(['rotateStep','zUp','zDown']))saved.quick=shortcutDefaults().quick;
- saved.schemaVersion=2;
-}
-const dismissibleModals=()=>[
- ['shortcutModal',closeShortcutSettings],['modelNameModal',closeModelNameDialog],['effectDownloadModal',closeEffectDownloads],
- ['effectExportModal',closeEffectExport],['sessionImportDialog',closeSessionChoice],['spriteExportModal',closeSpriteExport],
- ['unityExportModal',closeUnityExportSettings],['cropModal',cancelCrop],['imgModal',closeLibrary]
-];
-function activeShortcutModal(){return dismissibleModals().find(([id])=>!$(id).hidden);}
-function shortcutTextInput(target){return !!target&&(target.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));}
-function stopQuickHold(){
- const hold=heldQuickAction;heldQuickAction=null;
- if(hold?.element?.hasPointerCapture?.(hold.pointerId))hold.element.releasePointerCapture(hold.pointerId);
-}
-function startQuickHold(id,key='',element=null,pointerId=null){
- stopQuickHold();runQuickAction(id,true);
- heldQuickAction={id,key,element,pointerId,nextAt:performance.now()+shortcutPreferences.holdDelay};
-}
-function tickHeldQuickAction(now){
- if(!heldQuickAction)return;
- if(document.hidden||activeShortcutModal()||shortcutTextInput(document.activeElement)){stopQuickHold();return;}
- if(now>=heldQuickAction.nextAt){
-  const hold=heldQuickAction;hold.nextAt=now+shortcutPreferences.holdInterval;
-  runQuickAction(hold.id,false);
- }
-}
-function activateQuickButton(e,id){
- // Pointer gestures already execute on pointerdown; keyboard activation is a single step.
- if(repeatableQuickActions.has(id)&&e.detail>0){e.preventDefault();return;}
- runQuickAction(id);
-}
-function installQuickHoldControls(){
- const host=$('customQuickActions');
- host.addEventListener('pointerdown',e=>{
-  const button=e.target.closest('[data-quick-action]');
-  if(e.button!==0||!button||!repeatableQuickActions.has(button.dataset.quickAction))return;
-  e.preventDefault();button.setPointerCapture?.(e.pointerId);
-  startQuickHold(button.dataset.quickAction,'',button,e.pointerId);
- });
- window.addEventListener('keyup',e=>{
-  if(heldQuickAction?.key&&(heldQuickAction.key===(e.code||e.key)||['Shift','Alt','Control','Meta'].includes(e.key)))stopQuickHold();
- });
- for(const type of ['pointerup','pointercancel','lostpointercapture'])window.addEventListener(type,()=>{if(heldQuickAction?.element)stopQuickHold();});
- window.addEventListener('blur',stopQuickHold);
- document.addEventListener('visibilitychange',()=>{if(document.hidden)stopQuickHold();});
- document.addEventListener('focusin',e=>{if(shortcutTextInput(e.target))stopQuickHold();});
- for(const [id,close] of dismissibleModals()){
-  const modal=$(id),backdrop=document.createElement('button');
-  backdrop.type='button';backdrop.className='modal-backdrop-close';backdrop.setAttribute('aria-label','Đóng bảng khi bấm ra ngoài');
-  backdrop.addEventListener('click',()=>{stopQuickHold();close();});modal.prepend(backdrop);
- }
-}
 function handleConfiguredShortcut(e){
- const modal=activeShortcutModal();
- if(modal){stopQuickHold();if(e.key==='Escape'){e.preventDefault();modal[1]();}return;}
- if(e.key==='Escape'){stopQuickHold();closeLibrary();hideContextMenu();return;}
- if(e.isComposing||shortcutTextInput(e.target)||e.target.tagName==='BUTTON'&&[' ','Enter'].includes(e.key))return;
+ if(!$('shortcutModal').hidden){if(e.key==='Escape'){e.preventDefault();closeShortcutSettings();}return;}
+ for(const [modal,close] of [['modelNameModal',closeModelNameDialog],['effectDownloadModal',closeEffectDownloads],['effectExportModal',closeEffectExport],['sessionImportDialog',closeSessionChoice]])if(!$(modal).hidden){if(e.key==='Escape'){e.preventDefault();close();}return;}
+ if(e.key==='Escape'){closeLibrary();hideContextMenu();return;}
+ if(e.isComposing||e.target.isContentEditable||/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName)||!$('imgModal').hidden)return;
  const chord=eventChord(e),action=quickActionCatalog.find(([id])=>shortcutPreferences.bindings[id]===chord);
- if(action){
-  e.preventDefault();
-  if(repeatableQuickActions.has(action[0])){if(!e.repeat)startQuickHold(action[0],e.code||e.key);}
-  else{stopQuickHold();if(!e.repeat||!['play','undo','redo','delete'].includes(action[0]))runQuickAction(action[0]);}
- }else if(chord==='Backspace'){e.preventDefault();runQuickAction('delete');}else if(chord==='Ctrl+Y'){e.preventDefault();redoAction();}
+ if(action){e.preventDefault();if(!e.repeat||!['play','undo','redo','delete'].includes(action[0]))runQuickAction(action[0]);}
+ else if(chord==='Backspace'){e.preventDefault();runQuickAction('delete');}else if(chord==='Ctrl+Y'){e.preventDefault();redoAction();}
 }
 
 let timelineZoom=1,timelinePanMode=false;
@@ -4855,6 +4804,57 @@ function timelineMoveV20(e){
  if(drag?.type==='audioKeyDrag'){const f=timelineFrame(e);if(f!==drag.from&&!audioKeyMap()[f]){audioKeyMap()[f]=audioKeyMap()[drag.from];delete audioKeyMap()[drag.from];drag.from=f;selectedAudioCue.frame=f;frame=f;renderAudioPanel();draw();}return;}
  timelineMoveBeforeV20(e);
 }
+
+// Independent from selection/keyframe dragging: one pointer controls one scroll rail.
+function timelineScrollMetrics(axis){
+ const view=$('tw'),vertical=axis==='y',rail=$(vertical?'timelineVScroll':'timelineHScroll');
+ const viewport=vertical?view.clientHeight:view.clientWidth,content=vertical?tl.height:tl.width;
+ const length=Math.max(0,(vertical?rail.clientHeight:rail.clientWidth)-4),max=Math.max(0,content-viewport);
+ const size=Math.min(length,Math.max(32,length*viewport/Math.max(1,content))),travel=Math.max(0,length-size);
+ const value=clamp(vertical?view.scrollTop:view.scrollLeft,0,max);
+ return {rail,viewport,length,max,size,travel,value,position:max?value/max*travel:0};
+}
+function syncTimelineScrollbars(){
+ for(const axis of ['y','x']){
+  const m=timelineScrollMetrics(axis),thumb=$(axis==='y'?'timelineVThumb':'timelineHThumb');
+  thumb.style[axis==='y'?'height':'width']=m.size+'px';thumb.style[axis==='y'?'top':'left']=(m.position+2)+'px';
+  const stamp=[m.max,m.value].join(':');if(m.rail.dataset.scrollState!==stamp){
+   m.rail.dataset.scrollState=stamp;m.rail.setAttribute('aria-valuemax',Math.round(m.max));m.rail.setAttribute('aria-valuenow',Math.round(m.value));m.rail.setAttribute('aria-disabled',String(m.max===0));
+  }
+ }
+}
+function setTimelineScroll(axis,value){
+ const m=timelineScrollMetrics(axis),view=$('tw');view[axis==='y'?'scrollTop':'scrollLeft']=clamp(value,0,m.max);syncTimelineScrollbars();drawTL();
+}
+function installTimelineScrollbars(){
+ for(const axis of ['y','x']){
+  const rail=$(axis==='y'?'timelineVScroll':'timelineHScroll');let gesture=null;
+  const coordinate=e=>axis==='y'?e.clientY:e.clientX;
+  rail.addEventListener('pointerdown',e=>{
+   if(e.button!==0||gesture)return;e.preventDefault();e.stopPropagation();const m=timelineScrollMetrics(axis);if(!m.max||!m.travel)return;
+   const rect=rail.getBoundingClientRect(),point=coordinate(e)-(axis==='y'?rect.top:rect.left)-2;
+   const offset=point>=m.position&&point<=m.position+m.size?point-m.position:m.size/2;
+   gesture={id:e.pointerId,offset};rail.setPointerCapture?.(e.pointerId);
+   setTimelineScroll(axis,(point-offset)/m.travel*m.max);
+  });
+  rail.addEventListener('pointermove',e=>{
+   if(!gesture||gesture.id!==e.pointerId)return;e.preventDefault();e.stopPropagation();const m=timelineScrollMetrics(axis),rect=rail.getBoundingClientRect();
+   const point=coordinate(e)-(axis==='y'?rect.top:rect.left)-2;
+   setTimelineScroll(axis,m.travel?(point-gesture.offset)/m.travel*m.max:0);
+  });
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])rail.addEventListener(type,e=>{if(gesture?.id===e.pointerId)gesture=null;});
+  rail.addEventListener('keydown',e=>{
+   const m=timelineScrollMetrics(axis);let value=m.value;
+   if(e.key==='Home')value=0;else if(e.key==='End')value=m.max;
+   else if(e.key==='PageDown')value+=m.viewport;else if(e.key==='PageUp')value-=m.viewport;
+   else if(e.key===(axis==='y'?'ArrowDown':'ArrowRight'))value+=RH;
+   else if(e.key===(axis==='y'?'ArrowUp':'ArrowLeft'))value-=RH;else return;
+   e.preventDefault();e.stopPropagation();setTimelineScroll(axis,value);
+  });
+ }
+ $('tw').addEventListener('scroll',()=>{syncTimelineScrollbars();drawTL();},{passive:true});
+}
+
 function installV20Timeline(){
  tl.removeEventListener('pointerdown',timelineDownBeforeV20);tl.removeEventListener('pointermove',timelineMoveBeforeV20);tl.removeEventListener('pointerup',timelineUpBeforeV20);tl.removeEventListener('pointercancel',timelineUpBeforeV20);
  tl.addEventListener('pointerdown',timelineDownV20);tl.addEventListener('pointermove',timelineMoveV20);tl.addEventListener('pointerup',timelineUpBeforeV20);tl.addEventListener('pointercancel',timelineUpBeforeV20);
@@ -4877,7 +4877,7 @@ const restoreUndoBeforeV20=restoreUndoSnapshot;restoreUndoSnapshot=function(snap
 $('audioImport').addEventListener('change',e=>importDemoAudio(e.target.files));
 window.addEventListener('blur',()=>{endRightCanvasPan();playing=false;$('pb').textContent='▶';stopTimelineAudio();stopAudioVoices();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){playing=false;$('pb').textContent='▶';stopTimelineAudio();stopAudioVoices();}});
-loadShortcuts();renderQuickActions();installV20Timeline();installQuickHoldControls();
+loadShortcuts();renderQuickActions();installV20Timeline();installTimelineScrollbars();
 
 M=normalizeModel(M);normalizeEffectPackages(M);setTool('move');setMode('rig');refreshAnimationState();setDir('down');showSideTab('skeleton');
 syncRigDirectionTabs();refreshAnimationState();
