@@ -761,7 +761,7 @@ function normalizeUnityMeta(set){
  const startDefault=frameCount>=3?Math.max(1,Math.min(frameCount-2,Math.floor(frameCount*.33))):0;
  const endDefault=frameCount>=3?Math.max(startDefault,Math.min(frameCount-1,Math.floor(frameCount*.66))):0;
  const source=set?.unity||{};
- return {loop:typeof source.loop==='boolean'?source.loop:inferUnityLoop(set?.name),isCombat,
+ return {...Object.fromEntries(['comboGroup','comboIndex','comboCount','comboFallback','comboInputWindowStart','comboInputWindowEnd','hitEffects','hitFrame','hitFrames','hitboxWindows'].filter(k=>Object.hasOwn(source,k)).map(k=>[k,cloneData(source[k])])),weaponClass:typeof source.weaponClass==='string'?source.weaponClass:'',loop:typeof source.loop==='boolean'?source.loop:inferUnityLoop(set?.name),isCombat,
   castStartFrame:Number.isFinite(+source.castStartFrame)?Math.round(+source.castStartFrame):startDefault,
   castEndFrame:Number.isFinite(+source.castEndFrame)?Math.round(+source.castEndFrame):endDefault};
 }
@@ -3185,7 +3185,42 @@ function paintRigBlocks(g,includeDemo,measure,allowEffects=true){
   }
  }finally{Object.assign(M,original);}
 }
+function drawDummyHits(g,host,includeDemo,measure){
+ if(!includeDemo||mode!=='anim'||!host.previewOnly)return;
+ const target=M.blocks.find(b=>b.id===host.previewHitTarget);
+ if(!target||!blockVis(target))return;
+ const effect=findEffect(host.effectId),image=img(animatedBlockImage(target));
+ if(!effect||!image)return;
+ const world=solve(),info=blockInfo(target,world,segs(world));
+ if(!info)return;
+ const facing=M.dir;
+ for(const event of activeSet()?.unity?.hitEffects||[]){
+  if(event.effectId!==host.effectId)continue;
+  const clip=effect.animations.find(c=>c.id===event.clip);
+  if(!clip)continue;
+  const local=(frame-event.spawnFrame)*clip.animation.fps/A().fps;
+  if(local<0||local>=clip.animation.frames)continue;
+  const h=image.naturalHeight*(target.is||1),w=image.naturalWidth*(target.is||1);
+  let x=0,y=0;
+  if(event.anchor==='target_head')y=-h*.26;
+  if(event.anchor==='target_feet')y=h*.38;
+  if(event.anchor==='front_contact'){
+   x=facing==='right'?-w*.13:facing==='left'?w*.13:0;
+   y=facing==='down'?-h*.12:facing==='up'?h*.12:0;
+  }
+  g.save();
+  try{
+   g.translate(info.w.hx,info.w.hy);g.rotate(info.w.wa*D);
+   g.translate(info.x0,info.cy);g.scale(info.xScale,info.yScale);
+   g.translate(info.s.r0/2+target.ix,target.iy);g.rotate((target.ir||0)*D);
+   if(target.fx)g.scale(-1,1);
+   g.translate(x,y);
+   withEffectFrame(effect,local,()=>paintRigBlocks(g,false,measure,false),clip);
+  }finally{g.restore();}
+ }
+}
 function drawEffectDemo(g,block,info,measure,includeDemo=true){
+ if(block.previewHitTarget)return drawDummyHits(g,block,includeDemo,measure);
  const effect=findEffect(block.effectId),start=effectStartFrame(block);
  if(!effect||start===null)return;
  const clip=resolveEffectAnimation(effect,A().effectTracks?.[block.id]?.animationId);
@@ -3613,7 +3648,7 @@ function unityBuildPayload(){
    return {name:dir,frameRate:Math.max(1,+anim.fps||12),frameCount:Math.max(1,Math.round(+anim.frames||24)),boneTracks,blockKeyframes,...(audioEntries(anim).length?{audioEvents:audioEntries(anim).map(e=>({frame:e.frame,...e.cue}))}:{}),...(effectTracks.length?{effectTracks}:{})};
   });
   const frameCount=Math.max(1,...animDirs.map(d=>d.frameCount));
-  return {name:set.name,loop:!!meta.loop,isCombat:!!meta.isCombat,castStartFrame:Math.round(meta.castStartFrame),castEndFrame:Math.round(meta.castEndFrame),frameCount,directions:animDirs};
+  return {...meta,name:set.name,weaponClass:meta.weaponClass,loop:!!meta.loop,isCombat:!!meta.isCombat,castStartFrame:Math.round(meta.castStartFrame),castEndFrame:Math.round(meta.castEndFrame),frameCount,directions:animDirs};
  });
  const assetNames=new Set();
  directionData.forEach(d=>d.blocks.forEach(b=>{if(b.imageDown)assetNames.add(b.imageDown);}));
@@ -4509,13 +4544,25 @@ function fitTimeline(){
  if(tl.width!==Math.round(contentWidth)||tl.height!==contentHeight){tl.width=Math.round(contentWidth);tl.height=contentHeight;}
  syncTimelineScrollbars();
 }
+let queuedCombo='';
+window.addEventListener('keydown',event=>{
+ if(event.code!=='Enter'||event.repeat||!playing||editedEffectId||/INPUT|SELECT|TEXTAREA/.test(event.target.tagName))return;
+ const u=activeSet()?.unity;
+ if(!u?.comboGroup||frame<u.comboInputWindowStart||frame>=u.comboInputWindowEnd+1)return;
+ const next=M.animationSets.find(s=>s.unity?.comboGroup===u.comboGroup&&s.unity.comboIndex===u.comboIndex+1);
+ if(next)queuedCombo=activeSet().name;
+});
 function loop(time){
  const dt=Math.min(.1,(time-last)/1000);last=time;const previousAudioFrame=frame;
  if(playing&&activeSet()){
   frame+=dt*A().fps;
   const total=Math.max(1,A().frames);
   if(frame>=total){
-   if(editedEffectId&&!activeSet().unity.loop){frame=lastFrame();playing=false;$('pb').textContent='▶';}
+   if(!editedEffectId&&activeSet().unity.comboGroup){
+    const current=activeSet(),u=current.unity;
+    const next=queuedCombo===current.name?M.animationSets.find(s=>s.unity.comboGroup===u.comboGroup&&s.unity.comboIndex===u.comboIndex+1):null;
+    queuedCombo='';selectAnimation(next?.name||'Idle');frame=0;playing=true;
+   }else if(editedEffectId&&!activeSet().unity.loop){frame=lastFrame();playing=false;$('pb').textContent='▶';}
    else frame%=total;
   }
  }
@@ -4579,7 +4626,8 @@ function currentAudioRoutes(){
  const routes=new Map([['main',{anim:A(),pos:frame,absolute:frame,loop:false}]]);
  if(!editedEffectId)for(const block of M.blocks){
   if(!block.effectId||!blockVis(block))continue;
-  const effect=findEffect(block.effectId),start=effectStartFrame(block);if(!effect||start==null)continue;
+  if(block.previewHitTarget)return drawDummyHits(g,block,includeDemo,measure);
+ const effect=findEffect(block.effectId),start=effectStartFrame(block);if(!effect||start==null)continue;
   const clip=resolveEffectAnimation(effect,A().effectTracks?.[block.id]?.animationId),count=Math.max(1,clip.animation.frames);
   const absolute=Math.max(0,(frame-start)/Math.max(1,A().fps)*clip.animation.fps);
   routes.set('effect:'+block.id,{anim:clip.animation,pos:clip.loop?absolute%count:Math.min(absolute,count-1),absolute,loop:clip.loop,count});
