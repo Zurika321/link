@@ -1178,6 +1178,13 @@ function blockStateAt(k,f=frame){
  }
  const track=k.effectId&&A().effectTracks?.[k.id];
  if(track)state.visible=k.visible!==false&&f>=track.startFrame&&(track.endFrame==null||f<track.endFrame);
+ if(k.previewHitTarget){
+  state.visible=mode==='anim'&&state.visible&&(activeSet()?.unity?.hitEffects||[]).some(event=>{
+   if(event.effectId!==k.effectId||f<event.spawnFrame)return false;
+   const clip=findEffect(event.effectId)?.animations.find(c=>c.id===event.clip)?.animation;
+   return clip&&(f-event.spawnFrame)*clip.fps<A().fps*clip.frames;
+  });
+ }
  if(k.effectId&&(f<0||f>=Math.max(1,+A().frames||1)))state.visible=false;
  return state;
 }
@@ -1343,11 +1350,16 @@ function renderList(){
  M.bones.filter(b=>!b.p||!byId(b.p)).forEach(b=>boneRow(b,0));
  const blockRows=[],effectRows=[];
  for(const k of [...M.blocks].sort((a,b)=>String(a.name).localeCompare(String(b.name)))){
+  if(k.previewHitTarget && !(activeSet()?.unity?.hitEffects||[]).some(event=>event.effectId===k.effectId))continue;
+  if(k.previewOnly && !k.previewHitTarget && k.effectId && /hit|impact|trúng/i.test(k.name) && A().effectTracks?.[k.id]?.endFrame===0)continue;
   const parent=byId(k.b),kind=parent?`<small>· Gắn vào ${esc(parent.name)}</small>`:'<small>· Block độc lập</small>';
   const demo=k.previewOnly;
   const grip=`<button type="button" class="group-touch-grip" draggable="false" title="Kéo Block vào ô biến thể" aria-label="Kéo ${esc(k.name)} vào GroupBlock" onclick="pick('k',${k.id})">⠿</button>`;
   const row=`<div class="it tree-row ${parent?'component-row':'unattached'}${active('k',k.id)}${selectionLocked('k')?' selection-locked':''}" data-type="k" data-id="${k.id}" style="opacity:${blockVis(k)?1:.45}" draggable="true" ondragstart="treeDragStart(event,'k',${k.id})"><input class="block-visibility" type="checkbox" title="Hiện/ẩn ${k.effectId?'Effect':'block'}" ${k.visible!==false?'checked':''} onclick="event.stopPropagation()" onchange="setBlockVisibility(${k.id},this.checked)"><span class="tree-label${demo?' demo-label':''}">${k.effectId?'✦':'▣'} ${esc(k.name)} ${kind}${demo?' <small>· Demo</small>':''}</span>${grip}<small class="tree-z" title="Lớp Z trong Properties">Z: ${+k.z||0}</small></div>`;
-  (k.effectId?effectRows:blockRows).push(row);
+  if(k.previewHitTarget){
+   const cues=activeSet().unity.hitEffects.filter(e=>e.effectId===k.effectId).map(e=>e.clip+' · F'+e.spawnFrame);
+   effectRows.push('<div class="it tree-row"><span class="tree-label demo-label">'+esc(k.name)+' · '+esc(cues.join(', '))+'</span></div>');
+  }else (k.effectId?effectRows:blockRows).push(row);
  }
  $('rigTree').innerHTML=`
 <section class="tree-section">
@@ -2161,6 +2173,7 @@ function drawOnionGhost(g,ghostFrame,tintColor,alpha){
  const W=solveAt(ghostFrame),S=segsFor(W);
  g.save();
  (showImages?[...M.blocks]:[]).filter(k=>(!k.b||byId(k.b))&&blockVis(k)).sort((a,b)=>blockZ(a)-blockZ(b)).forEach(k=>{
+  if(k.previewHitTarget)return;
   const info=blockInfo(k,W,S);if(!info)return;
   const cPts=cornerPoints(k,info);
   g.save();
@@ -2213,7 +2226,7 @@ function draw(){
   }
  }
 
- (showImages?[...M.blocks]:[]).filter(k=>(!k.b||byId(k.b))&&(blockVis(k)||k.effectId&&isSelected('k',k.id))).sort((a,b)=>blockZ(a)-blockZ(b)).forEach(k=>{
+ (showImages?[...M.blocks]:[]).filter(k=>(!k.b||byId(k.b))&&(blockVis(k)||k.effectId&&!k.previewHitTarget&&isSelected('k',k.id))).sort((a,b)=>blockZ(a)-blockZ(b)).forEach(k=>{
   const info=blockInfo(k,W,S);if(!info)return;
   const selected=isSelected('k',k.id);
   if(k.effectId){if(blockVis(k))drawEffectDemo(g,k,info);}
