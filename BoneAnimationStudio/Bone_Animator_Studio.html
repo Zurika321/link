@@ -4638,9 +4638,8 @@ function dispatchAudioRange(anim,from,to,scope){for(const e of audioEntries(anim
 function currentAudioRoutes(){
  const routes=new Map([['main',{anim:A(),pos:frame,absolute:frame,loop:false}]]);
  if(!editedEffectId)for(const block of M.blocks){
-  if(!block.effectId||!blockVis(block))continue;
-  if(block.previewHitTarget)return drawDummyHits(g,block,includeDemo,measure);
- const effect=findEffect(block.effectId),start=effectStartFrame(block);if(!effect||start==null)continue;
+  if(!block.effectId||block.previewHitTarget||!blockVis(block))continue;
+  const effect=findEffect(block.effectId),start=effectStartFrame(block);if(!effect||start==null)continue;
   const clip=resolveEffectAnimation(effect,A().effectTracks?.[block.id]?.animationId),count=Math.max(1,clip.animation.frames);
   const absolute=Math.max(0,(frame-start)/Math.max(1,A().fps)*clip.animation.fps);
   routes.set('effect:'+block.id,{anim:clip.animation,pos:clip.loop?absolute%count:Math.min(absolute,count-1),absolute,loop:clip.loop,count});
