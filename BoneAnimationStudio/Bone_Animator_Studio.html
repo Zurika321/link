@@ -4557,14 +4557,12 @@ function fitTimeline(){
  if(tl.width!==Math.round(contentWidth)||tl.height!==contentHeight){tl.width=Math.round(contentWidth);tl.height=contentHeight;}
  syncTimelineScrollbars();
 }
-let queuedCombo='';
-window.addEventListener('keydown',event=>{
- if(event.code!=='Enter'||event.repeat||!playing||editedEffectId||/INPUT|SELECT|TEXTAREA/.test(event.target.tagName))return;
- const u=activeSet()?.unity;
- if(!u?.comboGroup||frame<u.comboInputWindowStart||frame>=u.comboInputWindowEnd+1)return;
- const next=M.animationSets.find(s=>s.unity?.comboGroup===u.comboGroup&&s.unity.comboIndex===u.comboIndex+1);
- if(next)queuedCombo=activeSet().name;
-});
+function nextPreviewSet(sets,current){
+ const u=current.unity;
+ return sets.find(s=>s.unity?.comboGroup===u.comboGroup && Number(s.unity.comboIndex)===Number(u.comboIndex)+1)
+     || sets.find(s=>s.name===(u.comboFallback||'Idle'))
+     || sets.find(s=>s.name==='Idle') || sets[0];
+}
 function loop(time){
  const dt=Math.min(.1,(time-last)/1000);last=time;const previousAudioFrame=frame;
  if(playing&&activeSet()){
@@ -4572,9 +4570,8 @@ function loop(time){
   const total=Math.max(1,A().frames);
   if(frame>=total){
    if(!editedEffectId&&activeSet().unity.comboGroup){
-    const current=activeSet(),u=current.unity;
-    const next=queuedCombo===current.name?M.animationSets.find(s=>s.unity.comboGroup===u.comboGroup&&s.unity.comboIndex===u.comboIndex+1):null;
-    queuedCombo='';selectAnimation(next?.name||'Idle');frame=0;playing=true;
+    const next=nextPreviewSet(M.animationSets,activeSet());
+    selectAnimation(next.name);playing=true;$('pb').textContent='⏸';
    }else if(editedEffectId&&!activeSet().unity.loop){frame=lastFrame();playing=false;$('pb').textContent='▶';}
    else frame%=total;
   }
@@ -4638,8 +4635,9 @@ function dispatchAudioRange(anim,from,to,scope){for(const e of audioEntries(anim
 function currentAudioRoutes(){
  const routes=new Map([['main',{anim:A(),pos:frame,absolute:frame,loop:false}]]);
  if(!editedEffectId)for(const block of M.blocks){
-  if(!block.effectId||block.previewHitTarget||!blockVis(block))continue;
-  const effect=findEffect(block.effectId),start=effectStartFrame(block);if(!effect||start==null)continue;
+  if(!block.effectId||!blockVis(block))continue;
+  if(block.previewHitTarget)continue;
+ const effect=findEffect(block.effectId),start=effectStartFrame(block);if(!effect||start==null)continue;
   const clip=resolveEffectAnimation(effect,A().effectTracks?.[block.id]?.animationId),count=Math.max(1,clip.animation.frames);
   const absolute=Math.max(0,(frame-start)/Math.max(1,A().fps)*clip.animation.fps);
   routes.set('effect:'+block.id,{anim:clip.animation,pos:clip.loop?absolute%count:Math.min(absolute,count-1),absolute,loop:clip.loop,count});
