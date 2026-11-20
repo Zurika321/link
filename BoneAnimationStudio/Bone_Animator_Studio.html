@@ -540,12 +540,17 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
  <section id="audioPane" class="side-pane" hidden><div class="row"><button onclick="$('audioImport').click()">＋ Audio</button><button onclick="stopAudioVoices()">■ Dừng tất cả</button></div><input id="audioImport" type="file" accept="audio/*,.wav,.mp3,.ogg,.m4a" multiple hidden><div class="row"><label>Audio demo</label><input id="audioEnabled" type="checkbox" checked onchange="setDemoAudioEnabled(this.checked)"></div><p id="audioStatus" class="status" role="status"></p><div id="audioPanel"></div></section>
  <section id="rightGroupPane" class="side-pane group-section" hidden><div id="groupBlockPanel"></div></section>
 </div>
+<dialog id="comboDialog"><strong id="comboTitle"></strong>
+<p><label>Nhóm combo <input id="comboGroupValue" list="comboGroups" placeholder="Để trống để rời nhóm"></label><datalist id="comboGroups"></datalist></p>
+<p><label>Thứ tự <input id="comboIndexValue" type="number" min="0" step="1"></label></p>
+<button type="button" onclick="saveCombo()">Lưu</button> <button type="button" onclick="document.getElementById('comboDialog').close()">Huỷ</button></dialog>
 <div id="resizeBottom" class="resize-handle resize-horizontal" role="separator" aria-orientation="horizontal" aria-label="Resize bảng animation"></div>
 <div id="T" class="pn">
  <div id="animBar">
   <div class="animation-setup">
    <label>Hướng <select id="directionSelect" onchange="setDir(this.value)"><option value="down">⬇ Down</option><option value="up">⬆ Up</option><option value="left">⬅ Left</option><option value="right">➡ Right</option></select></label>
    <label>Animation <select id="animationSelect" onchange="selectAnimation(this.value)"></select></label>
+   <button data-character-only type="button" onclick="editCombo()">Combo</button>
    <input id="animationName" placeholder="Tên animation mới / tên mới">
     <button class="anim-crud-button" type="button" onclick="createAnimation()" title="Tạo animation" aria-label="Tạo animation"><span class="desktop-label">＋ Tạo</span><span class="mobile-label" aria-hidden="true">＋</span></button>
     <button class="anim-crud-button" type="button" onclick="renameAnimation()" title="Đổi tên animation đang chọn" aria-label="Đổi tên animation"><span class="desktop-label">✎ Rename</span><span class="mobile-label" aria-hidden="true">✎</span></button>
@@ -4558,10 +4563,33 @@ function fitTimeline(){
  syncTimelineScrollbars();
 }
 function nextPreviewSet(sets,current){
- const u=current.unity;
- return sets.find(s=>s.unity?.comboGroup===u.comboGroup && Number(s.unity.comboIndex)===Number(u.comboIndex)+1)
-     || sets.find(s=>s.name===(u.comboFallback||'Idle'))
-     || sets.find(s=>s.name==='Idle') || sets[0];
+ const members=sets.filter(s=>s.unity?.comboGroup===current.unity.comboGroup)
+  .sort((a,b)=>Number(a.unity.comboIndex)-Number(b.unity.comboIndex));
+ return members.find(s=>Number(s.unity.comboIndex)>Number(current.unity.comboIndex)) || members[0];
+}
+function editCombo(){
+ if(editedEffectId)return;
+ if(playing)play();
+ const set=activeSet(),u=set.unity||{};
+ $('comboTitle').textContent=set.name;
+ $('comboGroupValue').value=u.comboGroup||'';
+ $('comboIndexValue').value=u.comboIndex??1;
+ $('comboGroups').replaceChildren(...Array.from(new Set(M.animationSets.map(s=>s.unity?.comboGroup).filter(Boolean)),g=>new Option(g,g)));
+ $('comboDialog').showModal();
+}
+function saveCombo(){
+ const set=activeSet(),group=$('comboGroupValue').value.trim(),index=$('comboIndexValue').valueAsNumber;
+ if(group && (!Number.isSafeInteger(index)||index<0))return alert('Thứ tự phải là số nguyên từ 0.');
+ if(group && M.animationSets.some(s=>s!==set&&s.unity?.comboGroup===group&&Number(s.unity.comboIndex)===index))return alert('Trong nhóm đã có đòn ở thứ tự này.');
+ checkpointUndo();
+ const u=set.unity ||= {}, old=u.comboGroup;
+ if(group){u.comboGroup=group;u.comboIndex=index;}
+ else for(const k of Object.keys(u))if(k.startsWith('combo'))delete u[k];
+ for(const g of new Set([group,old].filter(Boolean))){
+  const members=M.animationSets.filter(s=>s.unity?.comboGroup===g);
+  for(const member of members)member.unity.comboCount=members.length;
+ }
+ $('comboDialog').close();
 }
 function loop(time){
  const dt=Math.min(.1,(time-last)/1000);last=time;const previousAudioFrame=frame;
@@ -4570,8 +4598,7 @@ function loop(time){
   const total=Math.max(1,A().frames);
   if(frame>=total){
    if(!editedEffectId&&activeSet().unity.comboGroup){
-    const next=nextPreviewSet(M.animationSets,activeSet());
-    selectAnimation(next.name);playing=true;$('pb').textContent='⏸';
+    selectAnimation(nextPreviewSet(M.animationSets,activeSet()).name);playing=true;$('pb').textContent='⏸';
    }else if(editedEffectId&&!activeSet().unity.loop){frame=lastFrame();playing=false;$('pb').textContent='▶';}
    else frame%=total;
   }
