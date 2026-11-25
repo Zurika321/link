@@ -10,7 +10,7 @@
 body{display:grid;grid-template:"N N N" 54px "L C R" minmax(0,1fr) "T T T" 210px/230px minmax(260px,1fr) 270px;background:var(--bg);color:var(--t);font:13px system-ui,sans-serif;touch-action:pan-x pan-y}
 .pn{background:var(--p);border:1px solid var(--l);padding:8px;overflow:auto;min-width:0}
 #mainMenu{grid-area:N}#L{grid-area:L}#R{grid-area:R}#T{grid-area:T;display:flex;flex-direction:column;min-height:0}#C{grid-area:C;position:relative;min-width:0;min-height:0;overflow:hidden}
-canvas{display:block}#cvs{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;image-rendering:pixelated}#tw{flex:1;position:relative;min-height:0;overflow:hidden}#tls{width:100%;height:100%;touch-action:none;cursor:crosshair}
+canvas{display:block}#cvs{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair}#tw{flex:1;position:relative;min-height:0;overflow:hidden}#tls{width:100%;height:100%;touch-action:none;cursor:crosshair}
 button,input,select{background:#303642;color:var(--t);border:1px solid var(--l);border-radius:4px;padding:5px 7px;font:inherit;min-width:0}
 button{cursor:pointer;touch-action:manipulation}button:hover{border-color:var(--a)}button:active{filter:brightness(1.18)}button.active{background:#245b58;border-color:var(--a);color:#fff}
 input[type=checkbox]{accent-color:var(--a)}input[type=color]{height:30px;padding:2px;width:46px;flex:none}
@@ -1242,7 +1242,7 @@ function renderBlockKeyframeProperties(){
   </div>
  </details>`;
 }
-function blockZ(k){const z=+k.z||0;return M.dir==='up'?-z:z;}
+function blockZ(k){return +k.z||0;}
 function setB(b,patch){
  if(mode==='rig'||!activeSet()){Object.assign(b,patch);return}
  const f=Math.round(frame),existing=A().keys[b.id]?.[f],q=pose(b,frame);
@@ -1899,7 +1899,7 @@ function drawBlockWithDeformation(g,k,info,image,measure){
    const offscreen=document.createElement('canvas');
    const bw=Math.max(4,Math.round(info.s.r0)),bh=Math.max(4,Math.round(k.h));
    offscreen.width=bw;offscreen.height=bh;
-   const og=offscreen.getContext('2d');og.imageSmoothingEnabled=false;
+   const og=offscreen.getContext('2d');og.imageSmoothingEnabled=true;og.imageSmoothingQuality='high';
    og.translate(bw/2+k.ix,bh/2+k.iy);og.rotate((k.ir||0)*D);if(k.fx)og.scale(-1,1);
    og.drawImage(image,-image.naturalWidth*k.is/2,-image.naturalHeight*k.is/2,image.naturalWidth*k.is,image.naturalHeight*k.is);
    drawTexturedTriangle(g,offscreen,0,0,bw,0,0,bh,corners[0].x,corners[0].y,corners[1].x,corners[1].y,corners[2].x,corners[2].y);
@@ -2178,7 +2178,7 @@ function drawOnionGhost(g,ghostFrame,tintColor,alpha){
 
 /* Vẽ canvas */
 function draw(){
- const g=cv.getContext('2d'),W=solve(),S=segs(W);g.imageSmoothingEnabled=false;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv.width,cv.height);
+ const g=cv.getContext('2d'),W=solve(),S=segs(W);g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,cv.width,cv.height);
  g.setTransform(cam.z,0,0,cam.z,cv.width/2+cam.x,cv.height/2+cam.y);g.lineWidth=1/cam.z;g.strokeStyle='#343b46';g.beginPath();g.moveTo(-3000,0);g.lineTo(3000,0);g.moveTo(0,-3000);g.lineTo(0,3000);g.stroke();
 
  // 2. Onion Skinning (vẽ bóng mờ của 1-2 frame trước màu xanh dương và 1-2 frame sau màu đỏ cam)
@@ -3654,7 +3654,7 @@ function renderEffectAtlas(effects){
  const rows=Math.ceil(count/Math.max(1,columns));
  if(columns<1||rows*height>maxSide)
   throw new Error('Atlas vượt 4096 px. Hãy giảm kích thước hoặc số frame.');
- canvas.width=columns*width;canvas.height=rows*height;g.imageSmoothingEnabled=false;
+ canvas.width=columns*width;canvas.height=rows*height;g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';
  let cell=0;
  effects.forEach((effect,index)=>{
   for(let frame=0;frame<counts[index];frame++,cell++){
@@ -4264,49 +4264,15 @@ function renderSpriteFrameRaw(ctx,size,frameIndex,dir,bounds,set,includeDemo){
  return withSpriteSet(set,dir,frameIndex,()=>{
   const margin=Math.max(1,size*.025),scale=Math.min((size-margin*2)/bounds.width,(size-margin*2)/bounds.height);
   const ox=(size-bounds.width*scale)/2-bounds.minX*scale,oy=(size-bounds.height*scale)/2-bounds.minY*scale;
-  ctx.imageSmoothingEnabled=false;
+  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
   ctx.save();ctx.translate(ox,oy);ctx.scale(scale,scale);
   try{paintRigBlocks(ctx,includeDemo);}
   finally{ctx.restore();}
  });
 }
 function renderSpriteFrame(ctx,size,frameIndex,dir,bounds,set,includeDemo){
- ctx.imageSmoothingEnabled=false;
- if(size>64)return renderSpriteFrameRaw(ctx,size,frameIndex,dir,bounds,set,includeDemo);
- // 4x Super-Sampled Pixel-Art Downsampler + 1px Crisp Outline for 16/32/48/64px cells
- const ss=4,hiSize=size*ss,hiCanvas=document.createElement('canvas');hiCanvas.width=hiSize;hiCanvas.height=hiSize;
- const hiCtx=hiCanvas.getContext('2d',{alpha:true});hiCtx.imageSmoothingEnabled=false;
- renderSpriteFrameRaw(hiCtx,hiSize,frameIndex,dir,bounds,set,includeDemo);
- const hiData=hiCtx.getImageData(0,0,hiSize,hiSize).data,outImg=ctx.createImageData(size,size),out=outImg.data;
- const rBuf=new Uint8Array(16),gBuf=new Uint8Array(16),bBuf=new Uint8Array(16);
- for(let py=0;py<size;py++){
-  for(let px=0;px<size;px++){
-   let cnt=0;
-   for(let dy=0;dy<ss;dy++){
-    const rowOff=((py*ss+dy)*hiSize+px*ss)*4;
-    for(let dx=0;dx<ss;dx++){
-     const idx=rowOff+dx*4;
-     if(hiData[idx+3]>=128){rBuf[cnt]=hiData[idx];gBuf[cnt]=hiData[idx+1];bBuf[cnt]=hiData[idx+2];cnt++;}
-    }
-   }
-   if(cnt>=6){
-    const mid=cnt>>1,oIdx=(py*size+px)*4;
-    rBuf.subarray(0,cnt).sort();gBuf.subarray(0,cnt).sort();bBuf.subarray(0,cnt).sort();
-    out[oIdx]=rBuf[mid];out[oIdx+1]=gBuf[mid];out[oIdx+2]=bBuf[mid];out[oIdx+3]=255;
-   }
-  }
- }
- // Reinforce 1px crisp dark exterior outline on silhouette boundary pixels
- const alphaMap=new Uint8Array(size*size);
- for(let i=0;i<size*size;i++)alphaMap[i]=out[i*4+3]>0?1:0;
- for(let py=0;py<size;py++){
-  for(let px=0;px<size;px++){
-   const i=py*size+px;if(!alphaMap[i])continue;
-   const isEdge=(px===0||!alphaMap[i-1])||(px===size-1||!alphaMap[i+1])||(py===0||!alphaMap[i-size])||(py===size-1||!alphaMap[i+size]);
-   if(isEdge){const oIdx=i*4;out[oIdx]=Math.round(out[oIdx]*.28);out[oIdx+1]=Math.round(out[oIdx+1]*.28);out[oIdx+2]=Math.round(out[oIdx+2]*.34);}
-  }
- }
- ctx.putImageData(outImg,0,0);
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ return renderSpriteFrameRaw(ctx,size,frameIndex,dir,bounds,set,includeDemo);
 }
 /* ZIP STORE (không nén PNG) — không cần thư viện ngoài. */
 function zipCrc32(bytes){let crc=0xffffffff;for(const value of bytes){crc^=value;for(let i=0;i<8;i++)crc=(crc>>>1)^(-(crc&1)&0xedb88320);}return (crc^0xffffffff)>>>0;}
