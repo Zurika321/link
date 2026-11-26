@@ -759,6 +759,124 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 .rig-direction-tabs button[hidden] { display: none !important; }
 
 /* Floating Re-open Dock on Canvas when Left/Right/Timeline panels are hidden */
+/* Settings · Phím tắt / thao tác nhanh Modal & Nút nổi trên Canvas */
+.quick-settings-grid {
+  display: grid;
+  grid-template-columns: 155px minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.quick-settings-grid label {
+  font-size: 12px;
+  color: #9fb0c7;
+  line-height: 1.3;
+}
+.quick-settings-grid input {
+  height: 36px;
+  background: #232b3a;
+  border: 1px solid #3c485e;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: #f1f5f9;
+  width: 100%;
+}
+.shortcut-table-wrap {
+  border-top: 1px solid #2e384a;
+  padding-top: 8px;
+}
+.shortcut-table-head, .shortcut-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(110px, 1fr) 54px;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 8px;
+}
+.shortcut-table-head {
+  font-size: 12px;
+  font-weight: 700;
+  color: #93a4bc;
+  border-bottom: 1px solid #2e384a;
+}
+.shortcut-row {
+  border-bottom: 1px solid rgba(51, 63, 82, 0.55);
+  background: rgba(25, 31, 43, 0.55);
+  border-radius: 8px;
+  margin-top: 4px;
+}
+.shortcut-row span {
+  font-size: 13px;
+  color: #e2e8f0;
+  line-height: 1.3;
+}
+.shortcut-row input[type="text"] {
+  height: 34px;
+  background: #262f40;
+  border: 1px solid #3d4a61;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 12px;
+  color: #e2e8f0;
+  width: 100%;
+}
+.shortcut-row input[type="text"]:focus {
+  border-color: var(--a);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(63, 184, 175, 0.25);
+}
+.shortcut-row .float-chk-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.shortcut-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--a);
+  cursor: pointer;
+}
+#floatingQuickActionsBar {
+  position: absolute;
+  top: 38px;
+  left: 8px;
+  right: 8px;
+  z-index: 32;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  pointer-events: none;
+  padding: 2px 0;
+}
+#floatingQuickActionsBar::-webkit-scrollbar { display: none; }
+#floatingQuickActionsBar[hidden] { display: none !important; }
+.floating-quick-chip {
+  pointer-events: auto;
+  flex: 0 0 auto;
+  height: 30px;
+  border-radius: 999px;
+  padding: 0 11px;
+  background: rgba(20, 27, 38, 0.92);
+  border: 1px solid #3fb8af;
+  color: #d1fae5;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+}
+.floating-quick-chip:active {
+  transform: scale(0.95);
+  background: #246d68;
+}
+
 .canvas-reopen-dock {
   position: absolute;
   left: 8px;
@@ -928,6 +1046,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
  <div class="pill-group" aria-label="Dự án và Bảng">
   <button type="button" class="circle-icon-btn hub-btn" onclick="goBackToHubPage()" title="Về Trang Chính Quản Lý Dự Án (Bone_Animator_Hub.html)">🏠</button>
   <button type="button" class="circle-icon-btn save-btn" onclick="saveCurrentProjectToLocal(true)" title="Lưu dự án vào LocalStorage & cập nhật hình đại diện nhân vật">💾</button>
+  <button type="button" class="circle-icon-btn" onclick="openQuickSettingsModal()" title="Settings · Phím tắt / thao tác nhanh & Nút nổi">⚙</button>
   <button type="button" id="toggleLeftBtn" class="circle-icon-btn active" onclick="toggleSidePanel('left')" title="Bật / Tắt bảng Xương & Block bên Trái">◧</button>
   <button type="button" id="toggleRightBtn" class="circle-icon-btn active" onclick="toggleSidePanel('right')" title="Bật / Tắt bảng Thuộc tính & Ảnh bên Phải">◨</button>
   <button type="button" id="toggleTimelineBtn" class="circle-icon-btn active" onclick="toggleSidePanel('timeline')" title="Thu gọn / Mở rộng bảng Animation bên dưới">◳</button>
@@ -1046,6 +1165,8 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
 <div id="C">
  <canvas id="cvs"></canvas>
  <div id="hint">⬚ Quét chọn · ⤧ Tự do · 🦾 IK 2-Xương · ✏🦴 Kéo vẽ nhanh chuỗi Xương+Block · ✏▣ Kéo vẽ khung Block · 🎨 Vẽ Pixel · 🤖 AI JSON</div>
+ <!-- Thanh Nút nổi Thao tác nhanh trên Canvas -->
+ <div id="floatingQuickActionsBar" hidden aria-label="Các nút thao tác nhanh nổi trên Canvas"></div>
  <!-- Thanh nổi bật lại nhanh các bảng khi người dùng ẩn bảng trên Điện thoại / PC -->
  <div id="canvasReopenDock" class="canvas-reopen-dock" hidden>
   <button type="button" id="reopenLeftBtn" class="reopen-pill-btn" hidden onclick="toggleSidePanel('left')" title="Mở lại bảng Xương & Block bên Trái">◧ Bảng Trái</button>
@@ -1053,6 +1174,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <button type="button" id="reopenTimelineBtn" class="reopen-pill-btn" hidden onclick="toggleSidePanel('timeline')" title="Mở lại bảng Timeline Animation">🎬 Animation</button>
  </div>
  <div class="canvas-floating-tools">
+  <button type="button" id="quickSettingsFloatBtn" class="canvas-tool-button" style="background:#2b3548;border-color:#3fb8af;color:#99f6e4" onclick="openQuickSettingsModal()" aria-label="Settings · Phím tắt / thao tác nhanh" title="Settings · Phím tắt / thao tác nhanh">⚙</button>
   <button type="button" id="hintToggleBtn" class="canvas-tool-button" onclick="toggleCanvasHint()" aria-label="Bật/tắt hướng dẫn trên Canvas" title="Bật/tắt hướng dẫn trên Canvas">?</button>
   <div id="quickTools">
    <button type="button" id="quickToolsButton" class="canvas-tool-button" title="Công cụ dự án" aria-label="Công cụ dự án" aria-controls="quickToolsPanel" aria-expanded="false" onclick="toggleQuickTools()">⋯</button>
@@ -1065,6 +1187,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
     <div class="quick-tools-actions">
      <button type="button" onclick="goBackToHubPage()">🏠 Về Trang Chính</button>
      <button type="button" onclick="saveCurrentProjectToLocal(true);setQuickToolsOpen(false)">💾 Lưu Dự Án</button>
+     <button type="button" onclick="openQuickSettingsModal();setQuickToolsOpen(false)">⚙ Settings · Phím tắt</button>
      <button type="button" onclick="openAiBridgeModal();setQuickToolsOpen(false)">🤖 Cầu nối AI</button>
      <button type="button" onclick="openPixelPad();setQuickToolsOpen(false)">🎨 Vẽ Pixel</button>
      <button type="button" id="saveModelJson" onclick="saveM()">⬇ Xuất JSON</button>
@@ -1355,6 +1478,46 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
    <div class="sprite-actions">
     <button type="button" onclick="resolveCustomDialog(false)">Huỷ</button>
     <button type="button" id="customDialogConfirmBtn" class="active" onclick="resolveCustomDialog(true)">Đồng ý</button>
+   </div>
+  </div>
+ </section>
+</div>
+
+<!-- HỘP THOẠI SETTINGS · PHÍM TẮT / THAO TÁC NHANH & NÚT NỔI (#quickSettingsModal) -->
+<div id="quickSettingsModal" class="sprite-modal" style="z-index:1680" hidden onclick="if(event.target===this)closeQuickSettingsModal()">
+ <section class="pixel-pad-dialog" role="dialog" aria-modal="true" aria-labelledby="quickSettingsTitle" style="width:min(540px,96vw);max-height:90dvh">
+  <header class="modal-sticky-head">
+   <strong id="quickSettingsTitle" style="font-size:16px;color:#f1f5f9">Settings · Phím tắt / thao tác nhanh</strong>
+   <div style="display:flex;align-items:center;gap:6px">
+    <button type="button" onclick="closeQuickSettingsModal()" style="border-radius:8px;padding:5px 12px;background:#263042;border:1px solid #45536d;font-weight:600">Đóng</button>
+    <button type="button" class="modal-close-x" onclick="closeQuickSettingsModal()" aria-label="Đóng">✕</button>
+   </div>
+  </header>
+  <div class="pixel-pad-body" style="display:flex;flex-direction:column;gap:10px;padding:14px;overflow-y:auto">
+   <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.45">
+    Phím có thể sửa, để trống để bỏ gán. Không chạy khi đang gõ vào input hoặc mở hộp thoại. Ctrl trên Mac dùng Cmd. Settings lưu trong trình duyệt, không vào JSON.
+   </p>
+   <div class="quick-settings-grid">
+    <label for="qsRotateDeg">Góc xoay nhanh (độ)</label>
+    <input id="qsRotateDeg" type="number" step="1" value="45" oninput="updateQuickSettingNum('rotateDeg',this.value)">
+    <label for="qsZStep">Bước Z (số nguyên)</label>
+    <input id="qsZStep" type="number" step="1" value="1" oninput="updateQuickSettingNum('zStep',this.value)">
+    <label for="qsNudgeStep">Bước dịch (đơn vị canvas)</label>
+    <input id="qsNudgeStep" type="number" step="0.5" value="1" oninput="updateQuickSettingNum('nudgeStep',this.value)">
+    <label for="qsZoomFactor">Hệ số thu/phóng canvas</label>
+    <input id="qsZoomFactor" type="number" step="0.05" min="1.02" max="2.5" value="1.1" oninput="updateQuickSettingNum('zoomFactor',this.value)">
+   </div>
+   <div class="shortcut-table-wrap">
+    <div class="shortcut-table-head">
+     <span>Thao tác</span>
+     <span>Phím</span>
+     <span style="text-align:center">Nút nổi</span>
+    </div>
+    <div id="quickShortcutsList"></div>
+   </div>
+   <div style="display:flex;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid #2e384a">
+    <button type="button" onclick="resetQuickSettingsToDefault()" style="border-radius:999px;padding:6px 14px;color:#fcd34d;border-color:#b45309">↺ Khôi phục mặc định</button>
+    <button type="button" class="active" onclick="closeQuickSettingsModal()" style="border-radius:999px;padding:6px 18px;background:#246d68;border-color:var(--a);font-weight:700">✓ Đóng</button>
    </div>
   </div>
  </section>
@@ -5536,6 +5699,323 @@ function loadActiveProjectOnStartup(){
  currentProjectId='proj_seed_r6';
  loadPackage(cloneData(R6_PRESET_PACKAGE),{name:'Chiến Binh R6 (Mẫu 4 Hướng)'});
 }
+
+/* ============================================================================
+   SETTINGS · PHÍM TẮT / THAO TÁC NHANH & NÚT NỔI TRÊN CANVAS
+   ============================================================================ */
+const QUICK_SETTINGS_STORAGE_KEY='BoneAnimatorStudio.quickSettings.v1';
+
+const DEFAULT_QUICK_ACTIONS=[
+ {id:'playPause',label:'Phát / tạm dừng',shortLabel:'▶/⏸ Phát',defaultKey:'Space',defaultFloat:false},
+ {id:'prevFrame',label:'Frame trước',shortLabel:'⏮ Frame -1',defaultKey:'Ctrl+ArrowLeft',defaultFloat:false},
+ {id:'nextFrame',label:'Frame sau',shortLabel:'⏭ Frame +1',defaultKey:'Ctrl+ArrowRight',defaultFloat:false},
+ {id:'firstFrame',label:'Frame đầu',shortLabel:'|< Đầu',defaultKey:'Home',defaultFloat:false},
+ {id:'lastFrame',label:'Frame cuối',shortLabel:'>| Cuối',defaultKey:'End',defaultFloat:false},
+ {id:'keyBone',label:'Đặt key xương',shortLabel:'◆+ Key Xương',defaultKey:'K',defaultFloat:false},
+ {id:'keyBlock',label:'Đặt key ảnh Block',shortLabel:'▣+ Key Ảnh',defaultKey:'B',defaultFloat:false},
+ {id:'deleteSel',label:'Xóa đối tượng / key đang chọn',shortLabel:'🗑 Xóa',defaultKey:'Delete',defaultFloat:false},
+ {id:'copyKey',label:'Copy key',shortLabel:'📋 Copy Key',defaultKey:'Ctrl+C',defaultFloat:false},
+ {id:'cutKey',label:'Cut key',shortLabel:'✂ Cut Key',defaultKey:'Ctrl+X',defaultFloat:false},
+ {id:'pasteKey',label:'Paste key',shortLabel:'📌 Paste Key',defaultKey:'Ctrl+V',defaultFloat:false},
+ {id:'rotCCW',label:'Xoay nhanh ngược chiều (-Góc)',shortLabel:'↺ Xoay -Góc',defaultKey:'Q',defaultFloat:false},
+ {id:'rotCW',label:'Xoay nhanh cùng chiều (+Góc)',shortLabel:'↻ Xoay +Góc',defaultKey:'E',defaultFloat:false},
+ {id:'zUp',label:'Tăng thứ tự lớp Z (+Bước Z)',shortLabel:'⬆ Z+',defaultKey:']',defaultFloat:false},
+ {id:'zDown',label:'Giảm thứ tự lớp Z (-Bước Z)',shortLabel:'⬇ Z-',defaultKey:'[',defaultFloat:false},
+ {id:'nudgeUp',label:'Dịch lên trên (Bước dịch)',shortLabel:'↑ Dịch Lên',defaultKey:'ArrowUp',defaultFloat:false},
+ {id:'nudgeDown',label:'Dịch xuống dưới (Bước dịch)',shortLabel:'↓ Dịch Xuống',defaultKey:'ArrowDown',defaultFloat:false},
+ {id:'nudgeLeft',label:'Dịch sang trái (Bước dịch)',shortLabel:'← Dịch Trái',defaultKey:'ArrowLeft',defaultFloat:false},
+ {id:'nudgeRight',label:'Dịch sang phải (Bước dịch)',shortLabel:'→ Dịch Phải',defaultKey:'ArrowRight',defaultFloat:false},
+ {id:'zoomIn',label:'Phóng to Canvas',shortLabel:'🔍+ Zoom In',defaultKey:'=',defaultFloat:false},
+ {id:'zoomOut',label:'Thu nhỏ Canvas',shortLabel:'🔍- Zoom Out',defaultKey:'-',defaultFloat:false},
+ {id:'resetView',label:'Reset khung nhìn Canvas',shortLabel:'🎯 Reset Cam',defaultKey:'0',defaultFloat:false},
+ {id:'flipImgX',label:'Lật ngang ảnh Block',shortLabel:'⇄ Lật Ảnh',defaultKey:'H',defaultFloat:false},
+ {id:'toggleMode',label:'Chuyển chế độ RIG / ANIM',shortLabel:'🦴/🎬 Chế độ',defaultKey:'Tab',defaultFloat:false}
+];
+
+function createDefaultQuickSettings(){
+ const actions={};
+ DEFAULT_QUICK_ACTIONS.forEach(a=>{
+  actions[a.id]={key:a.defaultKey,floating:!!a.defaultFloat};
+ });
+ return {
+  rotateDeg:45,
+  zStep:1,
+  nudgeStep:1,
+  zoomFactor:1.1,
+  actions
+ };
+}
+
+let quickSettings=createDefaultQuickSettings();
+
+function loadQuickSettings(){
+ try{
+  const raw=localStorage.getItem(QUICK_SETTINGS_STORAGE_KEY);
+  if(!raw)return;
+  const parsed=JSON.parse(raw);
+  if(!parsed||typeof parsed!=='object')return;
+  if(Number.isFinite(+parsed.rotateDeg))quickSettings.rotateDeg=+parsed.rotateDeg;
+  if(Number.isFinite(+parsed.zStep))quickSettings.zStep=Math.max(1,Math.round(+parsed.zStep));
+  if(Number.isFinite(+parsed.nudgeStep))quickSettings.nudgeStep=+parsed.nudgeStep;
+  if(Number.isFinite(+parsed.zoomFactor)&&+parsed.zoomFactor>1.01)quickSettings.zoomFactor=+parsed.zoomFactor;
+  if(parsed.actions&&typeof parsed.actions==='object'){
+   DEFAULT_QUICK_ACTIONS.forEach(a=>{
+    const saved=parsed.actions[a.id];
+    if(saved&&typeof saved==='object'){
+     quickSettings.actions[a.id]={
+      key:typeof saved.key==='string'?saved.key:a.defaultKey,
+      floating:!!saved.floating
+     };
+    }
+   });
+  }
+ }catch(e){}
+}
+
+function saveQuickSettings(){
+ try{localStorage.setItem(QUICK_SETTINGS_STORAGE_KEY,JSON.stringify(quickSettings));}catch(e){}
+ renderFloatingQuickActionsBar();
+}
+
+function updateQuickSettingNum(field,val){
+ const n=parseFloat(String(val).replace(',','.'));
+ if(!Number.isFinite(n))return;
+ if(field==='rotateDeg')quickSettings.rotateDeg=n;
+ else if(field==='zStep')quickSettings.zStep=Math.max(1,Math.round(n));
+ else if(field==='nudgeStep')quickSettings.nudgeStep=n;
+ else if(field==='zoomFactor')quickSettings.zoomFactor=clamp(n,1.02,3);
+ saveQuickSettings();
+}
+
+function formatKeyEventCombo(e){
+ if(['Control','Shift','Alt','Meta'].includes(e.key))return '';
+ const parts=[];
+ if(e.ctrlKey||e.metaKey)parts.push('Ctrl');
+ if(e.altKey)parts.push('Alt');
+ if(e.shiftKey)parts.push('Shift');
+ let k=e.key;
+ if(k===' '||e.code==='Space')k='Space';
+ else if(k.length===1)k=k.toUpperCase();
+ parts.push(k);
+ return parts.join('+');
+}
+
+function renderQuickSettingsModal(){
+ if($('qsRotateDeg'))$('qsRotateDeg').value=quickSettings.rotateDeg;
+ if($('qsZStep'))$('qsZStep').value=quickSettings.zStep;
+ if($('qsNudgeStep'))$('qsNudgeStep').value=quickSettings.nudgeStep;
+ if($('qsZoomFactor'))$('qsZoomFactor').value=quickSettings.zoomFactor;
+ const host=$('quickShortcutsList');
+ if(!host)return;
+ host.innerHTML=DEFAULT_QUICK_ACTIONS.map(a=>{
+  const cfg=quickSettings.actions[a.id]||{key:a.defaultKey,floating:false};
+  return `<div class="shortcut-row">
+   <span>${esc(a.label)}</span>
+   <input type="text" data-action-id="${esc(a.id)}" value="${esc(cfg.key)}" placeholder="Để trống = bỏ gán"
+    onkeydown="handleShortcutInputKeydown(event,'${esc(a.id)}')"
+    oninput="handleShortcutTextChange('${esc(a.id)}',this.value)">
+   <div class="float-chk-wrap">
+    <input type="checkbox" ${cfg.floating?'checked':''} onchange="toggleQuickActionFloating('${esc(a.id)}',this.checked)" title="Hiện nút nổi trên Canvas">
+   </div>
+  </div>`;
+ }).join('');
+}
+
+function handleShortcutInputKeydown(e,actionId){
+ if(e.key==='Tab')return;
+ e.preventDefault();e.stopPropagation();
+ if(e.key==='Backspace'||e.key==='Escape'){
+  e.target.value='';
+  quickSettings.actions[actionId].key='';
+  saveQuickSettings();
+  return;
+ }
+ const combo=formatKeyEventCombo(e);
+ if(!combo)return;
+ e.target.value=combo;
+ quickSettings.actions[actionId].key=combo;
+ saveQuickSettings();
+}
+
+function handleShortcutTextChange(actionId,val){
+ if(!quickSettings.actions[actionId])return;
+ quickSettings.actions[actionId].key=String(val||'').trim();
+ saveQuickSettings();
+}
+
+function toggleQuickActionFloating(actionId,checked){
+ if(!quickSettings.actions[actionId])return;
+ quickSettings.actions[actionId].floating=!!checked;
+ saveQuickSettings();
+}
+
+function resetQuickSettingsToDefault(){
+ quickSettings=createDefaultQuickSettings();
+ saveQuickSettings();
+ renderQuickSettingsModal();
+ showToast('↺ Đã khôi phục cài đặt phím tắt & thao tác nhanh mặc định!');
+}
+
+function openQuickSettingsModal(){
+ renderQuickSettingsModal();
+ $('quickSettingsModal').hidden=false;
+}
+function closeQuickSettingsModal(){
+ $('quickSettingsModal').hidden=true;
+}
+
+function renderFloatingQuickActionsBar(){
+ const bar=$('floatingQuickActionsBar');
+ if(!bar)return;
+ const activeList=DEFAULT_QUICK_ACTIONS.filter(a=>quickSettings.actions[a.id]?.floating);
+ if(!activeList.length){
+  bar.hidden=true;
+  bar.innerHTML='';
+  return;
+ }
+ bar.hidden=false;
+ bar.innerHTML=activeList.map(a=>{
+  let label=a.shortLabel;
+  if(a.id==='rotCCW')label=`↺ -${quickSettings.rotateDeg}°`;
+  else if(a.id==='rotCW')label=`↻ +${quickSettings.rotateDeg}°`;
+  else if(a.id==='zUp')label=`⬆ Z+${quickSettings.zStep}`;
+  else if(a.id==='zDown')label=`⬇ Z-${quickSettings.zStep}`;
+  return `<button type="button" class="floating-quick-chip" onclick="executeQuickAction('${esc(a.id)}')" title="${esc(a.label)}">${esc(label)}</button>`;
+ }).join('');
+}
+
+function executeQuickAction(actionId){
+ checkpointUndo();
+ const o=cur();
+ const rotStep=+quickSettings.rotateDeg||45;
+ const zStep=Math.max(1,Math.round(+quickSettings.zStep||1));
+ const nudge=+quickSettings.nudgeStep||1;
+ const zFactor=clamp(+quickSettings.zoomFactor||1.1,1.02,3);
+
+ switch(actionId){
+  case 'playPause':
+   play();
+   break;
+  case 'prevFrame':
+   playing=false;$('pb').textContent='▶';
+   frame=clamp(Math.round(frame)-1,0,lastFrame());
+   $('fr').value=frame;renderAll();draw();
+   break;
+  case 'nextFrame':
+   playing=false;$('pb').textContent='▶';
+   frame=clamp(Math.round(frame)+1,0,lastFrame());
+   $('fr').value=frame;renderAll();draw();
+   break;
+  case 'firstFrame':
+   playing=false;$('pb').textContent='▶';
+   frame=0;$('fr').value=0;renderAll();draw();
+   break;
+  case 'lastFrame':
+   playing=false;$('pb').textContent='▶';
+   frame=lastFrame();$('fr').value=frame;renderAll();draw();
+   break;
+  case 'keyBone':
+   addKey();
+   break;
+  case 'keyBlock':
+   addBlockImgKey();
+   break;
+  case 'deleteSel':
+   if(ksel)delKey();else if(sel)del();
+   break;
+  case 'copyKey':
+   copyKey();
+   break;
+  case 'cutKey':
+   cutKey();
+   break;
+  case 'pasteKey':
+   pasteKey();
+   break;
+  case 'rotCCW':
+  case 'rotCW':{
+   const delta=actionId==='rotCW'?rotStep:-rotStep;
+   if(sel?.t==='b'&&o){
+    setBonePose(o,{a:+(pose(o).a+delta).toFixed(2)});
+    renderAll();draw();
+   }else if(sel?.t==='k'&&o){
+    if(o.b){o.ir=+(+o.ir+delta).toFixed(2);}
+    else{o.a=+(+o.a+delta).toFixed(2);}
+    saveActiveRig();renderAll();draw();
+   }else{
+    showToast('Hãy chọn Xương hoặc Block để xoay nhanh.');
+   }
+   break;
+  }
+  case 'zUp':
+  case 'zDown':{
+   const dz=actionId==='zUp'?zStep:-zStep;
+   if(sel?.t==='k'&&o){
+    o.z=clamp(Math.round((+o.z||0)+dz),0,300);
+    saveActiveRig();renderAll();draw();
+   }else{
+    showToast('Hãy chọn 1 Block để chỉnh nhanh thứ tự lớp Z.');
+   }
+   break;
+  }
+  case 'nudgeUp':
+  case 'nudgeDown':
+  case 'nudgeLeft':
+  case 'nudgeRight':{
+   const dx=actionId==='nudgeLeft'?-nudge:(actionId==='nudgeRight'?nudge:0);
+   const dy=actionId==='nudgeUp'?-nudge:(actionId==='nudgeDown'?nudge:0);
+   if(sel?.t==='b'&&o){
+    const q=pose(o);
+    setBonePose(o,{x:+(q.x+dx).toFixed(2),y:+(q.y+dy).toFixed(2)});
+    renderAll();draw();
+   }else if(sel?.t==='k'&&o){
+    if(o.b){o.ox=+(+o.ox+dx).toFixed(2);o.oy=+(+o.oy+dy).toFixed(2);}
+    else{o.x=+(+o.x+dx).toFixed(2);o.y=+(+o.y+dy).toFixed(2);}
+    saveActiveRig();renderAll();draw();
+   }
+   break;
+  }
+  case 'zoomIn':
+   cam.z=clamp(cam.z*zFactor,0.2,6);draw();
+   break;
+  case 'zoomOut':
+   cam.z=clamp(cam.z/zFactor,0.2,6);draw();
+   break;
+  case 'resetView':
+   cam={x:0,y:0,z:1};draw();
+   break;
+  case 'flipImgX':
+   if(sel?.t==='k'&&o){o.fx=o.fx?0:1;saveActiveRig();renderAll();draw();}
+   break;
+  case 'toggleMode':
+   setMode(mode==='rig'?'anim':'rig');
+   break;
+ }
+}
+
+// Bắt sự kiện bàn phím toàn cục theo bảng Settings · Phím tắt / thao tác nhanh
+window.addEventListener('keydown',e=>{
+ const anyModalOpen=['modelNameModal','effectDownloadModal','effectExportModal','sessionImportDialog','imgModal','cropModal','unityExportModal','customDialogModal','pixelPadModal','aiBridgeModal','quickSettingsModal'].some(id=>$(id)&&!$(id).hidden);
+ if(anyModalOpen){
+  if(e.key==='Escape'&&!$('quickSettingsModal').hidden){e.preventDefault();closeQuickSettingsModal();}
+  return;
+ }
+ const tag=(e.target?.tagName||'').toUpperCase();
+ const textEditing=tag==='TEXTAREA'||tag==='SELECT'||(tag==='INPUT'&&!['checkbox','radio','button'].includes((e.target.type||'').toLowerCase()));
+ if(textEditing)return;
+ const combo=formatKeyEventCombo(e);
+ if(!combo)return;
+ for(const a of DEFAULT_QUICK_ACTIONS){
+  const cfg=quickSettings.actions[a.id];
+  if(cfg&&cfg.key&&cfg.key.toLowerCase()===combo.toLowerCase()){
+   e.preventDefault();
+   executeQuickAction(a.id);
+   return;
+  }
+ }
+});
+
+setTimeout(()=>{loadQuickSettings();renderFloatingQuickActionsBar();},0);
 
 /* ============================================================================
    QUICK PIXEL ART & BLOCK DESIGN PAD
