@@ -1313,6 +1313,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
    <p class="unity-export-note">Unity JSON dùng schema v3 khi có Block Effect đã tắt Demo. Hãy dùng bộ script Unity v4 để đọc schema 1–3. GroupBlock, Block Keyframe, Easing và Skew/Mesh đều được xuất. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết. Tên SFX và dropdown RegistryId được cấu hình trong Inspector của CharacterAnimation.</p>
    <div class="unity-animation-row" style="font-size:11px;color:#9da8b7;font-weight:700"><span>ANIMATION</span><span>LOOP</span><span>ATTACK / SKILL</span><span>CAST START</span><span>CAST END</span></div>
    <div id="unityAnimationSettings"></div>
+   <label class="web-json-option"><input id="unityIncludeUnusedAssets" type="checkbox"> Lấy luôn cả ảnh không dùng (mặc định: chỉ lấy ảnh đang dùng, bỏ qua ảnh thừa và ảnh trong Block có Demo = true)</label>
    <label class="web-json-option"><input id="unityIncludeWebJson" type="checkbox"> Xuất kèm JSON chỉnh sửa (Web)</label>
    <button type="button" id="unityWebJsonDownload" onclick="downloadEditableJson('unityWebJsonDownload')" hidden>Tải lại JSON chỉnh sửa</button>
    <div id="unityExportStatus" class="unity-export-status"></div>
@@ -1630,6 +1631,7 @@ function normalizeBlockImage(block,dir){
 function normalizeModel(m){
  m.groupBlocks=normalizeGroupBlocks(m.groupBlocks);
  m.dirMode=[1,2,4,8].includes(+m.dirMode)?+m.dirMode:(Array.isArray(m.activeDirs)&&[1,2,4,8].includes(m.activeDirs.length)?m.activeDirs.length:4);
+ m.initialDirMode=[1,2,4,8].includes(+m.initialDirMode)?+m.initialDirMode:m.dirMode;
  m.activeDirs=DIR_MODES[m.dirMode];
  m.nid=+m.nid||1;m.bones=Array.isArray(m.bones)?m.bones:[];m.blocks=Array.isArray(m.blocks)?m.blocks:[];
  m.dir=ALL_8_DIRS.includes(m.dir)?m.dir:m.activeDirs[0];
@@ -2650,7 +2652,7 @@ function syncRigToAllDirections(){
  if(editedEffectId)return;
  saveActiveRig();const source={bones:cloneData(M.bones),blocks:cloneData(M.blocks)};
  const dirs=getModelActiveDirs(M);
- for(const dir of ALL_8_DIRS){
+ for(const dir of dirs){
   const images=new Map((M.rigsByDir[dir]?.blocks||[]).map(block=>[String(block.id),block.img||'']));
   const blocks=cloneData(source.blocks);
   for(const block of blocks)if(images.has(String(block.id))&&images.get(String(block.id)))block.img=images.get(String(block.id));
@@ -4216,7 +4218,7 @@ function openUnityExportSettings(){
  M.animationSets.forEach(ensureUnityMeta);
  renderUnityAnimationSettings();
  $('unityExportStatus').textContent='';
- $('unityIncludeWebJson').checked=false;
+ $('unityIncludeWebJson').checked=false;if($('unityIncludeUnusedAssets'))$('unityIncludeUnusedAssets').checked=false;
  clearEditableJson('unityWebJsonDownload');
  $('unityExportModal').hidden=false;
  setQuickToolsOpen(false);
@@ -4353,9 +4355,9 @@ function unityBuildPayload(){
   return {name:set.name,loop:!!meta.loop,isCombat:!!meta.isCombat,castStartFrame:Math.round(meta.castStartFrame),castEndFrame:Math.round(meta.castEndFrame),frameCount,directions:animDirs};
  });
  const assetNames=new Set();
- directionData.forEach(d=>d.blocks.forEach(b=>{if(b.imageDown)assetNames.add(b.imageDown);}));
- animations.forEach(a=>a.directions.forEach(d=>d.blockKeyframes.forEach(k=>k.states.forEach(st=>{if(st.imageName)assetNames.add(st.imageName);}))))
- const assets=[...assetNames].sort().map(name=>({name,dataUrl:imageData[name]||''}));
+ const includeUnused=!!$('unityIncludeUnusedAssets')?.checked;
+ if(includeUnused){LIB.forEach(n=>{if(imageData[n])assetNames.add(n);});}else{const validBlockIdsByDir={};directionData.forEach(d=>{const ids=new Set();d.blocks.forEach(b=>{if(b.drawImage){ids.add(b.id);if(b.imageDown)assetNames.add(b.imageDown);}});validBlockIdsByDir[d.dir]=ids;});animations.forEach(a=>a.directions.forEach(d=>{const ids=validBlockIdsByDir[d.dir]||new Set();d.blockKeyframes.forEach(k=>k.states.forEach(st=>{if(ids.has(st.blockId)&&st.imageName)assetNames.add(st.imageName);}));}));}
+ const assets=[...assetNames].filter(name=>!!imageData[name]).sort().map(name=>({name,dataUrl:imageData[name]||''}));
  const keptIds=new Set(directionData.flatMap(d=>d.blocks.map(k=>k.id)));
  const groupBlocks=M.groupBlocks.map(g=>({name:g.name,defaultVariant:g.defaultVariant,variants:g.variants.map(v=>({name:v.name,blockIds:v.blockIds.filter(id=>keptIds.has(id))}))}));
  const schemaVersion=directionData.some(dir=>dir.blocks.some(block=>block.effectId))?3:2;
@@ -4467,10 +4469,26 @@ async function exportUnityJson(){
 }
 
 /* Model files stay in the current browser tab. */
-function modelPackage(){
+function getUsedProjectAssetNames(proj=projectModel(),excludePreviewOnly=false){
+ const used=new Set(),activeDirs=getModelActiveDirs(proj);
+ activeDirs.forEach(d=>{const rig=proj.rigsByDir?.[d]||(d===proj.dir?proj:null);if(!rig)return;const validBlockIds=new Set();(rig.blocks||[]).forEach(k=>{if(excludePreviewOnly&&k.previewOnly)return;validBlockIds.add(String(k.id));if(!k.effectId&&k.img&&(!excludePreviewOnly||k.demo!==false))used.add(k.img);});(proj.animationSets||[]).forEach(set=>{const clip=set.dirs?.[d];Object.values(clip?.blockKeys||{}).forEach(items=>(items||[]).forEach(st=>{if(validBlockIds.has(String(st.blockId))&&st.image)used.add(st.image);}));});});
+ (proj.effects||[]).forEach(ef=>{(ef.rig?.blocks||[]).forEach(k=>{if(excludePreviewOnly&&k.previewOnly)return;if(k.img)used.add(k.img);});const clips=[ef.animation,...(ef.animations||[]).map(c=>c.animation)].filter(Boolean);clips.forEach(clip=>Object.values(clip.blockKeys||{}).forEach(items=>(items||[]).forEach(st=>{if(st.image)used.add(st.image);})));});
+ return used;
+}
+function pruneUnusedDirections(model){
+ const mode=+[1,2,4,8].find(n=>n===+model.dirMode)||4,activeDirs=DIR_MODES[mode];
+ model.dirMode=mode;model.initialDirMode=mode;model.activeDirs=activeDirs;
+ if(!activeDirs.includes(model.dir))model.dir=activeDirs[0];
+ ALL_8_DIRS.forEach(d=>{if(!activeDirs.includes(d)&&model.rigsByDir)delete model.rigsByDir[d];});
+ (model.animationSets||[]).forEach(set=>{if(!set.dirs)return;ALL_8_DIRS.forEach(d=>{if(!activeDirs.includes(d))delete set.dirs[d];});});
+ return model;
+}
+function modelPackage(includeUnused=false,excludePreviewOnly=false){
  flushEffectWorkspace();if(!editedEffectId)saveActiveRig();
- return {format:'BoneAnimatorStudioWeb',version:2,model:cloneData(projectModel()),
-  assets:Object.fromEntries(LIB.map(name=>[name,imageData[name]]).filter(([,data])=>!!data))};
+ const cloned=pruneUnusedDirections(cloneData(projectModel()));
+ const used=includeUnused?null:getUsedProjectAssetNames(cloned,excludePreviewOnly);
+ return {format:'BoneAnimatorStudioWeb',version:2,model:cloned,
+  assets:Object.fromEntries(LIB.filter(name=>includeUnused||used.has(name)).map(name=>[name,imageData[name]]).filter(([,data])=>!!data))};
 }
 function downloadJSON(filename,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 const editableJsonDownloads=new Map();
@@ -4502,6 +4520,7 @@ $('modelNameForm').addEventListener('submit',event=>{
  closeModelNameDialog();
  saveM();
 });
+function executeSaveM(){const name=$('mn').value.trim();const includeUnused=!!$('unityIncludeUnusedAssets')?.checked;const pack=modelPackage(includeUnused,false),filename=name.replace(/[^a-z0-9_-]+/gi,'_')+'.json';let item=sessionModels.find(item=>item.saved&&item.name===filename);if(item)item.package=pack;else{item={id:nextSessionModelId++,name:filename,package:pack,saved:true};sessionModels.push(item);}if(activeSessionModelId==null&&selectedSessionModelIds.size===0){activeSessionModelId=item.id;selectedSessionModelIds.add(item.id);}renderSessionModels();downloadJSON(filename,pack);showToast('⬇ Đã xuất file '+filename+' ('+pack.model.dirMode+' hướng)!');}
 function saveM(){
  const name=$('mn').value.trim();
  if(!name){
@@ -4509,14 +4528,12 @@ function saveM(){
   $('modelNameModal').hidden=false;$('exportModelName').focus();
   return;
  }
- const pack=modelPackage(),filename=name.replace(/[^a-z0-9_-]+/gi,'_')+'.json';
- let item=sessionModels.find(item=>item.saved&&item.name===filename);
- if(item)item.package=pack;
- else {item={id:nextSessionModelId++,name:filename,package:pack,saved:true};sessionModels.push(item);}
- if(activeSessionModelId==null&&selectedSessionModelIds.size===0){
-  activeSessionModelId=item.id;selectedSessionModelIds.add(item.id);
+ const proj=projectModel(),initD=+proj.initialDirMode||+proj.dirMode||4,curD=+proj.dirMode||4;
+ if(initD!==curD){
+  openCustomConfirm('Xác nhận đổi số lượng hướng','Số hướng ban đầu của dự án là '+initD+' hướng, hiện tại bạn đang chọn '+curD+' hướng. Bạn có xác nhận đổi lại số lượng hướng không? (Các hướng không dùng sẽ bị xoá sạch để tránh dữ liệu dư thừa làm nặng file JSON)',()=>{proj.initialDirMode=curD;pruneUnusedDirections(proj);executeSaveM();});
+  return;
  }
- renderSessionModels();downloadJSON(filename,pack);
+ executeSaveM();
 }
 function setSessionStatus(message){$('sessionModelStatus').textContent=message;}
 function renderSessionModels(){
@@ -5363,7 +5380,9 @@ function renderCharacterThumbnail(targetPack=null,size=128){
    const activeDirs=getModelActiveDirs(M);
    const thumbDir=activeDirs.includes('down')?'down':activeDirs[0];
    const rig=M.rigsByDir?.[thumbDir]||M;
-   M={...M,dir:thumbDir,bones:rig.bones||[],blocks:rig.blocks||[]};
+   // Luôn bật hiển thị ảnh (demo=true giống UAI) cho các Block có ảnh khi chụp hình đại diện dự án
+   const uaiBlocks=cloneData(rig.blocks||[]).map(k=>({...k,demo:k.img?true:k.demo}));
+   M={...M,dir:thumbDir,bones:rig.bones||[],blocks:uaiBlocks};
    mode='rig';frame=0;
    const bnd=newBounds();
    paintRigBlocks(g,false,bnd.add,false);
@@ -5395,14 +5414,29 @@ function renderCharacterThumbnail(targetPack=null,size=128){
  }
 }
 
-function saveCurrentProjectToLocal(notify=true){
+async function performSaveProjectToLocal(notify=true,onDone=null){
  flushEffectWorkspace();if(!editedEffectId)saveActiveRig();
+ try{
+  await Promise.allSettled((LIB||[]).map(n=>new Promise(res=>{
+   const src=imageData[n];if(!src)return res();
+   let im=imageCache[n];
+   if(im&&im.complete&&im.naturalWidth)return res();
+   im=new Image();
+   im.onload=()=>res();im.onerror=()=>res();
+   im.src=src;imageCache[n]=im;
+  })));
+ }catch(e){}
+ const proj=projectModel();
+ const dirMode=+[1,2,4,8].find(n=>n===+proj.dirMode)||4;
+ proj.dirMode=dirMode;
+ proj.initialDirMode=dirMode;
+ proj.activeDirs=DIR_MODES[dirMode];
+ pruneUnusedDirections(proj);
+ syncActiveRigFromDirections(proj);
  const name=($('mn').value||'').trim()||'Unnamed_Character';
  $('mn').value=name;
- const pack=modelPackage();
- const dirMode=+[1,2,4,8].find(n=>n===+pack.model.dirMode)||4;
- pack.model.dirMode=dirMode;
- pack.model.activeDirs=DIR_MODES[dirMode];
+ const includeUnused=!!$('unityIncludeUnusedAssets')?.checked;
+ const pack=modelPackage(includeUnused,false);
  const thumb=renderCharacterThumbnail(null,128);
  const list=getSavedProjectsFromLocal();
  const now=new Date().toISOString();
@@ -5412,6 +5446,7 @@ function saveCurrentProjectToLocal(notify=true){
   id:currentProjectId,
   name,
   dirMode,
+  uaiThumbV2:true,
   updatedAt:now,
   boneCount:(pack.model.bones||[]).length,
   blockCount:(pack.model.blocks||[]).length,
@@ -5424,13 +5459,60 @@ function saveCurrentProjectToLocal(notify=true){
  else list.unshift(entry);
  try{localStorage.setItem(ACTIVE_PROJECT_ID_KEY,currentProjectId);}catch(e){}
  if(setSavedProjectsToLocal(list)&&notify){
-  showToast('💾 Đã lưu dự án "'+name+'" ('+dirMode+' hướng) vào trình duyệt!');
+  showToast('💾 Đã lưu dự án "'+name+'" ('+dirMode+' hướng, đã dọn sạch hướng thừa)!');
  }
+ if(onDone)onDone();
+}
+
+function saveCurrentProjectToLocal(requireConfirm=true,onDone=null){
+ flushEffectWorkspace();if(!editedEffectId)saveActiveRig();
+ const proj=projectModel();
+ const name=($('mn').value||'').trim()||'Unnamed_Character';
+ const list=getSavedProjectsFromLocal();
+ const existing=list.find(p=>p.id===currentProjectId||p.name.toLowerCase()===name.toLowerCase());
+ const initD=+[1,2,4,8].find(n=>n===+(proj.initialDirMode|| existing?.dirMode))||(+proj.dirMode||4);
+ const curD=+[1,2,4,8].find(n=>n===+proj.dirMode)||4;
+
+ const checkOverwriteAndSave=()=>{
+  if(requireConfirm&&existing){
+   openCustomConfirm(
+    'Xác nhận Lưu & Ghi đè Dự án',
+    'Bạn có chắc chắn muốn lưu và ghi đè dự án "'+name+'" ('+curD+' hướng) vào trình duyệt không?',
+    ()=>performSaveProjectToLocal(true,onDone)
+   );
+  }else{
+   performSaveProjectToLocal(requireConfirm,onDone);
+  }
+ };
+
+ if(initD!==curD){
+  openCustomConfirm(
+   'Xác nhận đổi số lượng hướng',
+   'Số hướng ban đầu của dự án là '+initD+' hướng, hiện tại bạn đang chọn '+curD+' hướng. Bạn có xác nhận đổi lại số lượng hướng không? (Các hướng không thuộc '+curD+' hướng mới sẽ bị xoá sạch dữ liệu để tránh dư thừa làm nặng file JSON)',
+   ()=>checkOverwriteAndSave()
+  );
+  return;
+ }
+ checkOverwriteAndSave();
 }
 
 function goBackToHubPage(){
- saveCurrentProjectToLocal(false);
- window.location.href='Bone_Animator_Hub.html';
+ const proj=projectModel();
+ const initD=+[1,2,4,8].find(n=>n===+proj.initialDirMode)||(+proj.dirMode||4);
+ const curD=+[1,2,4,8].find(n=>n===+proj.dirMode)||4;
+ if(initD!==curD){
+  openCustomConfirm(
+   'Xác nhận đổi số lượng hướng trước khi về Trang Chính',
+   'Số hướng ban đầu của dự án là '+initD+' hướng, hiện tại bạn đang chọn '+curD+' hướng. Bạn có xác nhận đổi lại số lượng hướng và lưu dự án không?',
+   ()=>performSaveProjectToLocal(false,()=>{window.location.href='Bone_Animator_Hub.html';})
+  );
+  return;
+ }
+ openCustomConfirm(
+  'Về Trang Chính Quản Lý Dự Án',
+  'Bạn có muốn lưu lại các thay đổi của dự án "'+($('mn').value||'Character')+'" trước khi về Trang Chính không?',
+  ()=>performSaveProjectToLocal(false,()=>{window.location.href='Bone_Animator_Hub.html';})
+ );
 }
 
 function loadActiveProjectOnStartup(){
@@ -5451,8 +5533,8 @@ function loadActiveProjectOnStartup(){
   }
  }catch(e){}
  // Fallback nếu mở trực tiếp trang Edit lần đầu tiên mà chưa qua Hub
- loadPackage(cloneData(R6_PRESET_PACKAGE),{name:'Character_Model_MR6'});
- saveCurrentProjectToLocal(false);
+ currentProjectId='proj_seed_r6';
+ loadPackage(cloneData(R6_PRESET_PACKAGE),{name:'Chiến Binh R6 (Mẫu 4 Hướng)'});
 }
 
 /* ============================================================================
@@ -5648,71 +5730,150 @@ function stampPixelTemplate(kind){
  }
 }
 
+let pixelSourceBlockSnap=null;
+function captureBlockImageTransform(k){
+ if(!k)return null;
+ return {
+  id:k.id,b:k.b,ir:Number.isFinite(+k.ir)?+k.ir:(k.b?90:0),
+  is:Number.isFinite(+k.is)&&+k.is>0?+k.is:1,
+  ix:+k.ix||0,iy:+k.iy||0,fx:+k.fx||0,
+  sx:Number.isFinite(+k.sx)&&+k.sx>0?+k.sx:1,
+  sy:Number.isFinite(+k.sy)&&+k.sy>0?+k.sy:1,
+  h:Number.isFinite(+k.h)&&+k.h>0?+k.h:40,
+  freeW:Number.isFinite(+k.freeW)&&+k.freeW>0?+k.freeW:64,
+  s:Number.isFinite(+k.s)?+k.s:0,e:Number.isFinite(+k.e)?+k.e:1,
+  ox:+k.ox||0,oy:+k.oy||0,z:+k.z||152,vis:k.vis||'all',
+  x:+k.x||0,y:+k.y||0,a:+k.a||0
+ };
+}
+
 function loadCurrentBlockToPixelPad(){
  const o=cur();
+ if(sel?.t==='k'&&o)pixelSourceBlockSnap=captureBlockImageTransform(o);
  const imgName=(sel?.t==='k'&&o?.img)?o.img:modalImage;
  if(!imgName||!imageSrc(imgName))return showToast('Block hiện tại chưa có ảnh để nạp.');
  const im=img(imgName);
  if(!im)return showToast('Ảnh đang tải, hãy thử lại.');
  pushPixelUndo();
  const c=$('pixelDrawCanvas'),ctx=c.getContext('2d');
+ // Tự động khớp kích thước lưới Pixel với kích thước ảnh gốc nếu là 16, 32, 48, 64
+ if([16,32,48,64].includes(im.naturalWidth)&&im.naturalWidth===im.naturalHeight){
+  c.width=im.naturalWidth;c.height=im.naturalHeight;
+  if($('pixelGridSize'))$('pixelGridSize').value=String(im.naturalWidth);
+ }
  ctx.clearRect(0,0,c.width,c.height);
  ctx.imageSmoothingEnabled=false;
  ctx.drawImage(im,0,0,c.width,c.height);
  $('pixelAssetName').value=imgName;
- showToast('📥 Đã nạp ảnh "'+imgName+'" lên bàn vẽ Pixel.');
+ showToast('📥 Đã nạp ảnh "'+imgName+'" (Giữ nguyên Góc xoay ir='+(pixelSourceBlockSnap?.ir??0)+'° & Độ phóng is='+(pixelSourceBlockSnap?.is??1)+').');
 }
 
 function openPixelPad(){
  initPixelPalette();
  const o=cur();
  if(sel?.t==='k'&&o){
+  pixelSourceBlockSnap=captureBlockImageTransform(o);
   $('pixelAssetName').value=o.img||(o.name.replace(/[^a-z0-9_-]+/gi,'_')+'_'+M.dir+'.png');
   if(o.img&&img(o.img))loadCurrentBlockToPixelPad();
  }else if(sel?.t==='b'&&o){
+  const attachedBlk=M.blocks.find(k=>k.b===o.id&&!k.effectId);
+  pixelSourceBlockSnap=attachedBlk?captureBlockImageTransform(attachedBlk):null;
   $('pixelAssetName').value=o.name.replace(/[^a-z0-9_-]+/gi,'_')+'_'+M.dir+'.png';
+ }else{
+  pixelSourceBlockSnap=null;
  }
  $('pixelPadModal').hidden=false;
 }
 function closePixelPad(){$('pixelPadModal').hidden=true;}
+
+function applySavedImageTransformToBlock(blk,snap,hadImageBefore){
+ if(!blk)return;
+ if(snap){
+  blk.ir=snap.ir;
+  blk.is=snap.is;
+  blk.ix=snap.ix;
+  blk.iy=snap.iy;
+  blk.fx=snap.fx;
+  blk.sx=snap.sx;
+  blk.sy=snap.sy;
+ }else if(!hadImageBefore){
+  blk.ir=blk.b?90:0;
+ }
+}
 
 function savePixelPadToTarget(targetMode){
  const c=$('pixelDrawCanvas');
  let name=($('pixelAssetName').value||'').trim()||'quick_sprite.png';
  if(!/\.png$/i.test(name))name=name.replace(/\.[^.]+$/,'')+'.png';
  const dataUrl=c.toDataURL('image/png');
- checkpointUndo();
- if(LIB.includes(name)){
-  imageData[name]=dataUrl;
-  const im=new Image();im.src=dataUrl;imageCache[name]=im;
- }else{
-  name=registerImage(name,dataUrl);
- }
- if(targetMode==='selected'){
-  if(sel?.t==='k'){
-   const k=cur();
-   if(k&&!k.effectId){k.img=name;k.demo=true;fitImg();}
-   showToast('✅ Đã lưu "'+name+'" và cập nhật vào Block '+k.name+'!');
-  }else if(sel?.t==='b'){
-   const b=cur(),blk=addBlock();
-   attachBlockToBone(blk,b.id);
-   blk.name=b.name+'_blk';blk.img=name;blk.demo=true;blk.z=152;
-   showToast('✅ Đã lưu "'+name+'" và gắn Block mới vào Xương '+b.name+'!');
+ const executePixelSave=()=>{
+  checkpointUndo();
+  const currentSelectedBlock=(sel?.t==='k'&&cur()&&!cur().effectId)?cur():null;
+  const snap=currentSelectedBlock?captureBlockImageTransform(currentSelectedBlock):pixelSourceBlockSnap;
+  const hadImageBefore=!!(currentSelectedBlock?.img);
+
+  if(LIB.includes(name)){
+   imageData[name]=dataUrl;
+   const im=new Image();im.src=dataUrl;imageCache[name]=im;
   }else{
-   createBlockFromImage(name,{x:0,y:0});
-   showToast('✅ Đã lưu "'+name+'" và tạo Block trên Canvas!');
+   name=registerImage(name,dataUrl);
   }
- }else if(targetMode==='newBlock'){
-  const bone=sel?.t==='b'?byId(sel.id):(M.bones[0]||null);
-  const blk=addBlock();
-  if(bone)attachBlockToBone(blk,bone.id);
-  blk.name=name.replace(/\.png$/i,'');blk.img=name;blk.demo=true;blk.z=152+M.blocks.length;
-  showToast('➕ Đã tạo Block mới "'+blk.name+'" với ảnh vừa vẽ!');
- }else{
-  showToast('🗂 Đã lưu ảnh "'+name+'" vào Kho ảnh!');
+
+  if(targetMode==='selected'){
+   if(currentSelectedBlock){
+    // Giữ nguyên góc xoay ảnh cũ (ir), độ phóng to ảnh cũ (is) và độ lệch (ix, iy), tuyệt đối không gọi fitImg() làm mất thông số cũ!
+    currentSelectedBlock.img=name;
+    currentSelectedBlock.demo=true;
+    applySavedImageTransformToBlock(currentSelectedBlock,snap,hadImageBefore);
+    showToast('✅ Đã cập nhật ảnh "'+name+'" vào Block '+currentSelectedBlock.name+' (Giữ nguyên ir='+currentSelectedBlock.ir+'°, is='+currentSelectedBlock.is+')!');
+   }else if(sel?.t==='b'){
+    const b=cur(),blk=addBlock();
+    attachBlockToBone(blk,b.id);
+    blk.name=b.name+'_blk';blk.img=name;blk.demo=true;
+    if(snap){
+     applySavedImageTransformToBlock(blk,snap,true);
+     blk.h=snap.h;blk.s=snap.s;blk.e=snap.e;blk.ox=snap.ox;blk.oy=snap.oy;blk.z=snap.z;
+    }else{
+     blk.ir=90;blk.is=1;blk.z=152;
+    }
+    showToast('✅ Đã lưu "'+name+'" và gắn Block vào Xương '+b.name+'!');
+   }else{
+    createBlockFromImage(name,{x:0,y:0});
+    showToast('✅ Đã lưu "'+name+'" và tạo Block trên Canvas!');
+   }
+  }else if(targetMode==='newBlock'){
+   const targetBoneId=sel?.t==='b'?sel.id:(snap?.b||M.bones[0]?.id||0);
+   const bone=targetBoneId?byId(targetBoneId):null;
+   const blk=addBlock();
+   if(bone)attachBlockToBone(blk,bone.id);
+   blk.name=name.replace(/\.png$/i,'');
+   blk.img=name;blk.demo=true;
+   if(snap){
+    // Nhớ toàn bộ góc xoay ảnh cũ (ir), độ phóng to ảnh cũ (is) và kích thước từ Block nguồn
+    applySavedImageTransformToBlock(blk,snap,true);
+    blk.h=snap.h;blk.freeW=snap.freeW;blk.s=snap.s;blk.e=snap.e;blk.ox=snap.ox;blk.oy=snap.oy;
+    blk.z=(+snap.z||152)+1;
+    if(!bone){blk.x=snap.x+12;blk.y=snap.y+12;blk.a=snap.a;}
+   }else{
+    blk.ir=bone?90:0;blk.is=1;blk.z=152+M.blocks.length;
+   }
+   showToast('➕ Đã tạo Block mới "'+blk.name+'" (Kế thừa góc xoay ir='+blk.ir+'° & độ phóng is='+blk.is+')!');
+  }else{
+   showToast('🗂 Đã lưu ảnh "'+name+'" vào Kho ảnh!');
+  }
+  saveActiveRig();renderAll();draw();
+  closePixelPad();
+ };
+
+ if(LIB.includes(name)){
+  openCustomConfirm(
+   'Xác nhận ghi đè ảnh',
+   'Ảnh "'+name+'" đã tồn tại trong dự án. Bạn có chắc muốn ghi đè ảnh mới lên không? (Góc xoay và độ phóng to ảnh trên Block vẫn được giữ nguyên)',
+   executePixelSave
+  );
+  return;
  }
- saveActiveRig();renderAll();draw();
- closePixelPad();
+ executePixelSave();
 }
 
 /* ============================================================================

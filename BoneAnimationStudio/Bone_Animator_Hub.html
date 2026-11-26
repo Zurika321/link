@@ -395,6 +395,11 @@ button:active { transform: scale(0.97); }
   color: #fff;
   font-weight: 700;
   font-size: 12px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
 
 /* Modal Dialog with Always-Visible Sticky Close Button */
@@ -669,19 +674,38 @@ function applyDirectionModeToPackage(pack, dirMode) {
   const activeDirs = DIR_MODES[mode];
   pack.model = pack.model || {};
   pack.model.dirMode = mode;
+  pack.model.initialDirMode = mode;
   pack.model.activeDirs = activeDirs;
   pack.model.dir = activeDirs[0];
   const baseRig = pack.model.rigsByDir?.down || {bones: pack.model.bones || [], blocks: pack.model.blocks || []};
   pack.model.rigsByDir = pack.model.rigsByDir || {};
   ALL_8_DIRS.forEach(d => {
-    if (!pack.model.rigsByDir[d] || !Array.isArray(pack.model.rigsByDir[d].bones) || !pack.model.rigsByDir[d].bones.length) {
-      const srcDir = d.includes('left') && pack.model.rigsByDir.left?.bones?.length ? 'left'
-        : (d.includes('right') && pack.model.rigsByDir.right?.bones?.length ? 'right'
-        : (d.includes('up') && pack.model.rigsByDir.up?.bones?.length ? 'up' : 'down'));
-      const ref = pack.model.rigsByDir[srcDir] || baseRig;
-      pack.model.rigsByDir[d] = {bones: cloneData(ref.bones || []), blocks: cloneData(ref.blocks || [])};
+    if (activeDirs.includes(d)) {
+      if (!pack.model.rigsByDir[d] || !Array.isArray(pack.model.rigsByDir[d].bones) || !pack.model.rigsByDir[d].bones.length) {
+        const srcDir = d.includes('left') && pack.model.rigsByDir.left?.bones?.length ? 'left'
+          : (d.includes('right') && pack.model.rigsByDir.right?.bones?.length ? 'right'
+          : (d.includes('up') && pack.model.rigsByDir.up?.bones?.length ? 'up' : 'down'));
+        const ref = pack.model.rigsByDir[srcDir] || baseRig;
+        pack.model.rigsByDir[d] = {bones: cloneData(ref.bones || []), blocks: cloneData(ref.blocks || [])};
+      }
+      (pack.model.rigsByDir[d].blocks || []).forEach(k => {
+        if (!k.img && k['img' + d[0].toUpperCase() + d.slice(1)]) k.img = k['img' + d[0].toUpperCase() + d.slice(1)];
+        if (k.img && !k.effectId) k.demo = true;
+      });
+    } else {
+      // Xoá sạch dữ liệu của các hướng không sử dụng để giảm dung lượng JSON
+      delete pack.model.rigsByDir[d];
     }
   });
+  (pack.model.animationSets || []).forEach(set => {
+    if (!set.dirs) return;
+    ALL_8_DIRS.forEach(d => {
+      if (!activeDirs.includes(d)) delete set.dirs[d];
+    });
+  });
+  const curRig = pack.model.rigsByDir[pack.model.dir] || {bones:[], blocks:[]};
+  pack.model.bones = cloneData(curRig.bones);
+  pack.model.blocks = cloneData(curRig.blocks);
   return pack;
 }
 
@@ -713,11 +737,11 @@ function createBlankProjectPackage(dirMode = 4) {
   };
 }
 
-/* Kết xuất hình ảnh nhân vật (Character Thumbnail) từ package JSON */
-async function renderPackageThumbnail(pack, size = 128) {
+/* Kết xuất hình ảnh nhân vật (Character Thumbnail) chuẩn UAI từ package JSON */
+async function renderPackageThumbnail(pack, size = 144) {
   try {
     const model = pack.model || pack;
-    const assets = pack.assets || {};
+    const assets = {...(R6_PRESET_PACKAGE.assets||{}), ...(R15_PRESET_PACKAGE.assets||{}), ...(pack.assets||{})};
     const activeDirs = DIR_MODES[model.dirMode] || ['down','up','left','right'];
     const dir = activeDirs.includes('down') ? 'down' : activeDirs[0];
     const rig = model.rigsByDir?.[dir] || {bones: model.bones || [], blocks: model.blocks || []};
@@ -740,76 +764,98 @@ async function renderPackageThumbnail(pack, size = 128) {
     };
     bones.forEach(solveBone);
 
-    // Tải trước các ảnh cần dùng
+    // Tải trước đầy đủ các ảnh sprite cần dùng (chế độ UAI)
     const imgMap = {};
-    await Promise.all(blocks.map(k => {
-      const name = k.img;
-      if (!name || !assets[name] || imgMap[name]) return Promise.resolve();
+    const uniqueNames = [...new Set(blocks.map(k => k.img || k.imgDown || '').filter(Boolean))];
+    await Promise.all(uniqueNames.map(name => {
+      if (!assets[name]) return Promise.resolve();
       return new Promise(res => {
         const im = new Image();
-        im.onload = () => { imgMap[name] = im; res(); };
+        im.onload = async () => { try { if (im.decode) await im.decode(); } catch(e){} imgMap[name] = im; res(); };
         im.onerror = () => res();
         im.src = assets[name];
       });
     }));
 
-    // Tính bounding box
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-    const addPt = (x, y) => { if (Number.isFinite(x) && Number.isFinite(y)) { minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); } };
-    bones.forEach(b => { const w = W[b.id]; if (w) { addPt(w.hx, w.hy); addPt(w.tx, w.ty); } });
-    blocks.forEach(k => {
-      const w = k.b && W[k.b] ? W[k.b] : {hx: +k.x||0, hy: +k.y||0, wa: +k.a||0, l: Math.max(4, +k.freeW||64)};
-      const len = k.b ? ((+k.e||1) - (+k.s||0)) * w.l : Math.max(4, +k.freeW||64);
-      const h = (+k.h || 32) * (+k.sy || 1);
-      addPt(w.hx - len, w.hy - h);
-      addPt(w.hx + len, w.hy + h);
-      addPt(w.tx - len, w.ty - h);
-      addPt(w.tx + len, w.ty + h);
-    });
-    if (!Number.isFinite(minX)) { minX = -48; minY = -64; maxX = 48; maxY = 64; }
-    const bw = Math.max(24, maxX - minX), bh = Math.max(24, maxY - minY);
-
     const canvas = document.createElement('canvas');
     canvas.width = size; canvas.height = size;
     const g = canvas.getContext('2d');
     g.imageSmoothingEnabled = false;
-    const pad = size * 0.1;
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    const addPt = (x, y) => {
+      if (Number.isFinite(x) && Number.isFinite(y)) {
+        minX = Math.min(minX, x); minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+      }
+    };
+    const measureRect = (x, y, w, h) => {
+      const t = g.getTransform();
+      for (const [px, py] of [[x, y], [x+w, y], [x, y+h], [x+w, y+h]]) {
+        addPt(t.a*px + t.c*py + t.e, t.b*px + t.d*py + t.f);
+      }
+    };
+
+    const sorted = [...blocks].sort((a, b) => (+a.z||0) - (+b.z||0));
+    const paintPass = (measureOnly) => {
+      sorted.forEach(k => {
+        const b = k.b ? byId(k.b) : null;
+        const w = b ? W[b.id] : {hx: +k.x||0, hy: +k.y||0, wa: +k.a||0, l: Math.max(4, +k.freeW||64)};
+        if (!w) return;
+        const s = +k.s || 0, e = Number.isFinite(+k.e) ? +k.e : 1;
+        const r0 = b ? (e - s) * b.l : Math.max(4, +k.freeW || 64);
+        const x0 = b ? (s * b.l + (+k.ox || 0)) : -r0 / 2;
+        const cy = +k.oy || 0;
+        const sx = +k.sx || 1, sy = +k.sy || 1;
+        const h = +k.h || 36;
+        const skx = Math.tan((+k.skewX||0) * D), sky = Math.tan((+k.skewY||0) * D);
+        const width = r0 * sx;
+        g.save();
+        g.translate(w.hx, w.hy);
+        g.rotate(w.wa * D);
+        g.translate(x0, cy);
+        g.translate(width/2, 0);
+        if (skx || sky) g.transform(1, sky, skx, 1, 0, 0);
+        g.translate(-width/2, 0);
+        g.scale(sx, sy);
+        const imgName = k.img || k.imgDown || '';
+        const im = imgName ? imgMap[imgName] : null;
+        if (im && im.naturalWidth) {
+          const is = +k.is || 1;
+          g.save();
+          g.translate(r0/2 + (+k.ix||0), +k.iy||0);
+          g.rotate((+k.ir||0) * D);
+          if (k.fx) g.scale(-1, 1);
+          const iw = im.naturalWidth * is, ih = im.naturalHeight * is;
+          if (measureOnly) measureRect(-iw/2, -ih/2, iw, ih);
+          else g.drawImage(im, -iw/2, -ih/2, iw, ih);
+          g.restore();
+        } else {
+          if (measureOnly) measureRect(0, -h/2, r0, h);
+          else {
+            g.fillStyle = k.col || '#3fb8af';
+            g.fillRect(0, -h/2, r0, h);
+          }
+        }
+        g.restore();
+      });
+    };
+
+    paintPass(true);
+    if (!Number.isFinite(minX)) {
+      bones.forEach(b => { const w = W[b.id]; if (w) { addPt(w.hx, w.hy); addPt(w.tx, w.ty); } });
+    }
+    if (!Number.isFinite(minX)) { minX = -48; minY = -64; maxX = 48; maxY = 64; }
+    const bw = Math.max(16, maxX - minX), bh = Math.max(16, maxY - minY);
+    const pad = size * 0.08;
     const scale = Math.min((size - pad*2) / bw, (size - pad*2) / bh);
     const ox = (size - bw*scale)/2 - minX*scale;
     const oy = (size - bh*scale)/2 - minY*scale;
+    g.clearRect(0, 0, size, size);
     g.save();
     g.translate(ox, oy);
     g.scale(scale, scale);
-
-    const sorted = [...blocks].sort((a, b) => (+a.z||0) - (+b.z||0));
-    sorted.forEach(k => {
-      const b = k.b ? byId(k.b) : null;
-      const w = b ? W[b.id] : {hx: +k.x||0, hy: +k.y||0, wa: +k.a||0, l: Math.max(4, +k.freeW||64)};
-      if (!w) return;
-      const s = +k.s || 0, e = Number.isFinite(+k.e) ? +k.e : 1;
-      const r0 = b ? (e - s) * b.l : Math.max(4, +k.freeW || 64);
-      const x0 = b ? (s * b.l + (+k.ox || 0)) : -r0 / 2;
-      const cy = +k.oy || 0;
-      const sx = +k.sx || 1, sy = +k.sy || 1;
-      const h = +k.h || 36;
-      g.save();
-      g.translate(w.hx, w.hy);
-      g.rotate(w.wa * D);
-      g.translate(x0, cy);
-      g.scale(sx, sy);
-      const im = k.demo !== false && k.img ? imgMap[k.img] : null;
-      if (im) {
-        const is = +k.is || 1;
-        g.translate(r0/2 + (+k.ix||0), +k.iy||0);
-        g.rotate((+k.ir||0) * D);
-        if (k.fx) g.scale(-1, 1);
-        g.drawImage(im, -im.naturalWidth*is/2, -im.naturalHeight*is/2, im.naturalWidth*is, im.naturalHeight*is);
-      } else {
-        g.fillStyle = k.col || '#3fb8af';
-        g.fillRect(0, -h/2, r0, h);
-      }
-      g.restore();
-    });
+    paintPass(false);
     g.restore();
     return canvas.toDataURL('image/png');
   } catch (err) {
@@ -842,6 +888,21 @@ async function ensureSeededProjects() {
   if ($('previewR6') && r6Thumb) $('previewR6').innerHTML = `<img src="${r6Thumb}" alt="R6">`;
   if ($('previewR15') && r15Thumb) $('previewR15').innerHTML = `<img src="${r15Thumb}" alt="R15">`;
 
+  // Tự động cập nhật lại hình đại diện có bật UAI cho tất cả dự án có sẵn trong LocalStorage
+  let updatedExisting = false;
+  for (const item of list) {
+    if (item && item.package && !item.uaiThumbV3) {
+      if (item.id === 'proj_seed_r6' || /Chiến Binh R6/i.test(item.name || '')) {
+        item.package = applyDirectionModeToPackage(cloneData(R6_PRESET_PACKAGE), item.dirMode || 4);
+      } else if (item.id === 'proj_seed_r15' || /Hiệp Sĩ R15/i.test(item.name || '')) {
+        item.package = applyDirectionModeToPackage(cloneData(R15_PRESET_PACKAGE), item.dirMode || 4);
+      }
+      item.thumbnail = await renderPackageThumbnail(item.package, 144);
+      item.uaiThumbV3 = true;
+      updatedExisting = true;
+    }
+  }
+  if (updatedExisting) setSavedProjects(list);
   if (!list.length) {
     const p6 = applyDirectionModeToPackage(cloneData(R6_PRESET_PACKAGE), 4);
     const p15 = applyDirectionModeToPackage(cloneData(R15_PRESET_PACKAGE), 4);
