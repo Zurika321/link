@@ -281,7 +281,7 @@ body{grid-template:"N N N N N" 54px "L VL C VR R" minmax(0,1fr) "H H H H H" var(
 .unity-export-head,.unity-export-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--l);flex:none}
 .unity-export-foot{border-top:1px solid var(--l);border-bottom:0;justify-content:flex-end}
 .unity-export-body{padding:12px 16px;overflow:auto;min-height:0}
-.unity-animation-row{display:grid;grid-template-columns:minmax(130px,1fr) 100px 100px 100px 100px;gap:8px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--l)}
+.unity-animation-row{display:grid;grid-template-columns:minmax(115px,1fr) 76px 96px 88px 88px minmax(130px,1.05fr);gap:8px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--l)}
 .unity-animation-row .row-name{font-weight:650;overflow-wrap:anywhere}.unity-animation-row label{display:flex;align-items:center;gap:5px;font-size:11px;color:#c5ccd5}.unity-animation-row input[type=number]{width:62px;min-height:32px}
 .unity-export-note{font-size:12px;color:#aab4c2;line-height:1.5;margin:8px 0}.unity-export-status{white-space:pre-wrap;font-size:12px;line-height:1.5;margin:10px 0;color:#ffd166}
 @media(max-width:680px){.unity-animation-row{grid-template-columns:1fr 1fr;gap:6px}.unity-animation-row .row-name{grid-column:1/-1}}
@@ -936,6 +936,34 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   padding: 2px 0 !important;
 }
 .anim-pill-row::-webkit-scrollbar { display: none !important; }
+#animBar #animationName {
+  width: 94px !important;
+  min-width: 84px !important;
+  max-width: 104px !important;
+  flex: 0 0 94px !important;
+  height: 28px !important;
+  padding: 0 9px !important;
+  font-size: 11px !important;
+}
+#animBar #animComboGroup {
+  width: 96px !important;
+  min-width: 86px !important;
+  max-width: 108px !important;
+  flex: 0 0 96px !important;
+  height: 28px !important;
+  padding: 0 9px !important;
+  font-size: 11px !important;
+}
+#animBar #directionSelect {
+  width: auto !important;
+  max-width: 86px !important;
+  flex: 0 0 auto !important;
+}
+#animBar #animationSelect {
+  width: auto !important;
+  max-width: 120px !important;
+  flex: 0 0 auto !important;
+}
 
 #timelineControls {
   width: 100% !important;
@@ -1248,11 +1276,13 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
    </div>
 
    <div class="pill-group">
-    <input id="animationName" class="pill-select" style="width:105px" placeholder="Tên clip mới...">
+    <input id="animationName" class="pill-select" style="width:100px" placeholder="Tên clip mới...">
     <button type="button" class="circle-icon-btn" onclick="createAnimation()" title="Tạo animation mới">＋</button>
     <button type="button" class="circle-icon-btn" onclick="renameAnimation()" title="Đổi tên animation">✎</button>
     <button type="button" class="circle-icon-btn" onclick="duplicateAnimation()" title="Nhân bản animation">⧉</button>
     <button type="button" class="circle-icon-btn" id="deleteAnimationBtn" onclick="deleteAnimation()" title="Xoá animation" disabled>🗑</button>
+    <input id="animComboGroup" class="pill-select" style="width:104px;border-color:#2d6a64;color:#a7f3d0" placeholder="🔗 Combo group..." title="Tên nhóm Combo (các animation có cùng comboGroup sẽ tự động chạy nối tiếp luân phiên nhau trên Web và tự đếm index trong Unity)" oninput="setActiveAnimComboGroup(this.value)" onchange="setActiveAnimComboGroup(this.value)">
+    <span id="animComboBadge" class="pill-group-label" style="color:#6ee7b7;padding:0 4px" hidden></span>
    </div>
 
    <div class="pill-group">
@@ -1434,7 +1464,7 @@ body.effect-workspace .animation-setup #animationSelect{width:100%}
   <div class="unity-export-body">
    <div class="row"><label style="width:125px">Pixels Per Unit</label><input id="unityPpu" type="number" min="1" max="2048" step="1" value="100"></div>
    <p class="unity-export-note">Unity JSON dùng schema v3 khi có Block Effect đã tắt Demo. Hãy dùng bộ script Unity v4 để đọc schema 1–3. GroupBlock, Block Keyframe, Easing và Skew/Mesh đều được xuất. Với Attack/Skill, Charge chạy từ frame 0 đến Cast Start − 1; Cast chạy từ Cast Start đến Cast End; End chạy từ Cast End + 1 đến hết. Tên SFX và dropdown RegistryId được cấu hình trong Inspector của CharacterAnimation.</p>
-   <div class="unity-animation-row" style="font-size:11px;color:#9da8b7;font-weight:700"><span>ANIMATION</span><span>LOOP</span><span>ATTACK / SKILL</span><span>CAST START</span><span>CAST END</span></div>
+   <div class="unity-animation-row" style="font-size:11px;color:#9da8b7;font-weight:700"><span>ANIMATION</span><span>LOOP</span><span>ATTACK / SKILL</span><span>CAST START</span><span>CAST END</span><span>COMBO GROUP</span></div>
    <div id="unityAnimationSettings"></div>
    <label class="web-json-option"><input id="unityIncludeUnusedAssets" type="checkbox"> Lấy luôn cả ảnh không dùng (mặc định: chỉ lấy ảnh đang dùng, bỏ qua ảnh thừa và ảnh trong Block có Demo = true)</label>
    <label class="web-json-option"><input id="unityIncludeWebJson" type="checkbox"> Xuất kèm JSON chỉnh sửa (Web)</label>
@@ -1693,9 +1723,11 @@ function normalizeUnityMeta(set){
  const startDefault=frameCount>=3?Math.max(1,Math.min(frameCount-2,Math.floor(frameCount*.33))):0;
  const endDefault=frameCount>=3?Math.max(startDefault,Math.min(frameCount-1,Math.floor(frameCount*.66))):0;
  const source=set?.unity||{};
+ const comboGroup=typeof source.comboGroup==='string'?source.comboGroup.trim():(typeof set?.comboGroup==='string'?set.comboGroup.trim():'');
  return {loop:typeof source.loop==='boolean'?source.loop:inferUnityLoop(set?.name),isCombat,
   castStartFrame:Number.isFinite(+source.castStartFrame)?Math.round(+source.castStartFrame):startDefault,
-  castEndFrame:Number.isFinite(+source.castEndFrame)?Math.round(+source.castEndFrame):endDefault};
+  castEndFrame:Number.isFinite(+source.castEndFrame)?Math.round(+source.castEndFrame):endDefault,
+  comboGroup};
 }
 /* GroupBlock uses stable numeric block IDs shared by all directions.
    Membership is exclusive across every variant/group: shared/unchanging blocks stay outside groups. */
@@ -1829,14 +1861,57 @@ function seedAnimationSet(set,bones=M.bones){
   }
  }
 }
+function getComboGroupAnimations(set=activeSet()){
+ if(!set||editedEffectId)return [];
+ const cg=String(ensureUnityMeta(set).comboGroup||set.comboGroup||'').trim();
+ if(!cg)return [];
+ return (M.animationSets||[]).filter(s=>String(ensureUnityMeta(s).comboGroup||s.comboGroup||'').trim().toLowerCase()===cg.toLowerCase());
+}
+function formatAnimSelectLabel(a){
+ const cg=String(ensureUnityMeta(a).comboGroup||a.comboGroup||'').trim();
+ if(!cg)return a.name;
+ const list=getComboGroupAnimations(a);
+ const idx=list.findIndex(s=>s.name===a.name);
+ return `${a.name} [Combo: ${cg} #${idx+1}/${list.length}]`;
+}
+function syncAnimComboUI(updateInput=true){
+ const set=activeSet();
+ const inp=$('animComboGroup'),badge=$('animComboBadge');
+ if(!inp||!badge)return;
+ inp.disabled=!!editedEffectId||!set;
+ const cg=(!editedEffectId&&set)?String(ensureUnityMeta(set).comboGroup||set.comboGroup||'').trim():'';
+ if(updateInput&&document.activeElement!==inp)inp.value=cg;
+ if(cg){
+  const list=getComboGroupAnimations(set);
+  const idx=list.findIndex(s=>s.name===set.name);
+  badge.hidden=false;
+  badge.textContent=`#${idx+1}/${list.length}`;
+  badge.title=`Đòn thứ ${idx+1} trong chuỗi Combo "${cg}" (${list.length} đòn - khi bấm Play sẽ tự lặp luân phiên các đòn trong nhóm)`;
+ }else{
+  badge.hidden=true;
+  badge.textContent='';
+ }
+}
+function setActiveAnimComboGroup(val){
+ if(editedEffectId)return;
+ const set=activeSet();if(!set)return;
+ const meta=ensureUnityMeta(set);
+ meta.comboGroup=String(val||'').trim();
+ set.comboGroup=meta.comboGroup;
+ if($('animationSelect')){
+  $('animationSelect').innerHTML=M.animationSets.map(a=>`<option value="${esc(a.name)}" ${a.name===M.activeAnimation?'selected':''}>${esc(formatAnimSelectLabel(a))}</option>`).join('');
+  $('animationSelect').value=M.activeAnimation;
+ }
+ syncAnimComboUI(false);
+}
 function refreshAnimationState(){
  if(!M.animationSets.length)M.animationSets=[{name:'Default',dirs:emptyDirections()}];
  if(!M.animationSets.some(a=>a.name===M.activeAnimation))M.activeAnimation=M.animationSets[0].name;
  const set=activeSet();M.anims=set.dirs;M.anim=M.anims[M.dir];
  $('timelineControls').hidden=false;$('noAnimationHint').hidden=true;
  $('deleteAnimationBtn').disabled=M.animationSets.length<=1;
- $('animationSelect').innerHTML=M.animationSets.map(a=>`<option value="${esc(a.name)}" ${a.name===M.activeAnimation?'selected':''}>${esc(a.name)}</option>`).join('');
- $('animationSelect').value=M.activeAnimation;$('directionSelect').value=M.dir;syncAnim();
+ $('animationSelect').innerHTML=M.animationSets.map(a=>`<option value="${esc(a.name)}" ${a.name===M.activeAnimation?'selected':''}>${esc(formatAnimSelectLabel(a))}</option>`).join('');
+ $('animationSelect').value=M.activeAnimation;$('directionSelect').value=M.dir;syncAnim();syncAnimComboUI(true);
 }
 const A=()=>{const set=activeSet();return set?set.dirs[M.dir]:(emptyAnim());};
 const byId=id=>M.bones.find(b=>b.id==id),kids=id=>M.bones.filter(b=>b.p==id);
@@ -4393,22 +4468,38 @@ function closeUnityExportSettings(){
 }
 function renderUnityAnimationSettings(){
  const host=$('unityAnimationSettings');
+ const comboOrderCounter={};
  host.innerHTML=M.animationSets.map((set,index)=>{
-  const meta=ensureUnityMeta(set),id='unityAnim_'+index;
+  const meta=ensureUnityMeta(set),cg=String(meta.comboGroup||set.comboGroup||'').trim();
+  let comboIdxBadge='';
+  if(cg){
+   const k=cg.toLowerCase();
+   const step=(comboOrderCounter[k]||0);
+   comboOrderCounter[k]=step+1;
+   comboIdxBadge=`<span style="color:#6ee7b7;font-weight:700;font-size:11px;white-space:nowrap" title="Unity Combo Index: ${step}">#${step}</span>`;
+  }
   return `<div class="unity-animation-row" data-unity-index="${index}">
    <span class="row-name">${esc(set.name)}</span>
    <label><input type="checkbox" data-unity-field="loop" ${meta.loop?'checked':''}> Loop</label>
    <label><input type="checkbox" data-unity-field="isCombat" ${meta.isCombat?'checked':''}> Attack / Skill</label>
    <label>Start <input type="number" data-unity-field="castStartFrame" min="0" step="1" value="${meta.castStartFrame}" ${meta.isCombat?'':'disabled'}></label>
    <label>End <input type="number" data-unity-field="castEndFrame" min="0" step="1" value="${meta.castEndFrame}" ${meta.isCombat?'':'disabled'}></label>
+   <label title="Các animation có cùng comboGroup sẽ chạy luân phiên trên Web và được Unity tự đếm index theo thứ tự"><input type="text" data-unity-field="comboGroup" placeholder="Tên nhóm combo..." value="${esc(cg)}" style="width:100%;min-height:32px">${comboIdxBadge}</label>
   </div>`;
  }).join('')||'<div class="status">Chưa có animation set.</div>';
  host.querySelectorAll('[data-unity-index]').forEach(row=>{
   const index=+row.dataset.unityIndex,set=M.animationSets[index];
   row.querySelectorAll('[data-unity-field]').forEach(input=>input.addEventListener('change',()=>{
    const key=input.dataset.unityField,meta=ensureUnityMeta(set);
-   meta[key]=input.type==='checkbox'?input.checked:Math.round(+input.value||0);
-   if(key==='isCombat')renderUnityAnimationSettings();
+   if(key==='comboGroup'){
+    meta.comboGroup=String(input.value||'').trim();
+    set.comboGroup=meta.comboGroup;
+    refreshAnimationState();
+    renderUnityAnimationSettings();
+   }else{
+    meta[key]=input.type==='checkbox'?input.checked:Math.round(+input.value||0);
+    if(key==='isCombat')renderUnityAnimationSettings();
+   }
   }));
  });
 }
@@ -4515,7 +4606,7 @@ function unityBuildPayload(){
    return {name:dir,frameRate:Math.max(1,+anim.fps||12),frameCount:Math.max(1,Math.round(+anim.frames||24)),boneTracks,blockKeyframes};
   });
   const frameCount=Math.max(1,...animDirs.map(d=>d.frameCount));
-  return {name:set.name,loop:!!meta.loop,isCombat:!!meta.isCombat,castStartFrame:Math.round(meta.castStartFrame),castEndFrame:Math.round(meta.castEndFrame),frameCount,directions:animDirs};
+  const comboGroup=String(meta.comboGroup||set.comboGroup||'').trim();return {name:set.name,loop:!!meta.loop,isCombat:!!meta.isCombat,comboGroup,castStartFrame:Math.round(meta.castStartFrame),castEndFrame:Math.round(meta.castEndFrame),frameCount,directions:animDirs};
  });
  const assetNames=new Set();
  const includeUnused=!!$('unityIncludeUnusedAssets')?.checked;
@@ -5434,7 +5525,23 @@ function loop(time){
   const total=Math.max(1,A().frames);
   if(frame>=total){
    if(editedEffectId&&!findEffect(editedEffectId)?.loop){frame=lastFrame();playing=false;$('pb').textContent='▶';}
-   else frame%=total;
+   else{
+    const comboList=getComboGroupAnimations(activeSet());
+    if(comboList.length>1){
+     const curIdx=comboList.findIndex(s=>s.name===activeSet().name);
+     const nextSet=comboList[(curIdx+1)%comboList.length];
+     M.activeAnimation=nextSet.name;
+     M.anims=nextSet.dirs;
+     M.anim=M.anims[M.dir];
+     frame=0;ksel=null;
+     if($('animationSelect'))$('animationSelect').value=M.activeAnimation;
+     syncAnim();
+     syncAnimComboUI(true);
+     renderAll();
+    }else{
+     frame%=total;
+    }
+   }
   }
  }
  fit(cv);fitTimeline();draw();
